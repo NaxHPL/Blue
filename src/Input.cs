@@ -1,7 +1,7 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
 
-namespace BlueFw;
+namespace Blue;
 
 public enum MouseButton {
     Left,
@@ -65,6 +65,25 @@ public static class Input {
         /// </summary>
         public static bool MouseScrolledDown { get; private set; }
 
+        /// <summary>
+        /// The change in horizontal scroll wheel value since the last frame.
+        /// </summary>
+        /// <remarks>
+        /// A value &gt; 0 means the user scrolled right this frame.
+        /// <br>A value &lt; 0 means the user scrolled left this frame.</br>
+        /// </remarks>
+        public static int HorizontalMouseScrollDelta { get; private set; }
+
+        /// <summary>
+        /// Did the mouse scroll right this frame?
+        /// </summary>
+        public static bool MouseScrolledRight { get; private set; }
+
+        /// <summary>
+        /// Did the mouse scroll left this frame?
+        /// </summary>
+        public static bool MouseScrolledLeft { get; private set; }
+
         static MouseState prevMouseState, curMouseState;
         static KeyboardState prevKeyboardState, curKeyboardState;
 
@@ -75,9 +94,14 @@ public static class Input {
 
             MousePosition = curMouseState.Position.ToVector2();
             MouseMoved = curMouseState.Position != prevMouseState.Position;
+            
             MouseScrollDelta = curMouseState.ScrollWheelValue - prevMouseState.ScrollWheelValue;
             MouseScrolledUp = MouseScrollDelta > 0;
             MouseScrolledDown = MouseScrollDelta < 0;
+
+            HorizontalMouseScrollDelta = curMouseState.HorizontalScrollWheelValue - prevMouseState.HorizontalScrollWheelValue;
+            MouseScrolledRight = HorizontalMouseScrollDelta > 0;
+            MouseScrolledLeft = HorizontalMouseScrollDelta < 0;
 
             // Set keyboard state
             prevKeyboardState = curKeyboardState;

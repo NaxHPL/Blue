@@ -1,7 +1,7 @@
 ﻿using Microsoft.Xna.Framework;
 using System;
 
-namespace BlueFw.Math;
+namespace Blue.Math;
 
 /// <summary>
 /// Represents a 2D transformation matrix.

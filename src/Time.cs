@@ -1,7 +1,7 @@
 ﻿using Microsoft.Xna.Framework;
 using System;
 
-namespace BlueFw;
+namespace Blue;
 
 /// <summary>
 /// Provides an interface to get time information for the current update cycle.
