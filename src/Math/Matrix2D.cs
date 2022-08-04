@@ -13,9 +13,7 @@ public struct Matrix2D : IEquatable<Matrix2D> {
     /// <summary>
     /// The identity matrix.
     /// </summary>
-    public static Matrix2D Identity => identity;
-
-    static Matrix2D identity = new Matrix2D(
+    public static readonly Matrix2D Identity = new Matrix2D(
         1f, 0f, 0f,
         0f, 1f, 0f
     );
@@ -470,6 +468,36 @@ public struct Matrix2D : IEquatable<Matrix2D> {
         result.M23 = matrix2.M23 + (matrix2.M23 - matrix1.M23) * value;
     }
 
+    /// <summary>
+    /// Converts this <see cref="Matrix2D"/> to a <see cref="Matrix"/> and returns it.
+    /// </summary>
+    public Matrix ToMatrix4() {
+        ToMatrix4(this, out Matrix result);
+        return result;
+    }
+
+    /// <summary>
+    /// Converts a <see cref="Matrix2D"/> to a <see cref="Matrix"/> and stores it in <paramref name="matrix4"/>.
+    /// </summary>
+    public static void ToMatrix4(in Matrix2D matrix2, out Matrix matrix4) {
+        matrix4.M11 = matrix2.M11;
+        matrix4.M12 = matrix2.M12;
+        matrix4.M13 = 0f;
+        matrix4.M14 = 0f;
+        matrix4.M21 = matrix2.M21;
+        matrix4.M22 = matrix2.M22;
+        matrix4.M23 = 0f;
+        matrix4.M24 = 0f;
+        matrix4.M31 = 0f;
+        matrix4.M32 = 0f;
+        matrix4.M33 = 1f;
+        matrix4.M34 = 0f;
+        matrix4.M41 = matrix2.M13;
+        matrix4.M42 = matrix2.M23;
+        matrix4.M43 = 0f;
+        matrix4.M44 = 1f;
+    }
+
     #endregion
 
     #region Operators
@@ -613,32 +641,6 @@ public struct Matrix2D : IEquatable<Matrix2D> {
             matrix1.M21 != matrix2.M21 ||
             matrix1.M22 != matrix2.M22 ||
             matrix1.M23 != matrix2.M23;
-    }
-
-    /// <summary>
-    /// Implicit cast to a <see cref="Matrix"/>.
-    /// </summary>
-    public static implicit operator Matrix(in Matrix2D m) {
-        Matrix ret;
-
-        ret.M11 = m.M11;
-        ret.M12 = m.M12;
-        ret.M13 = 0f;
-        ret.M14 = 0f;
-        ret.M21 = m.M21;
-        ret.M22 = m.M22;
-        ret.M23 = 0f;
-        ret.M24 = 0f;
-        ret.M31 = 0f;
-        ret.M32 = 0f;
-        ret.M33 = 1f;
-        ret.M34 = 0f;
-        ret.M41 = m.M13;
-        ret.M42 = m.M23;
-        ret.M43 = 0f;
-        ret.M44 = 1f;
-
-        return ret;
     }
 
     #endregion

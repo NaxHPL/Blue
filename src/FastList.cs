@@ -168,9 +168,10 @@ public class FastList<T> {
     /// <summary>
     /// Removes the item at the specified index.
     /// </summary>
+    /// <exception cref="ArgumentOutOfRangeException"/>
     public void RemoveAt(int index) {
         if (index < 0 || index >= Length) {
-            throw new ArgumentOutOfRangeException(nameof(index), index, $"Expected a value in the range [0,{Length+1}]");
+            throw new ArgumentOutOfRangeException(nameof(index), index, $"Expected a value in the range [0,{Length-1}]");
         }
 
         Length--;

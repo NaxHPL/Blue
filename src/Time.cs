@@ -53,7 +53,7 @@ public static class Time {
     static float altTimeScale = 1f;
 
     // This is called at the beginning of each Update
-    public static void SetState(GameTime gameTime) {
+    internal static void SetState(GameTime gameTime) {
         TotalTime = (float)gameTime.TotalGameTime.TotalSeconds;
         UnscaledDeltaTime = (float)gameTime.ElapsedGameTime.TotalSeconds;
         DeltaTime = UnscaledDeltaTime * timeScale;

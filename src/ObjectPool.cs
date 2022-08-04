@@ -3,9 +3,6 @@ using System.Collections.Generic;
 
 namespace Blue;
 
-/// <summary>
-/// A simple object pool.
-/// </summary>
 public class ObjectPool<T> where T : class {
 
     /// <summary>
@@ -40,7 +37,10 @@ public class ObjectPool<T> where T : class {
     /// Retrieves the next available <typeparamref name="T"/>.
     /// </summary>
     public T Retrieve() {
-        T obj = availableObjects.Count > 0 ? availableObjects.Pop() : factory();
+        if (!availableObjects.TryPop(out T obj)) {
+            obj = factory();
+        }
+
         ObjectRetrieved?.Invoke(obj);
         return obj;
     }

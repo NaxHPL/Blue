@@ -5,26 +5,24 @@ using System;
 
 namespace Blue;
 
-public delegate void BlueInstanceEventHandler(BlueInstance instance);
-
 public class BlueInstance : Game {
 
     /// <summary>
     /// Invoked when the instance is getting initialized.
     /// Use this event to load non-graphical resources needed by the game.
     /// </summary>
-    public event BlueInstanceEventHandler Initializing;
+    public event Action Initializing;
 
     /// <summary>
     /// Invoked when the instance is loading content.
     /// Use this event to load any graphical resources needed by the game.
     /// </summary>
-    public event BlueInstanceEventHandler LoadingContent;
+    public event Action LoadingContent;
 
     /// <summary>
     /// The currently active scene.
     /// </summary>
-    //public Scene ActiveScene { get; private set; }
+    public Scene ActiveScene { get; private set; }
 
     /// <summary>
     /// Used to initialize and control the presentation of the graphics device.
@@ -46,30 +44,22 @@ public class BlueInstance : Game {
     /// </summary>
     public bool PauseOnFocusLost = false;
 
-    static bool instanceCreated = false;
-
     SpriteBatch spriteBatch;
-    //Scene queuedSceneToLoad;
+    Scene queuedSceneToLoad;
 
     public BlueInstance() {
-        if (instanceCreated) {
-            throw new Exception("Attempting to create a second instance of " + nameof(BlueInstance));
-        }
-
-        instanceCreated = true;
-
         Graphics = new GraphicsDeviceManager(this);
         Screen = new ScreenProperties(this);
     }
 
     protected override void Initialize() {
-        Initializing?.Invoke(this);
+        Initializing?.Invoke();
         base.Initialize(); // Calls LoadContent()
     }
 
     protected override void LoadContent() {
         spriteBatch = new SpriteBatch(GraphicsDevice);
-        LoadingContent?.Invoke(this);
+        LoadingContent?.Invoke();
     }
 
     protected override void Update(GameTime gameTime) {
@@ -81,45 +71,45 @@ public class BlueInstance : Game {
         Time.SetState(gameTime);
         Input.SetState(Mouse.GetState(), Keyboard.GetState());
 
-        //if (queuedSceneToLoad != null) {
-        //    LoadSceneImmediate(queuedSceneToLoad);
-        //    queuedSceneToLoad = null;
-        //}
+        if (queuedSceneToLoad != null) {
+            LoadSceneImmediate(queuedSceneToLoad);
+            queuedSceneToLoad = null;
+        }
 
-        //ActiveScene?.Update();
+        ActiveScene?.Update();
     }
 
     protected override void Draw(GameTime gameTime) {
-        //if (ActiveScene == null) {
-        //    return;
-        //}
+        if (ActiveScene == null) {
+            return;
+        }
 
-        //ActiveScene.Render(spriteBatch);
+        ActiveScene.Render(spriteBatch);
     }
 
     /// <summary>
     /// Loads a scene. The scene will load at the start of the next frame.
     /// </summary>
-    //public void LoadScene(Scene scene) {
-    //    if (scene == null) {
-    //        throw new ArgumentNullException(nameof(scene), "The scene you're trying to load is null!");
-    //    }
+    public void LoadScene(Scene scene) {
+        if (scene == null) {
+            throw new ArgumentNullException(nameof(scene), "The scene you're trying to load is null!");
+        }
 
-    //    if (scene == ActiveScene) {
-    //        throw new ArgumentException("The scene you're trying to load is already active!", nameof(scene));
-    //    }
+        if (scene == ActiveScene) {
+            throw new ArgumentException("The scene you're trying to load is already active!", nameof(scene));
+        }
 
-    //    queuedSceneToLoad = scene;
-    //}
+        queuedSceneToLoad = scene;
+    }
 
-    //void LoadSceneImmediate(Scene scene) {
-    //    if (ActiveScene != null) {
-    //        ActiveScene.Unload();
-    //        ActiveScene = null;
-    //        GC.Collect();
-    //    }
+    void LoadSceneImmediate(Scene scene) {
+        if (ActiveScene != null) {
+            ActiveScene.Unload();
+            ActiveScene = null;
+            GC.Collect();
+        }
 
-    //    scene.Load();
-    //    ActiveScene = scene;
-    //}
+        scene.Load(this);
+        ActiveScene = scene;
+    }
 }
