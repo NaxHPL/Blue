@@ -30,11 +30,6 @@ public class BlueInstance : Game {
     public GraphicsDeviceManager Graphics { get; private set; }
 
     /// <summary>
-    /// Access to screen information and settings.
-    /// </summary>
-    public ScreenProperties Screen { get; private set; }
-
-    /// <summary>
     /// Indicates if the game is the focused application.
     /// </summary>
     public bool IsGameInFocus => IsActive;
@@ -49,7 +44,7 @@ public class BlueInstance : Game {
 
     public BlueInstance() {
         Graphics = new GraphicsDeviceManager(this);
-        Screen = new ScreenProperties(this);
+        Screen.BlueInstance = this;
     }
 
     protected override void Initialize() {

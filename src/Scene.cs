@@ -18,159 +18,31 @@ public class Scene {
     public ContentManager Content { get; private set; }
 
     /// <summary>
-    /// This scene's collection of entites.
-    /// </summary>
-    public readonly EntityCollection Entities;
-
-    /// <summary>
     /// This scene's main camera.
     /// </summary>
     public readonly Camera Camera;
 
-    readonly RenderableCollection renderables;
-    readonly FastList<RenderGroup> renderGroups = new FastList<RenderGroup>();
+    /// <summary>
+    /// This scene's collection of entites.
+    /// </summary>
+    internal readonly EntityCollection Entities;
 
-    RenderTarget2D sceneRenderTarget;
-
-    bool renderGroupsNeedSorting;
+    readonly SceneUpdater sceneUpdater;
+    readonly SceneRenderer sceneRenderer;
 
     /// <summary>
     /// Creates a new <see cref="Scene"/>.
     /// </summary>
     public Scene() {
         Entities = new EntityCollection(this);
-        renderables = new RenderableCollection(this);
+
+        sceneUpdater = new SceneUpdater();
+        sceneRenderer = new SceneRenderer();
 
         Entity cameraEntity = new Entity("Main Camera");
         Camera = cameraEntity.AddComponent<Camera>();
         AddEntity(cameraEntity);
     }
-
-    /// <summary>
-    /// Adds a render group to the scene.
-    /// </summary>
-    public void AddRenderGroup(RenderGroup renderGroup) {
-        if (renderGroups.Contains(renderGroup)) {
-            return;
-        }
-
-        renderGroups.Add(renderGroup);
-        renderGroupsNeedSorting = true;
-    }
-
-    /// <summary>
-    /// Removes a render group from the scene.
-    /// </summary>
-    public void RemoveRenderGroup(RenderGroup renderGroup) {
-        renderGroups.Remove(renderGroup);
-    }
-
-    internal void Update() {
-        Entities.Update();
-    }
-
-    internal void Render(SpriteBatch spriteBatch) {
-        if (renderGroups.Length == 0) {
-            Log.Error("The scene has no render groups!");
-            return;
-        }
-
-        renderables.EnsureSorted();
-        EnsureRenderGroupsSorted();
-
-        //for (int i = 0; i < cameras.Length; i++) {
-        //    RenderForCamera(spriteBatch, cameras.Buffer[i]);
-        //}
-        
-        // render UI here? probably
-    }
-
-    void EnsureRenderGroupsSorted() {
-        if (!renderGroupsNeedSorting) {
-            return;
-        }
-
-        renderGroups.Sort();
-        renderGroupsNeedSorting = false;
-    }
-
-    //void RenderForCamera(SpriteBatch spriteBatch, Camera camera) {
-    //    RenderTarget2D mainTarget = camera.RenderTarget ?? sceneRenderTarget;
-    //    bool mainTargetSet = false;
-    //    bool mainTargetCleared = false;
-
-    //    void SetMainTargetAsRenderTarget() {
-    //        if (mainTargetSet) {
-    //            return;
-    //        }
-
-    //        RDE.GraphicsDevice.SetRenderTarget(mainTarget);
-
-    //        if (!mainTargetCleared) {
-    //            RDE.GraphicsDevice.Clear(camera.ClearColor);
-    //            mainTargetCleared = true;
-    //        }
-
-    //        mainTargetSet = true;
-    //    }
-
-    //    for (int i = 0; i < renderGroups.Length; i++) {
-    //        RenderGroup renderGroup = renderGroups.Buffer[i];
-    //        bool groupRendersToMainTarget = renderGroup.RenderTarget == null;
-
-    //        if (groupRendersToMainTarget) {
-    //            SetMainTargetAsRenderTarget();
-    //        }
-
-    //        renderGroup.Render(Renderables, spriteBatch, camera);
-
-    //        if (!groupRendersToMainTarget) {
-    //            // run through post processor(s) giving them a source and destination render target
-
-    //            SetMainTargetAsRenderTarget();
-
-    //            // draw destination render target
-    //        }
-    //    }
-
-    //    if (mainTarget == camera.RenderTarget) {
-    //        // run through post processor(s) giving them a source and destination render target
-    //    }
-    //}
-
-    #region Lifecycle Methods
-
-    internal void Load(BlueInstance instance) {
-        BlueInstance = instance;
-        Content = new ContentManager(instance.Services, instance.Content.RootDirectory);
-        sceneRenderTarget = new RenderTarget2D(instance.GraphicsDevice, instance.GraphicsDevice.Viewport.Width, instance.GraphicsDevice.Viewport.Height);
-        OnLoad();
-    }
-
-    /// <summary>
-    /// Called when this scene is loaded. Only called once in the scene's lifetime.
-    /// </summary>
-    protected virtual void OnLoad() { }
-
-    public void Unload() {
-        for (int i = 0; i < Entities.Count; i++) {
-            Entities[i].Destroy();
-        }
-
-        Content?.Dispose(); // This calls Content.Unload()
-        sceneRenderTarget?.Dispose();
-
-        OnUnload();
-
-        BlueInstance = null;
-    }
-
-    /// <summary>
-    /// Called when this scene is unloaded. Only called once in the scene's lifetime.
-    /// </summary>
-    protected virtual void OnUnload() { }
-
-    #endregion
 
     #region Entity/Component Management
 
@@ -178,14 +50,14 @@ public class Scene {
     /// Adds an <see cref="Entity"/> and all of its children entities to this scene.
     /// </summary>
     public void AddEntity(Entity entity) {
-        if (entity == null || !Entities.Add(entity)) {
+        if (!Entities.Add(entity)) {
             return;
         }
 
         entity.Scene = this;
         entity.BlueInstance = BlueInstance;
 
-        // add renderables
+        // TODO: register updatables/renderables
 
         for (int i = 0; i < entity.ChildCount; i++) {
             AddEntity(entity.GetChildAt(i));
@@ -197,14 +69,14 @@ public class Scene {
     /// </summary>
     /// <returns><see langword="true"/> if <paramref name="entity"/> was found and removed; otherwise <see langword="false"/>.</returns>
     public bool RemoveEntity(Entity entity) {
-        if (entity == null || !Entities.Remove(entity)) {
+        if (!Entities.Remove(entity)) {
             return false;
         }
 
         entity.Scene = null;
         entity.BlueInstance = null;
 
-        // remove renderables
+        // TODO: unregister updatables/renderables
 
         for (int i = 0; i < entity.ChildCount; i++) {
             RemoveEntity(entity.GetChildAt(i));
@@ -289,19 +161,46 @@ public class Scene {
         return Entities.FindComponents<T>(includeDisabled);
     }
 
-    /// <summary>
-    /// Adds a renderable to the scene.
-    /// </summary>
-    public void AddRenderable(IRenderable renderable) {
-        renderables.Add(renderable);
+    #endregion
+
+    internal void Update() {
+        sceneUpdater.Update();
+    }
+
+    internal void Render(SpriteBatch spriteBatch) {
+        sceneRenderer.Render(spriteBatch);
+    }
+
+    #region Lifecycle Methods
+
+    internal void Load(BlueInstance instance) {
+        BlueInstance = instance;
+        Content = new ContentManager(instance.Services, instance.Content.RootDirectory);
+        sceneRenderTarget = new RenderTarget2D(instance.GraphicsDevice, instance.GraphicsDevice.Viewport.Width, instance.GraphicsDevice.Viewport.Height);
+        OnLoad();
     }
 
     /// <summary>
-    /// Removes a renderable to the scene.
+    /// Called when this scene is loaded and becomes the active scene.
     /// </summary>
-    public bool RemoveRenderable(IRenderable renderable) {
-        return renderables.Remove(renderable);
+    protected virtual void OnLoad() { }
+
+    public void Unload() {
+        for (int i = 0; i < Entities.Count; i++) {
+            Entities[i].Destroy();
+        }
+
+        Content?.Dispose(); // This calls Content.Unload()
+
+        OnUnload();
+
+        BlueInstance = null;
     }
+
+    /// <summary>
+    /// Called when this scene is unloaded and is no longer the active scene.
+    /// </summary>
+    protected virtual void OnUnload() { }
 
     #endregion
 }

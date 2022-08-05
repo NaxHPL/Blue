@@ -335,7 +335,6 @@ public class Transform {
         }
 
         hierarchyDirty |= dirtyFlag;
-        Entity.Components.OnEntityTransformChanged();
 
         for (int i = 0; i < children.Length; i++) {
             children.Buffer[i].SetHierarchyDirty(dirtyFlag);

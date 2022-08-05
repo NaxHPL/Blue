@@ -1,7 +1,7 @@
 ﻿using Microsoft.Xna.Framework;
 using System;
 
-namespace Blue.Math;
+namespace Blue;
 
 /// <summary>
 /// Describes a 2D rectangle. Does <b>not</b> support negative width/height.
