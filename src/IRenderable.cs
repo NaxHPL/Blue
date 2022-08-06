@@ -1,6 +1,7 @@
-﻿using System.Collections.Generic;
+﻿using Microsoft.Xna.Framework.Graphics;
+using System.Collections.Generic;
 
-namespace Blue;
+namespace BlueFw;
 
 internal interface IRenderable {
 
@@ -27,7 +28,7 @@ internal interface IRenderable {
     /// <summary>
     /// Defines when this renderable will be drawn within its render layer.
     /// </summary>
-    float LayerOrder { get; }
+    float LayerDepth { get; }
 
     /// <summary>
     /// This renderable's material.
@@ -55,7 +56,7 @@ internal class RenderableOrderComparer : IComparer<IRenderable> {
             return compareResult;
         }
 
-        compareResult = a.LayerOrder.CompareTo(b.LayerOrder);
+        compareResult = b.LayerDepth.CompareTo(a.LayerDepth);
         if (compareResult != 0) {
             return compareResult;
         }

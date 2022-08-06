@@ -1,7 +1,7 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
 
-namespace Blue;
+namespace BlueFw;
 
 public enum MouseButton {
     Left,

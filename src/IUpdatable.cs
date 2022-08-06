@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace Blue;
+namespace BlueFw;
 
 internal interface IUpdatable {
 

@@ -1,4 +1,4 @@
-﻿namespace Blue;
+﻿namespace BlueFw;
 
 /// <summary>
 /// The coordinate space in which to operate.

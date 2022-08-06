@@ -1,8 +1,7 @@
-﻿using Blue.Math;
-using Microsoft.Xna.Framework;
+﻿using Microsoft.Xna.Framework;
 using System;
 
-namespace Blue;
+namespace BlueFw;
 
 /// <summary>
 /// Position, scale, and rotation of an entity.
@@ -14,7 +13,9 @@ public class Transform {
         Clean         = 0x00,
         PositionDirty = 0x01,
         ScaleDirty    = 0x02,
-        RotationDirty = 0x04
+        RotationDirty = 0x04,
+
+        All = PositionDirty | ScaleDirty | RotationDirty
     }
 
     /// <summary>
@@ -329,15 +330,16 @@ public class Transform {
 
     #endregion
 
-    void SetHierarchyDirty(DirtyFlags dirtyFlag) {
-        if (hierarchyDirty.HasFlag(dirtyFlag)) {
+    void SetHierarchyDirty(DirtyFlags dirtyFlags) {
+        if (hierarchyDirty.HasFlag(dirtyFlags)) {
             return;
         }
 
-        hierarchyDirty |= dirtyFlag;
+        hierarchyDirty |= dirtyFlags;
+        Entity.Components.OnEntityTransformChanged();
 
         for (int i = 0; i < children.Length; i++) {
-            children.Buffer[i].SetHierarchyDirty(dirtyFlag);
+            children.Buffer[i].SetHierarchyDirty(dirtyFlags);
         }
     }
 
@@ -533,7 +535,7 @@ public class Transform {
         parent = transform;
 
         worldToLocalDirty = true;
-        SetHierarchyDirty(DirtyFlags.PositionDirty);
+        SetHierarchyDirty(DirtyFlags.All);
     }
 
     /// <summary>

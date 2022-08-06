@@ -1,9 +1,9 @@
-﻿namespace Blue;
+﻿namespace BlueFw;
 
 /// <summary>
 /// Base component class.
 /// </summary>
-public class Component : IDestroyable {
+public abstract class Component : BlueObject, IDestroyable {
 
     enum LifecycleEnabledMethod {
         OnEnable,
@@ -27,7 +27,7 @@ public class Component : IDestroyable {
     public bool ActiveInHierarchy {
         get {
             if (activeInHierachyDirty) {
-                activeInHierachy = enabled && AttachedToEntity && Entity.EnabledInHierarchy;
+                activeInHierachy = enabled && AttachedToEntity && Entity.ActiveInHierarchy;
                 activeInHierachyDirty = false;
             }
             return activeInHierachy;
@@ -175,6 +175,11 @@ public class Component : IDestroyable {
     /// </summary>
     /// <param name="removedFromEntity">The Entity this component was removed from.</param>
     internal virtual void OnRemovedFromEntity(Entity removedFromEntity) { }
+
+    /// <summary>
+    /// Called when the transform of the entity this component is attached to changes.
+    /// </summary>
+    public virtual void OnEntityTransformChanged() { }
 
     /// <summary>
     /// Called when this component gets destroyed. <see cref="OnDisable"/> gets called fiirst (if enabled), then <see cref="OnDestroy"/>.

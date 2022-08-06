@@ -2,14 +2,9 @@
 using Microsoft.Xna.Framework.Graphics;
 using System.Collections.Generic;
 
-namespace Blue;
+namespace BlueFw;
 
 public class Scene {
-
-    /// <summary>
-    /// The Blue instance running this scene. If this scene is not the active scene, this will be null.
-    /// </summary>
-    public BlueInstance BlueInstance { get; private set; }
 
     /// <summary>
     /// The <see cref="ContentManager"/> of this scene. Use this for scene specific content.
@@ -55,7 +50,6 @@ public class Scene {
         }
 
         entity.Scene = this;
-        entity.BlueInstance = BlueInstance;
 
         // TODO: register updatables/renderables
 
@@ -74,7 +68,6 @@ public class Scene {
         }
 
         entity.Scene = null;
-        entity.BlueInstance = null;
 
         // TODO: unregister updatables/renderables
 
@@ -164,19 +157,17 @@ public class Scene {
     #endregion
 
     internal void Update() {
-        sceneUpdater.Update();
+        //sceneUpdater.Update();
     }
 
     internal void Render(SpriteBatch spriteBatch) {
-        sceneRenderer.Render(spriteBatch);
+        //sceneRenderer.Render(spriteBatch);
     }
 
     #region Lifecycle Methods
 
-    internal void Load(BlueInstance instance) {
-        BlueInstance = instance;
-        Content = new ContentManager(instance.Services, instance.Content.RootDirectory);
-        sceneRenderTarget = new RenderTarget2D(instance.GraphicsDevice, instance.GraphicsDevice.Viewport.Width, instance.GraphicsDevice.Viewport.Height);
+    internal void Load() {
+        Content = new ContentManager(Blue.Instance.Services, Blue.Instance.Content.RootDirectory);
         OnLoad();
     }
 
@@ -193,8 +184,6 @@ public class Scene {
         Content?.Dispose(); // This calls Content.Unload()
 
         OnUnload();
-
-        BlueInstance = null;
     }
 
     /// <summary>

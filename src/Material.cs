@@ -1,6 +1,6 @@
 ﻿using Microsoft.Xna.Framework.Graphics;
 
-namespace Blue;
+namespace BlueFw;
 
 public class Material {
 

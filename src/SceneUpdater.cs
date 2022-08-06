@@ -1,4 +1,4 @@
-﻿namespace Blue;
+﻿namespace BlueFw;
 
 internal class SceneUpdater {
 

@@ -1,7 +1,7 @@
 ﻿using Microsoft.Xna.Framework;
 using System;
 
-namespace Blue;
+namespace BlueFw;
 
 public static class EasingFunctions {
 

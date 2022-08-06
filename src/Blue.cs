@@ -3,9 +3,16 @@ using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using System;
 
-namespace Blue;
+namespace BlueFw;
 
-public class BlueInstance : Game {
+public class Blue : Game {
+
+    static Blue instance;
+
+    /// <summary>
+    /// Access to the <see cref="Blue"/> instance.
+    /// </summary>
+    public static Blue Instance => instance ?? throw new Exception("Attempted to access the " + nameof(Blue) + " instance before it was created!");
 
     /// <summary>
     /// Invoked when the instance is getting initialized.
@@ -42,9 +49,12 @@ public class BlueInstance : Game {
     SpriteBatch spriteBatch;
     Scene queuedSceneToLoad;
 
-    public BlueInstance() {
+    public Blue() {
+        if (instance != null) {
+            throw new Exception("Attempted to create a second instance of " + nameof(Blue) + "! Only one instance is allowed.");
+        }
+
         Graphics = new GraphicsDeviceManager(this);
-        Screen.BlueInstance = this;
     }
 
     protected override void Initialize() {
@@ -104,7 +114,7 @@ public class BlueInstance : Game {
             GC.Collect();
         }
 
-        scene.Load(this);
+        scene.Load();
         ActiveScene = scene;
     }
 }
