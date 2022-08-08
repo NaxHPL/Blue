@@ -21,13 +21,24 @@ public abstract class Component : BlueObject, IDestroyable {
     public bool AttachedToEntity => Entity != null;
 
     /// <summary>
+    /// The Scene this component is attached to. It will be attached to a Scene if it's a Scene component.
+    /// </summary>
+    public Scene Scene { get; internal set; }
+
+    /// <summary>
+    /// Returns <see langword="true"/> if this component is attached to a Scene.
+    /// </summary>
+    public bool AttachedToScene => Scene != null;
+
+    /// <summary>
     /// Gets whether this component is active in the scene hierarchy.
-    /// This is true if it's enabled and the Entity it's attached to is active.
+    /// This is true if it's enabled and the Entity it's attached to is active
+    /// OR it's enabled and is a scene component.
     /// </summary>
     public bool Active {
         get {
             if (activeInHierachyDirty) {
-                activeInHierachy = enabled && AttachedToEntity && Entity.Active;
+                activeInHierachy = enabled && ((AttachedToEntity && Entity.Active) || AttachedToScene);
                 activeInHierachyDirty = false;
             }
             return activeInHierachy;
@@ -132,11 +143,14 @@ public abstract class Component : BlueObject, IDestroyable {
     }
 
     /// <summary>
-    /// Removes this component from the entity it's attached to.
+    /// Removes this component from the entity or scene it's attached to.
     /// </summary>
-    public void DetachFromEntity() {
+    public void DetachFromOwner() {
         if (AttachedToEntity) {
             Entity.RemoveComponent(this);
+        }
+        else if (AttachedToScene) {
+            Scene.RemoveSceneComponent(this);
         }
     }
 

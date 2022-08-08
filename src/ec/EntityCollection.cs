@@ -6,11 +6,6 @@ namespace BlueFw;
 internal class EntityCollection {
 
     /// <summary>
-    /// The scene this <see cref="EntityCollection"/> is attached to.
-    /// </summary>
-    public readonly Scene Scene;
-
-    /// <summary>
     /// The number of entities in this collection.
     /// </summary>
     public int Count => entities.Length;
@@ -33,14 +28,6 @@ internal class EntityCollection {
 
     static readonly List<Entity> reusableEntityList = new List<Entity>();
     static readonly List<Component> reusableComponentList = new List<Component>();
-
-    /// <summary>
-    /// Creates a new <see cref="EntityCollection"/>.
-    /// </summary>
-    /// <param name="scene">The scene that owns this collection.</param>
-    public EntityCollection(Scene scene) {
-        Scene = scene;
-    }
 
     /// <summary>
     /// Adds an entity.

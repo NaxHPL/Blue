@@ -22,14 +22,20 @@ public class Scene {
     /// </summary>
     internal readonly EntityCollection Entities;
 
-    readonly SceneUpdater sceneUpdater = new SceneUpdater();
-    readonly SceneRenderer sceneRenderer = new SceneRenderer();
+    internal readonly ComponentCollection SceneComponents;
+
+    readonly SceneUpdater sceneUpdater;
+    readonly SceneRenderer sceneRenderer;
 
     /// <summary>
     /// Creates a new <see cref="Scene"/>.
     /// </summary>
     public Scene() {
-        Entities = new EntityCollection(this);
+        Entities = new EntityCollection();
+        SceneComponents = new ComponentCollection();
+
+        sceneUpdater = new SceneUpdater();
+        sceneRenderer = new SceneRenderer(this);
 
         Entity cameraEntity = new Entity("Main Camera");
         Camera = cameraEntity.AddComponent<Camera>();
@@ -37,6 +43,54 @@ public class Scene {
     }
 
     #region Entities/Components
+
+    /// <summary>
+    /// Adds a scene component.
+    /// </summary>
+    /// <remarks>
+    /// Scene components are ideal for components that will last the entire lifetime of the scene and don't require a <see cref="Transform"/>.
+    /// </remarks>
+    /// <returns>
+    /// <see langword="true"/> if <paramref name="component"/> wasn't already a scene component iSn this scene and added successfully; otherwise <see langword="false"/>.
+    /// </returns>
+    public bool AddSceneComponent(Component component) {
+        if (!SceneComponents.Add(component)) {
+            return false;
+        }
+
+        component.DetachFromOwner();
+        component.Scene = this;
+        component.FlagActiveInHierarchyDirty();
+
+        if (component.Active) {
+            component.TryInvokeOnEnable();
+        }
+        else {
+            component.TryInvokeOnDisable();
+        }
+
+        RegisterComponent(component);
+        return true;
+    }
+
+    /// <summary>
+    /// Removes the specified component as a scene component.
+    /// </summary>
+    /// <returns>
+    /// <see langword="true"/> if <paramref name="component"/> was found and removed from this scene; otherwise <see langword="false"/>.
+    /// </returns>
+    public bool RemoveSceneComponent(Component component) {
+        if (!SceneComponents.Remove(component)) {
+            return false;
+        }
+
+        component.Scene = null;
+        component.FlagActiveInHierarchyDirty();
+        component.TryInvokeOnDisable();
+
+        UnregisterComponent(component);
+        return true;
+    }
 
     /// <summary>
     /// Adds an <see cref="Entity"/> and all of its children entities to this scene.
@@ -111,8 +165,21 @@ public class Scene {
     }
 
     /// <summary>
-    /// Finds a component in this scene of type <typeparamref name="T"/>.
+    /// Gets a scene component of type <typeparamref name="T"/>.
+    /// Returns null if not found.
     /// </summary>
+    public T GetSceneComponent<T>() where T : Component {
+        return SceneComponents.Find<T>();
+    }
+
+    /// <summary>
+    /// Finds a component in this scene of type <typeparamref name="T"/>.
+    /// Returns null if not found.
+    /// </summary>
+    /// <remarks>
+    /// This searches for components attached to entities in the scene.
+    /// To search for scene components, use <see cref="GetSceneComponent{T}"/>.
+    /// </remarks>
     public T FindComponent<T>() where T : Component {
         return Entities.FindComponent<T>();
     }

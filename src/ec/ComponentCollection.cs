@@ -6,11 +6,6 @@ namespace BlueFw;
 internal class ComponentCollection {
 
     /// <summary>
-    /// The entity this <see cref="ComponentCollection"/> is attached to.
-    /// </summary>
-    public readonly Entity Entity;
-
-    /// <summary>
     /// The number of components in this <see cref="ComponentCollection"/>.
     /// </summary>
     public int Count => components.Length;
@@ -32,14 +27,6 @@ internal class ComponentCollection {
     readonly HashSet<uint> componentInstanceIds = new HashSet<uint>(); // Used for checking if the collection contains a component
 
     static readonly List<Component> reusableComponentList = new List<Component>(); // A reusable list used by various methods
-
-    /// <summary>
-    /// Creates a new <see cref="ComponentCollection"/>.
-    /// </summary>
-    /// <param name="entity">The entity this <see cref="ComponentCollection"/> is attached to.</param>
-    public ComponentCollection(Entity entity) {
-        Entity = entity;
-    }
 
     /// <summary>
     /// Adds a component to the collection.

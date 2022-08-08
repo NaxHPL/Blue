@@ -65,7 +65,7 @@ public class Entity : BlueObject, IDestroyable {
     /// </summary>
     public Entity(string name) {
         Transform = new Transform(this);
-        Components = new ComponentCollection(this);
+        Components = new ComponentCollection();
         Name = string.IsNullOrEmpty(name) ? $"Entity_{InstanceID}" : name;
     }
 
@@ -229,7 +229,7 @@ public class Entity : BlueObject, IDestroyable {
             return false;
         }
 
-        component.DetachFromEntity();
+        component.DetachFromOwner();
         component.Entity = this;
         component.FlagActiveInHierarchyDirty();
         component.OnAddedToEntity(this);

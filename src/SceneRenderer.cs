@@ -7,6 +7,8 @@ internal class SceneRenderer {
 
     static readonly IComparer<IRenderable> renderableComparer = new RenderableOrderComparer();
 
+    readonly Scene scene;
+
     readonly FastList<IRenderable> renderables = new FastList<IRenderable>();
     readonly HashSet<IRenderable> renderablesSet = new HashSet<IRenderable>();
 
@@ -14,6 +16,10 @@ internal class SceneRenderer {
     readonly HashSet<IRenderable> renderablesPendingRemove = new HashSet<IRenderable>();
 
     bool renderableOrderDirty = true;
+
+    public SceneRenderer(Scene scene) {
+        this.scene = scene;
+    }
 
     public bool Register(IRenderable renderable) {
         if (renderable == null) {
