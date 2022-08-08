@@ -1,4 +1,6 @@
-﻿namespace BlueFw;
+﻿using Blue.src.ec;
+
+namespace BlueFw;
 
 /// <summary>
 /// Base component class.

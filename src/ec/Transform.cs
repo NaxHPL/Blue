@@ -1,7 +1,8 @@
-﻿using Microsoft.Xna.Framework;
+﻿using BlueFw;
+using Microsoft.Xna.Framework;
 using System;
 
-namespace BlueFw;
+namespace Blue.src.ec;
 
 /// <summary>
 /// Position, scale, and rotation of an entity.
@@ -10,9 +11,9 @@ public class Transform {
 
     [Flags]
     enum DirtyFlags {
-        Clean         = 0x00,
+        Clean = 0x00,
         PositionDirty = 0x01,
-        ScaleDirty    = 0x02,
+        ScaleDirty = 0x02,
         RotationDirty = 0x04,
 
         All = PositionDirty | ScaleDirty | RotationDirty
@@ -560,7 +561,7 @@ public class Transform {
     /// <exception cref="ArgumentOutOfRangeException"></exception>
     public Transform GetChildAt(int index) {
         if (index < 0 || index >= children.Length) {
-            throw new ArgumentOutOfRangeException(nameof(index), index, $"Expected a value in the range [0,{children.Length-1}]");
+            throw new ArgumentOutOfRangeException(nameof(index), index, $"Expected a value in the range [0,{children.Length - 1}]");
         }
 
         return children.Buffer[index];

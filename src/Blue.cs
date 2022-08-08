@@ -1,18 +1,16 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-using Microsoft.Xna.Framework.Input;
 using System;
 
 namespace BlueFw;
 
 public class Blue : Game {
 
-    static Blue instance;
-
     /// <summary>
     /// Access to the <see cref="Blue"/> instance.
     /// </summary>
     public static Blue Instance => instance ?? throw new Exception("Attempted to access the " + nameof(Blue) + " instance before it was created!");
+    static Blue instance;
 
     /// <summary>
     /// Invoked when the instance is getting initialized.
@@ -53,13 +51,14 @@ public class Blue : Game {
         if (instance != null) {
             throw new Exception("Attempted to create a second instance of " + nameof(Blue) + "! Only one instance is allowed.");
         }
-
+        
+        instance = this;
         Graphics = new GraphicsDeviceManager(this);
     }
 
     protected override void Initialize() {
         Initializing?.Invoke();
-        base.Initialize(); // Calls LoadContent()
+        base.Initialize();
     }
 
     protected override void LoadContent() {
@@ -73,8 +72,8 @@ public class Blue : Game {
             return;
         }
 
-        Time.SetState(gameTime);
-        Input.SetState(Mouse.GetState(), Keyboard.GetState());
+        Time.Update(gameTime);
+        Input.Update();
 
         if (queuedSceneToLoad != null) {
             LoadSceneImmediate(queuedSceneToLoad);
@@ -85,11 +84,7 @@ public class Blue : Game {
     }
 
     protected override void Draw(GameTime gameTime) {
-        if (ActiveScene == null) {
-            return;
-        }
-
-        ActiveScene.Render(spriteBatch);
+        ActiveScene?.Render(spriteBatch);
     }
 
     /// <summary>

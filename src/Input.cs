@@ -17,24 +17,76 @@ public enum MouseButton {
 public static class Input {
 
     /// <summary>
-    /// Provides access to keyboard and mouse state.
+    /// Provides access to keyboard state.
     /// </summary>
-    public static class KBM {
+    public static class KB {
+
+        /// <summary>
+        /// Direct access to the keyboard state of the previous frame.
+        /// </summary>
+        public static KeyboardState PreviousState { get; private set; }
+
+        /// <summary>
+        /// Direct access to the keyboard state of the current frame.
+        /// </summary>
+        public static KeyboardState CurrentState { get; private set; }
+
+        internal static void Update() {
+            PreviousState = CurrentState;
+            CurrentState = Keyboard.GetState();
+        }
+
+        /// <summary>
+        /// Returns true if <paramref name="key"/> is held down this frame.
+        /// </summary>
+        public static bool GetKeyPressed(Keys key) {
+            return CurrentState.IsKeyDown(key);
+        }
+
+        /// <summary>
+        /// Returns true if <paramref name="key"/> was pressed this frame.
+        /// </summary>
+        public static bool GetKeyDown(Keys key) {
+            return PreviousState.IsKeyUp(key) && CurrentState.IsKeyDown(key);
+        }
+
+        /// <summary>
+        /// Returns true if <paramref name="key"/> was released this frame.
+        /// </summary>
+        public static bool GetKeyUp(Keys key) {
+            return PreviousState.IsKeyDown(key) && CurrentState.IsKeyUp(key);
+        }
+    }
+
+    /// <summary>
+    /// Provides access to mouse state.
+    /// </summary>
+    public static class M {
+
+        /// <summary>
+        /// Direct access to the mouse state of the previous frame.
+        /// </summary>
+        public static MouseState PreviousState { get; private set; }
+
+        /// <summary>
+        /// Direct access to the mouse state of the current frame.
+        /// </summary>
+        public static MouseState CurrentState { get; private set; }
 
         /// <summary>
         /// The horizontal position of the mouse relative to the window.
         /// </summary>
-        public static int MouseX => curMouseState.X;
+        public static int MouseX => CurrentState.X;
 
         /// <summary>
         /// The vertical position of the mouse relative to the window.
         /// </summary>
-        public static int MouseY => curMouseState.Y;
+        public static int MouseY => CurrentState.Y;
 
         /// <summary>
         /// The mouse position relative to the window as a <see cref="Point"/>.
         /// </summary>
-        public static Point MousePositionPoint => curMouseState.Position;
+        public static Point MousePositionPoint => CurrentState.Position;
 
         /// <summary>
         /// The mouse position relative to the window.
@@ -84,28 +136,20 @@ public static class Input {
         /// </summary>
         public static bool MouseScrolledLeft { get; private set; }
 
-        static MouseState prevMouseState, curMouseState;
-        static KeyboardState prevKeyboardState, curKeyboardState;
+        internal static void Update() {
+            PreviousState = CurrentState;
+            CurrentState = Mouse.GetState();
 
-        internal static void SetState(MouseState mouseState, KeyboardState keyboardState) {
-            // Set mouse state
-            prevMouseState = curMouseState;
-            curMouseState = mouseState;
+            MousePosition = CurrentState.Position.ToVector2();
+            MouseMoved = CurrentState.Position != PreviousState.Position;
 
-            MousePosition = curMouseState.Position.ToVector2();
-            MouseMoved = curMouseState.Position != prevMouseState.Position;
-            
-            MouseScrollDelta = curMouseState.ScrollWheelValue - prevMouseState.ScrollWheelValue;
+            MouseScrollDelta = CurrentState.ScrollWheelValue - PreviousState.ScrollWheelValue;
             MouseScrolledUp = MouseScrollDelta > 0;
             MouseScrolledDown = MouseScrollDelta < 0;
 
-            HorizontalMouseScrollDelta = curMouseState.HorizontalScrollWheelValue - prevMouseState.HorizontalScrollWheelValue;
+            HorizontalMouseScrollDelta = CurrentState.HorizontalScrollWheelValue - PreviousState.HorizontalScrollWheelValue;
             MouseScrolledRight = HorizontalMouseScrollDelta > 0;
             MouseScrolledLeft = HorizontalMouseScrollDelta < 0;
-
-            // Set keyboard state
-            prevKeyboardState = curKeyboardState;
-            curKeyboardState = keyboardState;
         }
 
         /// <summary>
@@ -113,12 +157,12 @@ public static class Input {
         /// </summary>
         public static bool GetMouseButtonPressed(MouseButton button) {
             return button switch {
-                MouseButton.Left     => curMouseState.LeftButton == ButtonState.Pressed,
-                MouseButton.Right    => curMouseState.RightButton == ButtonState.Pressed,
-                MouseButton.Middle   => curMouseState.MiddleButton == ButtonState.Pressed,
-                MouseButton.XButton1 => curMouseState.XButton1 == ButtonState.Pressed,
-                MouseButton.XButton2 => curMouseState.XButton2 == ButtonState.Pressed,
-                _                    => false
+                MouseButton.Left => CurrentState.LeftButton == ButtonState.Pressed,
+                MouseButton.Right => CurrentState.RightButton == ButtonState.Pressed,
+                MouseButton.Middle => CurrentState.MiddleButton == ButtonState.Pressed,
+                MouseButton.XButton1 => CurrentState.XButton1 == ButtonState.Pressed,
+                MouseButton.XButton2 => CurrentState.XButton2 == ButtonState.Pressed,
+                _ => false
             };
         }
 
@@ -127,12 +171,12 @@ public static class Input {
         /// </summary>
         public static bool GetMouseButtonDown(MouseButton button) {
             return button switch {
-                MouseButton.Left     => prevMouseState.LeftButton == ButtonState.Released && curMouseState.LeftButton == ButtonState.Pressed,
-                MouseButton.Right    => prevMouseState.RightButton == ButtonState.Released && curMouseState.RightButton == ButtonState.Pressed,
-                MouseButton.Middle   => prevMouseState.MiddleButton == ButtonState.Released && curMouseState.MiddleButton == ButtonState.Pressed,
-                MouseButton.XButton1 => prevMouseState.XButton1 == ButtonState.Released && curMouseState.XButton1 == ButtonState.Pressed,
-                MouseButton.XButton2 => prevMouseState.XButton2 == ButtonState.Released && curMouseState.XButton2 == ButtonState.Pressed,
-                _                    => false
+                MouseButton.Left => PreviousState.LeftButton == ButtonState.Released && CurrentState.LeftButton == ButtonState.Pressed,
+                MouseButton.Right => PreviousState.RightButton == ButtonState.Released && CurrentState.RightButton == ButtonState.Pressed,
+                MouseButton.Middle => PreviousState.MiddleButton == ButtonState.Released && CurrentState.MiddleButton == ButtonState.Pressed,
+                MouseButton.XButton1 => PreviousState.XButton1 == ButtonState.Released && CurrentState.XButton1 == ButtonState.Pressed,
+                MouseButton.XButton2 => PreviousState.XButton2 == ButtonState.Released && CurrentState.XButton2 == ButtonState.Pressed,
+                _ => false
             };
         }
 
@@ -141,45 +185,52 @@ public static class Input {
         /// </summary>
         public static bool GetMouseButtonUp(MouseButton button) {
             return button switch {
-                MouseButton.Left     => prevMouseState.LeftButton == ButtonState.Pressed && curMouseState.LeftButton == ButtonState.Released,
-                MouseButton.Right    => prevMouseState.RightButton == ButtonState.Pressed && curMouseState.RightButton == ButtonState.Released,
-                MouseButton.Middle   => prevMouseState.MiddleButton == ButtonState.Pressed && curMouseState.MiddleButton == ButtonState.Released,
-                MouseButton.XButton1 => prevMouseState.XButton1 == ButtonState.Pressed && curMouseState.XButton1 == ButtonState.Released,
-                MouseButton.XButton2 => prevMouseState.XButton2 == ButtonState.Pressed && curMouseState.XButton2 == ButtonState.Released,
-                _                    => false
+                MouseButton.Left => PreviousState.LeftButton == ButtonState.Pressed && CurrentState.LeftButton == ButtonState.Released,
+                MouseButton.Right => PreviousState.RightButton == ButtonState.Pressed && CurrentState.RightButton == ButtonState.Released,
+                MouseButton.Middle => PreviousState.MiddleButton == ButtonState.Pressed && CurrentState.MiddleButton == ButtonState.Released,
+                MouseButton.XButton1 => PreviousState.XButton1 == ButtonState.Pressed && CurrentState.XButton1 == ButtonState.Released,
+                MouseButton.XButton2 => PreviousState.XButton2 == ButtonState.Pressed && CurrentState.XButton2 == ButtonState.Released,
+                _ => false
             };
-        }
-
-        /// <summary>
-        /// Returns true if <paramref name="key"/> is held down this frame.
-        /// </summary>
-        public static bool GetKeyPressed(Keys key) {
-            return curKeyboardState.IsKeyDown(key);
-        }
-
-        /// <summary>
-        /// Returns true if <paramref name="key"/> was pressed this frame.
-        /// </summary>
-        public static bool GetKeyDown(Keys key) {
-            return prevKeyboardState.IsKeyUp(key) && curKeyboardState.IsKeyDown(key);
-        }
-
-        /// <summary>
-        /// Returns true if <paramref name="key"/> was released this frame.
-        /// </summary>
-        public static bool GetKeyUp(Keys key) {
-            return prevKeyboardState.IsKeyDown(key) && curKeyboardState.IsKeyUp(key);
         }
     }
 
     /// <summary>
     /// Provides access to game pad state
     /// </summary>
-    public static class GamePad {
-        // todo
+    public static class GP {
+        
+        internal static void Update() {
+            // todo
+        }
     }
 
-    internal static void SetState(MouseState mouseState, KeyboardState keyboardState) {
-        KBM.SetState(mouseState, keyboardState);
+    /// <summary>
+    /// Whether or not to handle keyboard input.
+    /// </summary>
+    public static bool EnableKeyboard = false;
+
+    /// <summary>
+    /// Whether or not to handle mouse input.
+    /// </summary>
+    public static bool EnableMouse = false;
+
+    /// <summary>
+    /// Whether or not to handle game pad input.
+    /// </summary>
+    public static bool EnableGamePad = false;
+
+    internal static void Update() {
+        if (EnableKeyboard) {
+            KB.Update();
+        }
+
+        if (EnableMouse) {
+            M.Update();
+        }
+
+        if (EnableGamePad) {
+            GP.Update();
+        }
     }
 }

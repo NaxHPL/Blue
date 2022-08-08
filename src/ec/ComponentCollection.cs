@@ -6,34 +6,32 @@ namespace BlueFw;
 internal class ComponentCollection {
 
     /// <summary>
-    /// The number of components in this <see cref="ComponentCollection"/>.
-    /// </summary>
-    public int Count => allComponents.Length;
-
-    /// <summary>
-    /// Gets the <see cref="Component"/> at the specified index.
-    /// </summary>
-    public Component this[int index] {
-        get {
-            if (index >= allComponents.Length) {
-                throw new IndexOutOfRangeException();
-            }
-
-            return allComponents.Buffer[index];
-        }
-    }
-
-    /// <summary>
     /// The entity this <see cref="ComponentCollection"/> is attached to.
     /// </summary>
     public readonly Entity Entity;
 
-    readonly FastList<Component> allComponents = new FastList<Component>();
-    readonly HashSet<uint> allComponentsInstanceIds = new HashSet<uint>(); // More efficient to search this instead of the allComponents list, but gotta keep them in sync
-    readonly HashSet<Component> componentsToAdd = new HashSet<Component>();
-    readonly HashSet<Component> componentsToRemove = new HashSet<Component>();
+    /// <summary>
+    /// The number of components in this <see cref="ComponentCollection"/>.
+    /// </summary>
+    public int Count => components.Length;
 
-    static readonly List<Component> tempList = new List<Component>(); // A reusable list used by various methods
+    /// <summary>
+    /// Gets the <see cref="Component"/> at the specified index.,
+    /// </summary>
+    public Component this[int index] {
+        get {
+            if (index >= components.Length) {
+                throw new IndexOutOfRangeException();
+            }
+
+            return components.Buffer[index];
+        }
+    }
+
+    readonly FastList<Component> components = new FastList<Component>();
+    readonly HashSet<uint> componentInstanceIds = new HashSet<uint>(); // Used for checking if the collection contains a component
+
+    static readonly List<Component> reusableComponentList = new List<Component>(); // A reusable list used by various methods
 
     /// <summary>
     /// Creates a new <see cref="ComponentCollection"/>.
@@ -54,15 +52,12 @@ internal class ComponentCollection {
             return false;
         }
 
-        if (componentsToRemove.Remove(component)) {
-            return true;
-        }
-
-        if (allComponentsInstanceIds.Contains(component.InstanceID)) {
+        if (!componentInstanceIds.Add(component.InstanceID)) {
             return false;
         }
 
-        return componentsToAdd.Add(component);
+        components.Add(component);
+        return true;
     }
 
     /// <summary>
@@ -72,30 +67,24 @@ internal class ComponentCollection {
     /// <see langword="true"/> if <paramref name="component"/> was found and removed from the collection; otherwise <see langword="false"/>.
     /// </returns>
     public bool Remove(Component component) {
-        if (componentsToAdd.Remove(component)) {
-            return true;
-        }
-
-        if (!allComponentsInstanceIds.Contains(component.InstanceID)) {
+        if (component == null) {
             return false;
         }
 
-        return componentsToRemove.Add(component);
+        if (!componentInstanceIds.Remove(component.InstanceID)) {
+            return false;
+        }
+
+        components.Remove(component);
+        return true;
     }
 
     /// <summary>
     /// Gets the first component of type <typeparamref name="T"/>.
     /// </summary>
     public T Get<T>() where T : Component {
-        for (int i = 0; i < allComponents.Length; i++) {
-            Component component = allComponents.Buffer[i];
-            if (component is T c && !componentsToRemove.Contains(component)) {
-                return c;
-            }
-        }
-
-        foreach (Component component in componentsToAdd) {
-            if (component is T c) {
+        for (int i = 0; i < components.Length; i++) {
+            if (components.Buffer[i] is T c) {
                 return c;
             }
         }
@@ -112,8 +101,8 @@ internal class ComponentCollection {
     /// </remarks>
     /// <param name="includeInactive">(Optional) Include inactive components in the search.</param>
     public void GetAll<T>(List<T> results, bool includeInactive = false) where T : Component {
-        for (int i = 0; i < allComponents.Length; i++) {
-            Component component = allComponents.Buffer[i];
+        for (int i = 0; i < components.Length; i++) {
+            Component component = components.Buffer[i];
             if (component is T c && (includeInactive || component.ActiveInHierarchy) && !componentsToRemove.Contains(component)) {
                 results.Add(c);
             }
@@ -136,21 +125,21 @@ internal class ComponentCollection {
     /// </remarks>
     /// <param name="includeInactive">(Optional) Include inactive components in the search.</param>
     public T[] GetAll<T>(bool includeInactive = false) where T : Component {
-        for (int i = 0; i < allComponents.Length; i++) {
-            Component component = allComponents.Buffer[i];
+        for (int i = 0; i < components.Length; i++) {
+            Component component = components.Buffer[i];
             if (component is T && (includeInactive || component.ActiveInHierarchy) && !componentsToRemove.Contains(component)) {
-                tempList.Add(component);
+                reusableComponentList.Add(component);
             }
         }
 
         foreach (Component component in componentsToAdd) {
             if (component is T && (includeInactive || component.ActiveInHierarchy)) {
-                tempList.Add(component);
+                reusableComponentList.Add(component);
             }
         }
 
-        T[] arr = (T[])tempList.ToArray();
-        tempList.Clear();
+        T[] arr = (T[])reusableComponentList.ToArray();
+        reusableComponentList.Clear();
         return arr;
     }
 
@@ -160,11 +149,11 @@ internal class ComponentCollection {
     public bool Contains(Component component) {
         return
             !componentsToRemove.Contains(component) &&
-            (allComponentsInstanceIds.Contains(component.InstanceID) || componentsToAdd.Contains(component));
+            (componentInstanceIds.Contains(component.InstanceID) || componentsToAdd.Contains(component));
     }
     internal void OnEntityTransformChanged() {
-        for (int i = 0; i < allComponents.Length; i++) {
-            allComponents[i].OnEntityTransformChanged();
+        for (int i = 0; i < components.Length; i++) {
+            components[i].OnEntityTransformChanged();
         }
 
         foreach (Component component in componentsToAdd) {
@@ -190,15 +179,15 @@ internal class ComponentCollection {
     }
 
     void RemoveImmediate(Component component) {
-        allComponents.Remove(component);
-        allComponentsInstanceIds.Remove(component.InstanceID);
+        components.Remove(component);
+        componentInstanceIds.Remove(component.InstanceID);
 
         component.TryInvokeOnDisable();
     }
 
     void AddImmediate(Component component) {
-        allComponents.Add(component);
-        allComponentsInstanceIds.Add(component.InstanceID);
+        components.Add(component);
+        componentInstanceIds.Add(component.InstanceID);
 
         if (component.ActiveInHierarchy) {
             component.TryInvokeOnEnable();
