@@ -1,8 +1,7 @@
-﻿using BlueFw;
-using Microsoft.Xna.Framework;
+﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
-namespace Blue.src.ext;
+namespace BlueFw;
 
 public static class SpriteBatchExt {
 

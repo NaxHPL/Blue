@@ -80,9 +80,10 @@ internal class ComponentCollection {
     }
 
     /// <summary>
-    /// Gets the first component of type <typeparamref name="T"/>.
+    /// Finds the first component of type <typeparamref name="T"/>.
+    /// Returns null if not found.
     /// </summary>
-    public T Get<T>() where T : Component {
+    public T Find<T>() where T : Component {
         for (int i = 0; i < components.Length; i++) {
             if (components.Buffer[i] is T c) {
                 return c;
@@ -93,23 +94,12 @@ internal class ComponentCollection {
     }
 
     /// <summary>
-    /// Gets all components of type <typeparamref name="T"/> to <paramref name="results"/>.
+    /// Finds all components of type <typeparamref name="T"/> and adds them to <paramref name="results"/>.
     /// </summary>
-    /// <remarks>
-    /// By default, this only searches for components which are active in the hierarchy.
-    /// Set <paramref name="includeInactive"/> to <see langword="true"/> to include inactive components in the search.
-    /// </remarks>
-    /// <param name="includeInactive">(Optional) Include inactive components in the search.</param>
-    public void GetAll<T>(List<T> results, bool includeInactive = false) where T : Component {
+    /// <param name="onlyActive">(Optional) Only consider components which are active in the hierarchy.</param>
+    public void FindAll<T>(List<T> results, bool onlyActive = false) where T : Component {
         for (int i = 0; i < components.Length; i++) {
-            Component component = components.Buffer[i];
-            if (component is T c && (includeInactive || component.ActiveInHierarchy) && !componentsToRemove.Contains(component)) {
-                results.Add(c);
-            }
-        }
-
-        foreach (Component component in componentsToAdd) {
-            if (component is T c && (includeInactive || component.ActiveInHierarchy)) {
+            if (components.Buffer[i] is T c && (!onlyActive || c.ActiveInHierarchy)) {
                 results.Add(c);
             }
         }
@@ -117,24 +107,13 @@ internal class ComponentCollection {
 
 
     /// <summary>
-    /// Returns all components of type <typeparamref name="T"/>.
+    /// Finds all components of type <typeparamref name="T"/>.
     /// </summary>
-    /// <remarks>
-    /// By default, this only searches for components which are active in the hierarchy.
-    /// Set <paramref name="includeInactive"/> to <see langword="true"/> to include inactive components in the search.
-    /// </remarks>
-    /// <param name="includeInactive">(Optional) Include inactive components in the search.</param>
-    public T[] GetAll<T>(bool includeInactive = false) where T : Component {
+    /// <param name="onlyActive">(Optional) Only consider components which are active in the hierarchy.</param>
+    public T[] FindAll<T>(bool onlyActive = false) where T : Component {
         for (int i = 0; i < components.Length; i++) {
-            Component component = components.Buffer[i];
-            if (component is T && (includeInactive || component.ActiveInHierarchy) && !componentsToRemove.Contains(component)) {
-                reusableComponentList.Add(component);
-            }
-        }
-
-        foreach (Component component in componentsToAdd) {
-            if (component is T && (includeInactive || component.ActiveInHierarchy)) {
-                reusableComponentList.Add(component);
+            if (components.Buffer[i] is T c && (!onlyActive || c.ActiveInHierarchy)) {
+                reusableComponentList.Add(c);
             }
         }
 
@@ -147,53 +126,12 @@ internal class ComponentCollection {
     /// Returns <see langword="true"/> if this component collection contains <paramref name="component"/>.
     /// </summary>
     public bool Contains(Component component) {
-        return
-            !componentsToRemove.Contains(component) &&
-            (componentInstanceIds.Contains(component.InstanceID) || componentsToAdd.Contains(component));
+        return component != null && componentInstanceIds.Contains(component.InstanceID);
     }
+
     internal void OnEntityTransformChanged() {
         for (int i = 0; i < components.Length; i++) {
-            components[i].OnEntityTransformChanged();
-        }
-
-        foreach (Component component in componentsToAdd) {
-            component.OnEntityTransformChanged();
-        }
-    }
-
-    // TODO: CALL THIS AT END OF UPDATE
-    internal void ApplyPendingChanges() {
-        if (componentsToRemove.Count > 0) {
-            foreach (Component component in componentsToRemove) {
-                RemoveImmediate(component);
-            }
-            componentsToRemove.Clear();
-        }
-
-        if (componentsToAdd.Count > 0) {
-            foreach (Component component in componentsToAdd) {
-                AddImmediate(component);
-            }
-            componentsToAdd.Clear();
-        }
-    }
-
-    void RemoveImmediate(Component component) {
-        components.Remove(component);
-        componentInstanceIds.Remove(component.InstanceID);
-
-        component.TryInvokeOnDisable();
-    }
-
-    void AddImmediate(Component component) {
-        components.Add(component);
-        componentInstanceIds.Add(component.InstanceID);
-
-        if (component.ActiveInHierarchy) {
-            component.TryInvokeOnEnable();
-        }
-        else {
-            component.TryInvokeOnDisable();
+            components.Buffer[i].OnEntityTransformChanged();
         }
     }
 }

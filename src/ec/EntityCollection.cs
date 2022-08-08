@@ -120,7 +120,7 @@ internal class EntityCollection {
     }
 
     /// <summary>
-    /// Finds an entity of type <typeparamref name="T"/>.
+    /// Finds an entity in this collection of type <typeparamref name="T"/>.
     /// Returns null if not found.
     /// </summary>
     public T Find<T>() where T : Entity {

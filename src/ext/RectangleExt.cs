@@ -1,7 +1,7 @@
 ﻿using BlueFw;
 using Microsoft.Xna.Framework;
 
-namespace Blue.src.ext;
+namespace BlueFw;
 
 public static class RectangleExt {
 

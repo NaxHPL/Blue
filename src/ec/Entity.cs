@@ -1,12 +1,12 @@
-﻿using Blue.src.ec;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 
 namespace BlueFw;
 
 public class Entity : BlueObject, IDestroyable {
 
     /// <summary>
-    /// Gets whether this entity is enabled in the game. This is true if it and all of its parents are locally enabled.
+    /// Gets whether this entity is active in the game.
+    /// This is true if it's enabled and its parent is active in the hierarchy.
     /// </summary>
     public bool ActiveInHierarchy {
         get {
@@ -29,7 +29,7 @@ public class Entity : BlueObject, IDestroyable {
     public bool AttachedToScene => Scene != null;
 
     /// <summary>
-    /// Gets or sets whether this entity is locally enabled.
+    /// Gets or sets whether this entity is enabled.
     /// </summary>
     public bool Enabled {
         get => enabled;
@@ -295,21 +295,21 @@ public class Entity : BlueObject, IDestroyable {
     /// Returns <see langword="true"/> if this entity has a component of type <typeparamref name="T"/>.
     /// </summary>
     public bool HasComponent<T>() where T : Component {
-        return Components.Get<T>() != null;
+        return Components.Find<T>() != null;
     }
 
     /// <summary>
     /// Returns the first component of type <typeparamref name="T"/> attached to this entity. If a <typeparamref name="T"/> isn't attached, returns <see langword="null"/>.
     /// </summary>
     public T GetComponent<T>() where T : Component {
-        return Components.Get<T>();
+        return Components.Find<T>();
     }
 
     /// <summary>
     /// Tries to get the first component of type <typeparamref name="T"/> attached to this entity. If successful, the component is stored in <paramref name="component"/>.
     /// </summary>
     public bool TryGetComponent<T>(out T component) where T : Component {
-        component = Components.Get<T>();
+        component = Components.Find<T>();
         return component != null;
     }
 
@@ -322,7 +322,7 @@ public class Entity : BlueObject, IDestroyable {
     /// </remarks>
     /// <param name="includeInactive">(Optional) Include inactive components in the search.</param>
     public void GetComponents<T>(List<T> results, bool includeInactive = false) where T : Component {
-        Components.GetAll(results, includeInactive);
+        Components.FindAll(results, includeInactive);
     }
 
     /// <summary>
@@ -334,7 +334,7 @@ public class Entity : BlueObject, IDestroyable {
     /// </remarks>
     /// <param name="includeInactive">(Optional) Include inactive components in the search.</param>
     public T[] GetComponents<T>(bool includeInactive = false) where T : Component {
-        return Components.GetAll<T>(includeInactive);
+        return Components.FindAll<T>(includeInactive);
     }
 
     /// <summary>
@@ -377,7 +377,7 @@ public class Entity : BlueObject, IDestroyable {
             return;
         }
 
-        Components.GetAll(results, includeInactive);
+        Components.FindAll(results, includeInactive);
 
         for (int i = 0; i < ChildCount; i++) {
             GetChildAt(i).GetComponentsInChildren(results, includeInactive);
@@ -413,7 +413,7 @@ public class Entity : BlueObject, IDestroyable {
     /// </remarks>
     /// <param name="includeInactive">(Optional) Include inactive components in the search.</param>
     public void GetComponentsInParents<T>(List<T> results, bool includeInactive = false) where T : Component {
-        Components.GetAll(results, includeInactive);
+        Components.FindAll(results, includeInactive);
 
         if (HasParent) {
             Parent.GetComponentsInParents(results, includeInactive);

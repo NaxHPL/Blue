@@ -1,6 +1,4 @@
-﻿using Blue.src.ec;
-
-namespace BlueFw;
+﻿namespace BlueFw;
 
 /// <summary>
 /// Base component class.
@@ -23,8 +21,8 @@ public abstract class Component : BlueObject, IDestroyable {
     public bool AttachedToEntity => Entity != null;
 
     /// <summary>
-    /// Gets whether this component is active in the scene.
-    /// This is true if <see cref="Enabled"/> is true and the Entity its attached to is active in the hierarchy.
+    /// Gets whether this component is active in the game.
+    /// This is true if it's enabled and the Entity its attached to is active in the hierarchy.
     /// </summary>
     public bool ActiveInHierarchy {
         get {
@@ -52,7 +50,7 @@ public abstract class Component : BlueObject, IDestroyable {
     public bool IsInitialized { get; private set; }
 
     /// <summary>
-    /// Gets or sets whether this component is locally enabled. A disabled component won't get updated or rendered.
+    /// Gets or sets whether this component is enabled. A disabled component won't get updated or rendered.
     /// </summary>
     /// <remarks>
     /// A <see cref="Component"/> is always disabled if not attached to an entity.

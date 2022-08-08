@@ -1,8 +1,7 @@
-﻿using BlueFw;
-using Microsoft.Xna.Framework;
+﻿using Microsoft.Xna.Framework;
 using System;
 
-namespace Blue.src.ec;
+namespace BlueFw;
 
 /// <summary>
 /// Position, scale, and rotation of an entity.
@@ -11,10 +10,10 @@ public class Transform {
 
     [Flags]
     enum DirtyFlags {
-        Clean = 0x00,
-        PositionDirty = 0x01,
-        ScaleDirty = 0x02,
-        RotationDirty = 0x04,
+        Clean           = 0x00,
+        PositionDirty   = 0x01,
+        ScaleDirty      = 0x02,
+        RotationDirty   = 0x04,
 
         All = PositionDirty | ScaleDirty | RotationDirty
     }
