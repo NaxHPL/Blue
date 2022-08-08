@@ -5,13 +5,13 @@ namespace BlueFw;
 public class Entity : BlueObject, IDestroyable {
 
     /// <summary>
-    /// Gets whether this entity is active in the game.
-    /// This is true if it's enabled and its parent is active in the hierarchy.
+    /// Gets whether this entity is active in the scene hierarchy.
+    /// This is true if it's enabled and its parent is active.
     /// </summary>
-    public bool ActiveInHierarchy {
+    public bool Active {
         get {
             if (activeInHierachyDirty) {
-                activeInHierachy = HasParent ? enabled && Parent.ActiveInHierarchy : enabled;
+                activeInHierachy = enabled && (!HasParent || Parent.Active);
                 activeInHierachyDirty = false;
             }
             return activeInHierachy;
@@ -93,14 +93,14 @@ public class Entity : BlueObject, IDestroyable {
             return;
         }
 
-        bool activeInHierarchyBefore = ActiveInHierarchy;
+        bool activeInHierarchyBefore = Active;
         Transform.SetParent(entity.Transform);
         FlagActiveInHierarchyDirty();
 
-        if (!activeInHierarchyBefore && ActiveInHierarchy) {
+        if (!activeInHierarchyBefore && Active) {
             TryInvokeOnEnableOnAllChildComponents();
         }
-        else if (activeInHierarchyBefore && !ActiveInHierarchy) {
+        else if (activeInHierarchyBefore && !Active) {
             TryInvokeOnDisableOnAllChildComponents();
         }
     }
@@ -120,14 +120,14 @@ public class Entity : BlueObject, IDestroyable {
             return;
         }
 
-        bool activeInHierarchyBefore = ActiveInHierarchy;
+        bool activeInHierarchyBefore = Active;
         this.enabled = enabled;
         FlagActiveInHierarchyDirty();
 
-        if (!activeInHierarchyBefore && ActiveInHierarchy) {
+        if (!activeInHierarchyBefore && Active) {
             TryInvokeOnEnableOnAllChildComponents();
         }
-        else if (activeInHierarchyBefore && !ActiveInHierarchy) {
+        else if (activeInHierarchyBefore && !Active) {
             TryInvokeOnDisableOnAllChildComponents();
         }
     }
@@ -234,11 +234,15 @@ public class Entity : BlueObject, IDestroyable {
         component.FlagActiveInHierarchyDirty();
         component.OnAddedToEntity(this);
 
-        if (component.ActiveInHierarchy) {
+        if (component.Active) {
             component.TryInvokeOnEnable();
         }
         else {
             component.TryInvokeOnDisable();
+        }
+
+        if (AttachedToScene) {
+            Scene.RegisterComponent(component);
         }
 
         return true;
@@ -267,9 +271,13 @@ public class Entity : BlueObject, IDestroyable {
 
         component.Entity = null;
         component.FlagActiveInHierarchyDirty();
-        component.TryInvokeOnDisable();
         component.OnRemovedFromEntity(this);
-        
+        component.TryInvokeOnDisable();
+
+        if (AttachedToScene) {
+            Scene.UnregisterComponent(component);
+        }
+
         return true;
     }
 
@@ -334,11 +342,11 @@ public class Entity : BlueObject, IDestroyable {
     /// </summary>
     /// <param name="onlyActive">(Optional) Only consider components which are active in the hierarchy.</param>
     public T GetComponentInChildren<T>(bool onlyActive = false) where T : Component {
-        if (onlyActive && !ActiveInHierarchy) {
+        if (onlyActive && !Active) {
             return null;
         }
 
-        if (TryGetComponent(out T component) && (!onlyActive || component.ActiveInHierarchy)) {
+        if (TryGetComponent(out T component) && (!onlyActive || component.Active)) {
             return component;
         }
 
@@ -357,7 +365,7 @@ public class Entity : BlueObject, IDestroyable {
     /// </summary>
     /// <param name="onlyActive">(Optional) Only consider components which are active in the hierarchy.</param>
     public void GetComponentsInChildren<T>(List<T> results, bool onlyActive = false) where T : Component {
-        if (onlyActive && !ActiveInHierarchy) {
+        if (onlyActive && !Active) {
             return;
         }
 
@@ -373,7 +381,7 @@ public class Entity : BlueObject, IDestroyable {
     /// </summary>
     /// <param name="onlyActive">(Optional) Only consider components which are active in the hierarchy.</param>
     public T GetComponentInParents<T>(bool onlyActive = false) where T : Component {
-        if (TryGetComponent(out T component) && (!onlyActive || component.ActiveInHierarchy)) {
+        if (TryGetComponent(out T component) && (!onlyActive || component.Active)) {
             return component;
         }
 

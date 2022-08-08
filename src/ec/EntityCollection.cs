@@ -139,7 +139,7 @@ internal class EntityCollection {
     /// <param name="onlyActive">(Optional) Only consider entities which are active in the hierarchy.</param>
     public void FindAll<T>(List<T> results, bool onlyActive = false) where T : Entity {
         for (int i = 0; i < entities.Length; i++) {
-            if (entities.Buffer[i] is T e && (!onlyActive || e.ActiveInHierarchy)) {
+            if (entities.Buffer[i] is T e && (!onlyActive || e.Active)) {
                 results.Add(e);
             }
         }
@@ -151,7 +151,7 @@ internal class EntityCollection {
     /// <param name="onlyActive">(Optional) Only consider entities which are active in the hierarchy.</param>
     public T[] FindAll<T>(bool onlyActive = false) where T : Entity {
         for (int i = 0; i < entities.Length; i++) {
-            if (entities.Buffer[i] is T && (!onlyActive || entities.Buffer[i].ActiveInHierarchy)) {
+            if (entities.Buffer[i] is T && (!onlyActive || entities.Buffer[i].Active)) {
                 reusableEntityList.Add(entities.Buffer[i]);
             }
         }
@@ -181,7 +181,7 @@ internal class EntityCollection {
     /// <param name="onlyActive">(Optional) Only consider components which are active in the hierarchy.</param>
     public void FindComponents<T>(List<T> results, bool onlyActive = false) where T : Component {
         for (int i = 0; i < entities.Length; i++) {
-            if (entities.Buffer[i].TryGetComponent(out T c) && (!onlyActive || c.ActiveInHierarchy)) {
+            if (entities.Buffer[i].TryGetComponent(out T c) && (!onlyActive || c.Active)) {
                 results.Add(c);
             }
         }
@@ -193,7 +193,7 @@ internal class EntityCollection {
     /// <param name="onlyActive">(Optional) Only consider components which are active in the hierarchy.</param>
     public T[] FindComponents<T>(bool onlyActive = false) where T : Component {
         for (int i = 0; i < entities.Length; i++) {
-            if (entities.Buffer[i].TryGetComponent(out T c) && (!onlyActive || c.ActiveInHierarchy)) {
+            if (entities.Buffer[i].TryGetComponent(out T c) && (!onlyActive || c.Active)) {
                 reusableComponentList.Add(c);
             }
         }

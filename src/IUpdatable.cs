@@ -7,11 +7,15 @@ internal interface IUpdatable {
     /// <summary>
     /// Defines whether this updatable should be updated.
     /// </summary>
-    bool Enabled { get; }
+    bool Active { get; }
 
     /// <summary>
     /// Defines when this updatable will be updated.
     /// </summary>
+    /// <remarks>
+    /// If you plan to change this value after this updatable is added to a scene,
+    /// you must call <see cref="Scene.ApplyUpdateOrderChanges"/> after this value changes.
+    /// </remarks>
     int UpdateOrder { get; }
 
     /// <summary>

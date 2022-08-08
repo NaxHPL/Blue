@@ -16,7 +16,7 @@ internal class ComponentCollection {
     public int Count => components.Length;
 
     /// <summary>
-    /// Gets the <see cref="Component"/> at the specified index.,
+    /// Gets the <see cref="Component"/> at the specified index.
     /// </summary>
     public Component this[int index] {
         get {
@@ -99,7 +99,7 @@ internal class ComponentCollection {
     /// <param name="onlyActive">(Optional) Only consider components which are active in the hierarchy.</param>
     public void FindAll<T>(List<T> results, bool onlyActive = false) where T : Component {
         for (int i = 0; i < components.Length; i++) {
-            if (components.Buffer[i] is T c && (!onlyActive || c.ActiveInHierarchy)) {
+            if (components.Buffer[i] is T c && (!onlyActive || c.Active)) {
                 results.Add(c);
             }
         }
@@ -112,7 +112,7 @@ internal class ComponentCollection {
     /// <param name="onlyActive">(Optional) Only consider components which are active in the hierarchy.</param>
     public T[] FindAll<T>(bool onlyActive = false) where T : Component {
         for (int i = 0; i < components.Length; i++) {
-            if (components.Buffer[i] is T c && (!onlyActive || c.ActiveInHierarchy)) {
+            if (components.Buffer[i] is T c && (!onlyActive || c.Active)) {
                 reusableComponentList.Add(c);
             }
         }

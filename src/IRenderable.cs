@@ -8,12 +8,7 @@ internal interface IRenderable {
     /// <summary>
     /// Defines if this renderable will be rendered.
     /// </summary>
-    bool Enabled { get; }
-
-    /// <summary>
-    /// Gets whether this renderable is seen by the camera.
-    /// </summary>
-    bool Visible { get; }
+    bool Active { get; }
 
     /// <summary>
     /// The world space bounds of this renderable.
@@ -23,11 +18,20 @@ internal interface IRenderable {
     /// <summary>
     /// The render layer this renderable is drawn on.
     /// </summary>
+    /// <remarks>
+    /// If you plan to change this value after this renderable is added to a scene,
+    /// you must call <see cref="Scene.ApplyRenderOrderChanges"/> after this value changes.
+    /// </remarks>
     int RenderLayer { get; }
 
     /// <summary>
     /// Defines when this renderable will be drawn within its render layer.
+    /// Larger depth values get rendered first.
     /// </summary>
+    /// <remarks>
+    /// If you plan to change this value after this renderable is added to a scene,
+    /// you must call <see cref="Scene.ApplyRenderOrderChanges"/> after this value changes.
+    /// </remarks>
     float LayerDepth { get; }
 
     /// <summary>
@@ -36,15 +40,8 @@ internal interface IRenderable {
     Material Material { get; }
 
     /// <summary>
-    /// Checks if this renderable is visible by <paramref name="camera"/>.
-    /// </summary>
-    /// <returns><see langword="true"/> if <paramref name="camera"/> can see this renderable; otherwise <see langword="false"/>.</returns>
-    bool CheckVisibleBy(Camera camera);
-
-    /// <summary>
     /// Renders this renderable using the specified sprite batch.
     /// </summary>
-    /// <param name="spriteBatch"></param>
     void Render(SpriteBatch spriteBatch);
 }
 

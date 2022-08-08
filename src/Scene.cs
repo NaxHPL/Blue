@@ -22,8 +22,8 @@ public class Scene {
     /// </summary>
     internal readonly EntityCollection Entities;
 
-    readonly SceneUpdater sceneUpdater;
-    readonly SceneRenderer sceneRenderer;
+    readonly SceneUpdater sceneUpdater = new SceneUpdater();
+    readonly SceneRenderer sceneRenderer = new SceneRenderer();
 
     /// <summary>
     /// Creates a new <see cref="Scene"/>.
@@ -31,15 +31,12 @@ public class Scene {
     public Scene() {
         Entities = new EntityCollection(this);
 
-        sceneUpdater = new SceneUpdater();
-        sceneRenderer = new SceneRenderer();
-
         Entity cameraEntity = new Entity("Main Camera");
         Camera = cameraEntity.AddComponent<Camera>();
         AddEntity(cameraEntity);
     }
 
-    #region Entity/Component Management
+    #region Entities/Components
 
     /// <summary>
     /// Adds an <see cref="Entity"/> and all of its children entities to this scene.
@@ -50,8 +47,7 @@ public class Scene {
         }
 
         entity.Scene = this;
-
-        // TODO: register updatables/renderables
+        RegisterComponents(entity.Components);
 
         for (int i = 0; i < entity.ChildCount; i++) {
             AddEntity(entity.GetChildAt(i));
@@ -68,8 +64,7 @@ public class Scene {
         }
 
         entity.Scene = null;
-
-        // TODO: unregister updatables/renderables
+        UnregisterComponents(entity.Components);
 
         for (int i = 0; i < entity.ChildCount; i++) {
             RemoveEntity(entity.GetChildAt(i));
@@ -102,25 +97,17 @@ public class Scene {
     /// <summary>
     /// Finds all entities of type <typeparamref name="T"/> and adds them to <paramref name="results"/>.
     /// </summary>
-    /// <remarks>
-    /// By default, this only searches for entities which are enabled in the hierarchy.
-    /// Set <paramref name="includeDisabled"/> to <see langword="true"/> to include disabled entities in the search.
-    /// </remarks>
-    /// <param name="includeDisabled">(Optional) Include disabled entities in the search.</param>
-    public void FindEntities<T>(List<T> results, bool includeDisabled = false) where T : Entity {
-        Entities.FindAll(results, includeDisabled);
+    /// <param name="onlyActive">(Optional) Only consider entities which are active in the hierarchy.</param>
+    public void FindEntities<T>(List<T> results, bool onlyActive = false) where T : Entity {
+        Entities.FindAll(results, onlyActive);
     }
 
     /// <summary>
     /// Finds all entities of type <typeparamref name="T"/>.
     /// </summary>
-    /// <remarks>
-    /// By default, this only searches for entities which are enabled in the hierarchy.
-    /// Set <paramref name="includeDisabled"/> to <see langword="true"/> to include disabled entities in the search.
-    /// </remarks>
-    /// <param name="includeDisabled">(Optional) Include disabled entities in the search.</param>
-    public T[] FindEntities<T>(bool includeDisabled = false) where T : Entity {
-        return Entities.FindAll<T>(includeDisabled);
+    /// <param name="onlyActive">(Optional) Only consider entities which are active in the hierarchy.</param>
+    public T[] FindEntities<T>(bool onlyActive = false) where T : Entity {
+        return Entities.FindAll<T>(onlyActive);
     }
 
     /// <summary>
@@ -133,36 +120,76 @@ public class Scene {
     /// <summary>
     /// Finds all components in this scene of type <typeparamref name="T"/> and adds them to <paramref name="results"/>.
     /// </summary>
-    /// <remarks>
-    /// By default, this only searches for components which are enabled in the hierarchy.
-    /// Set <paramref name="includeDisabled"/> to <see langword="true"/> to include disabled components in the search.
-    /// </remarks>
-    /// <param name="includeDisabled">(Optional) Include disabled components in the search.</param>
-    public void FindComponents<T>(List<T> results, bool includeDisabled = false) where T : Component {
-        Entities.FindComponents(results, includeDisabled);
+    /// <param name="onlyActive">(Optional) Only consider components which are active in the hierarchy.</param>
+    public void FindComponents<T>(List<T> results, bool onlyActive = false) where T : Component {
+        Entities.FindComponents(results, onlyActive);
     }
 
     /// <summary>
     /// Finds all components in this scene of type <typeparamref name="T"/>.
     /// </summary>
-    /// <remarks>
-    /// By default, this only searches for components which are enabled in the hierarchy.
-    /// Set <paramref name="includeDisabled"/> to <see langword="true"/> to include disabled components in the search.
-    /// </remarks>
-    /// <param name="includeDisabled">(Optional) Include disabled components in the search.</param>
-    public T[] FindComponents<T>(bool includeDisabled = false) where T : Component {
-        return Entities.FindComponents<T>(includeDisabled);
+    /// <param name="onlyActive">(Optional) Only consider components which are active in the hierarchy.</param>
+    public T[] FindComponents<T>(bool onlyActive = false) where T : Component {
+        return Entities.FindComponents<T>(onlyActive);
     }
 
     #endregion
 
+    #region Update/Render
+
+    internal void RegisterComponents(ComponentCollection components) {
+        for (int i = 0; i < components.Count; i++) {
+            RegisterComponent(components[i]);
+        }
+    }
+
+    internal void UnregisterComponents(ComponentCollection components) {
+        for (int i = 0; i < components.Count; i++) {
+            UnregisterComponent(components[i]);
+        }
+    }
+
+    internal void RegisterComponent(Component component) {
+        if (component is IUpdatable updatable) {
+            sceneUpdater.Register(updatable);
+        }
+        if (component is IRenderable renderable) {
+            sceneRenderer.Register(renderable);
+        }
+    }
+
+    internal void UnregisterComponent(Component component) {
+        if (component is IUpdatable updatable) {
+            sceneUpdater.Unregister(updatable);
+        }
+        if (component is IRenderable renderable) {
+            sceneRenderer.Unregister(renderable);
+        }
+    }
+
+    /// <summary>
+    /// Apply any changes made to update orders. The new order will be reflected in the next update cycle.
+    /// </summary>
+    public void ApplyUpdateOrderChanges() {
+        sceneUpdater.FlagUpdateOrderDirty();
+    }
+
     internal void Update() {
-        //sceneUpdater.Update();
+        sceneUpdater.Update();
+    }
+
+    /// <summary>
+    /// Apply any changes made to render orders. The new order will be reflected in the next update cycle.
+    /// </summary>
+    public void ApplyRenderOrderChanges() {
+        sceneRenderer.FlagRenderOrderDirty();
     }
 
     internal void Render(SpriteBatch spriteBatch) {
-        //sceneRenderer.Render(spriteBatch);
+        sceneRenderer.Render(spriteBatch);
     }
+
+    #endregion
 
     #region Lifecycle Methods
 

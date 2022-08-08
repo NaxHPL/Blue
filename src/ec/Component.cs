@@ -21,13 +21,13 @@ public abstract class Component : BlueObject, IDestroyable {
     public bool AttachedToEntity => Entity != null;
 
     /// <summary>
-    /// Gets whether this component is active in the game.
-    /// This is true if it's enabled and the Entity its attached to is active in the hierarchy.
+    /// Gets whether this component is active in the scene hierarchy.
+    /// This is true if it's enabled and the Entity it's attached to is active.
     /// </summary>
-    public bool ActiveInHierarchy {
+    public bool Active {
         get {
             if (activeInHierachyDirty) {
-                activeInHierachy = enabled && AttachedToEntity && Entity.ActiveInHierarchy;
+                activeInHierachy = enabled && AttachedToEntity && Entity.Active;
                 activeInHierachyDirty = false;
             }
             return activeInHierachy;
