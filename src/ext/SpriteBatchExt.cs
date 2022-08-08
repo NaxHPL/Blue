@@ -1,7 +1,8 @@
-﻿using Microsoft.Xna.Framework;
+﻿using BlueFw;
+using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
-namespace BlueFw.Extensions;
+namespace Blue.src.ext;
 
 public static class SpriteBatchExt {
 
@@ -27,7 +28,7 @@ public static class SpriteBatchExt {
     /// <param name="color">The color of the rectangle.</param>
     /// <param name="layerDepth">The depth of the layer of this rectangle.</param>
     public static void FillRectangle(this SpriteBatch spriteBatch, in Rectangle rect, in Color color, float layerDepth = 0f) {
-        FillRectangle(spriteBatch, rect.X, rect.Y, rect.Width, rect.Height, color, layerDepth);
+        spriteBatch.FillRectangle(rect.X, rect.Y, rect.Width, rect.Height, color, layerDepth);
     }
 
     /// <summary>
@@ -40,7 +41,7 @@ public static class SpriteBatchExt {
     /// <param name="color">The color of the rectangle.</param>
     /// <param name="layerDepth">The depth of the layer of this rectangle.</param>
     public static void FillRectangle(this SpriteBatch spriteBatch, float x, float y, float width, float height, in Color color, float layerDepth = 0f) {
-        FillRectangle(spriteBatch, new Vector2(x, y), new Vector2(width, height), color, layerDepth);
+        spriteBatch.FillRectangle(new Vector2(x, y), new Vector2(width, height), color, layerDepth);
     }
 
     /// <summary>

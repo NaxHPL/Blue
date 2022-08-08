@@ -205,31 +205,44 @@ public static class Input {
         }
     }
 
-    /// <summary>
-    /// Whether or not to handle keyboard input.
-    /// </summary>
-    public static bool EnableKeyboard = false;
+    static bool enableKeyboard = false;
+    static bool enableMouse = false;
+    static bool enableGamePad = false;
 
-    /// <summary>
-    /// Whether or not to handle mouse input.
-    /// </summary>
-    public static bool EnableMouse = false;
-
-    /// <summary>
-    /// Whether or not to handle game pad input.
-    /// </summary>
-    public static bool EnableGamePad = false;
-
-    internal static void Update() {
-        if (EnableKeyboard) {
+    public static void SetKeyboardEnabled(bool enabled) {
+        if (enabled && !enableKeyboard) {
             KB.Update();
         }
 
-        if (EnableMouse) {
+        enableKeyboard = enabled;
+    }
+
+    public static void SetMouseEnabled(bool enabled) {
+        if (enabled && !enableMouse) {
             M.Update();
         }
 
-        if (EnableGamePad) {
+        enableMouse = enabled;
+    }
+
+    public static void SetGamePadEnabled(bool enabled) {
+        if (enabled && !enableGamePad) {
+            GP.Update();
+        }
+
+        enableGamePad = enabled;
+    }
+
+    internal static void Update() {
+        if (enableKeyboard) {
+            KB.Update();
+        }
+
+        if (enableMouse) {
+            M.Update();
+        }
+
+        if (enableGamePad) {
             GP.Update();
         }
     }

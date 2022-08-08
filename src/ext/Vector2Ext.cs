@@ -1,6 +1,7 @@
-﻿using Microsoft.Xna.Framework;
+﻿using BlueFw;
+using Microsoft.Xna.Framework;
 
-namespace BlueFw.Extensions;
+namespace Blue.src.ext;
 
 public static class Vector2Ext {
 
@@ -27,7 +28,7 @@ public static class Vector2Ext {
     /// Creates a <see cref="Vector2"/> that contains a transformation of a 2D vector by a <see cref="Matrix2D"/> and stores it in <paramref name="result"/>.
     /// </summary>
     public static void Transform(in Vector2 vector, in Matrix2D matrix, out Vector2 result) {
-        result.X = (vector.X * matrix.M11) + (vector.Y * matrix.M21) + matrix.M13;
-        result.Y = (vector.X * matrix.M12) + (vector.Y * matrix.M22) + matrix.M23;
+        result.X = vector.X * matrix.M11 + vector.Y * matrix.M21 + matrix.M13;
+        result.Y = vector.X * matrix.M12 + vector.Y * matrix.M22 + matrix.M23;
     }
 }
