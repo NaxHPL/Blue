@@ -181,7 +181,7 @@ public class Scene {
             Entities[i].Destroy();
         }
 
-        Content?.Dispose(); // This calls Content.Unload()
+        Content?.Dispose();
 
         OnUnload();
     }

@@ -168,13 +168,13 @@ public abstract class Component : BlueObject, IDestroyable {
     /// Called immediately after this component gets added to an entity.
     /// </summary>
     /// <param name="addedToEntity">The entity this component was added to.</param>
-    internal virtual void OnAddedToEntity(Entity addedToEntity) { }
+    public virtual void OnAddedToEntity(Entity addedToEntity) { }
 
     /// <summary>
     /// Called immediately after this component gets removed from an entity.
     /// </summary>
     /// <param name="removedFromEntity">The Entity this component was removed from.</param>
-    internal virtual void OnRemovedFromEntity(Entity removedFromEntity) { }
+    public virtual void OnRemovedFromEntity(Entity removedFromEntity) { }
 
     /// <summary>
     /// Called when the transform of the entity this component is attached to changes.

@@ -82,18 +82,20 @@ public class Entity : BlueObject, IDestroyable {
             return;
         }
 
-        FlagEnabledInHierarchyDirty();
-
         if (entity == null) {
             Transform.SetParent(null);
+            FlagActiveInHierarchyDirty();
+
             if (enabled) {
                 TryInvokeOnEnableOnAllChildComponents();
             }
+
             return;
         }
 
         bool activeInHierarchyBefore = ActiveInHierarchy;
         Transform.SetParent(entity.Transform);
+        FlagActiveInHierarchyDirty();
 
         if (!activeInHierarchyBefore && ActiveInHierarchy) {
             TryInvokeOnEnableOnAllChildComponents();
@@ -119,9 +121,8 @@ public class Entity : BlueObject, IDestroyable {
         }
 
         bool activeInHierarchyBefore = ActiveInHierarchy;
-
         this.enabled = enabled;
-        FlagEnabledInHierarchyDirty();
+        FlagActiveInHierarchyDirty();
 
         if (!activeInHierarchyBefore && ActiveInHierarchy) {
             TryInvokeOnEnableOnAllChildComponents();
@@ -161,7 +162,7 @@ public class Entity : BlueObject, IDestroyable {
         }
     }
 
-    void FlagEnabledInHierarchyDirty() {
+    void FlagActiveInHierarchyDirty() {
         activeInHierachyDirty = true;
 
         for (int i = 0; i < Components.Count; i++) {
@@ -169,7 +170,7 @@ public class Entity : BlueObject, IDestroyable {
         }
 
         for (int i = ChildCount - 1; i >= 0; i--) {
-            GetChildAt(i).FlagEnabledInHierarchyDirty();
+            GetChildAt(i).FlagActiveInHierarchyDirty();
         }
     }
 
@@ -215,7 +216,7 @@ public class Entity : BlueObject, IDestroyable {
 
     #endregion
 
-    #region Component Management
+    #region Components
 
     /// <summary>
     /// Adds the specified component to this entity.
@@ -231,6 +232,7 @@ public class Entity : BlueObject, IDestroyable {
         component.DetachFromEntity();
         component.Entity = this;
         component.FlagActiveInHierarchyDirty();
+        component.OnAddedToEntity(this);
 
         if (component.ActiveInHierarchy) {
             component.TryInvokeOnEnable();
@@ -238,8 +240,6 @@ public class Entity : BlueObject, IDestroyable {
         else {
             component.TryInvokeOnDisable();
         }
-
-        component.OnAddedToEntity(this);
 
         return true;
     }
@@ -314,48 +314,36 @@ public class Entity : BlueObject, IDestroyable {
     }
 
     /// <summary>
-    /// Adds all components of type <typeparamref name="T"/> attached to this entity to <paramref name="results"/>.
+    /// Finds all components of type <typeparamref name="T"/> and adds them to <paramref name="results"/>.
     /// </summary>
-    /// <remarks>
-    /// By default, this only searches for components which are active in the hierarchy.
-    /// Set <paramref name="includeInactive"/> to <see langword="true"/> to include inactive components in the search.
-    /// </remarks>
-    /// <param name="includeInactive">(Optional) Include inactive components in the search.</param>
-    public void GetComponents<T>(List<T> results, bool includeInactive = false) where T : Component {
-        Components.FindAll(results, includeInactive);
+    /// <param name="onlyActive">(Optional) Only consider components which are active in the hierarchy.</param>
+    public void GetComponents<T>(List<T> results, bool onlyActive = false) where T : Component {
+        Components.FindAll(results, onlyActive);
     }
 
     /// <summary>
-    /// Returns all components of type <typeparamref name="T"/> attached to this entity.
+    /// Finds all components of type <typeparamref name="T"/>.
     /// </summary>
-    /// <remarks>
-    /// By default, this only searches for components which are active in the hierarchy.
-    /// Set <paramref name="includeInactive"/> to <see langword="true"/> to include inactive components in the search.
-    /// </remarks>
-    /// <param name="includeInactive">(Optional) Include inactive components in the search.</param>
-    public T[] GetComponents<T>(bool includeInactive = false) where T : Component {
-        return Components.FindAll<T>(includeInactive);
+    /// <param name="onlyActive">(Optional) Only consider components which are active in the hierarchy.</param>
+    public T[] GetComponents<T>(bool onlyActive = false) where T : Component {
+        return Components.FindAll<T>(onlyActive);
     }
 
     /// <summary>
     /// Returns the first component of type <typeparamref name="T"/> found on this entity or any of its children. Uses depth first search.
     /// </summary>
-    /// <remarks>
-    /// By default, this only searches for components which are active in the hierarchy.
-    /// Set <paramref name="includeInactive"/> to <see langword="true"/> to include inactive components in the search.
-    /// </remarks>
-    /// <param name="includeInactive">(Optional) Include inactive components in the search.</param>
-    public T GetComponentInChildren<T>(bool includeInactive = false) where T : Component {
-        if (!includeInactive && !ActiveInHierarchy) {
+    /// <param name="onlyActive">(Optional) Only consider components which are active in the hierarchy.</param>
+    public T GetComponentInChildren<T>(bool onlyActive = false) where T : Component {
+        if (onlyActive && !ActiveInHierarchy) {
             return null;
         }
 
-        if (TryGetComponent(out T component) && (includeInactive || component.ActiveInHierarchy)) {
+        if (TryGetComponent(out T component) && (!onlyActive || component.ActiveInHierarchy)) {
             return component;
         }
 
         for (int i = 0; i < ChildCount; i++) {
-            T c = GetChildAt(i).GetComponentInChildren<T>(includeInactive);
+            T c = GetChildAt(i).GetComponentInChildren<T>(onlyActive);
             if (c != null) {
                 return c;
             }
@@ -367,38 +355,30 @@ public class Entity : BlueObject, IDestroyable {
     /// <summary>
     /// Adds all components of type <typeparamref name="T"/> attached to this entity or any of its children to <paramref name="results"/>.
     /// </summary>
-    /// <remarks>
-    /// By default, this only searches for components which are active in the hierarchy.
-    /// Set <paramref name="includeInactive"/> to <see langword="true"/> to include inactive components in the search.
-    /// </remarks>
-    /// <param name="includeInactive">(Optional) Include inactive components in the search.</param>
-    public void GetComponentsInChildren<T>(List<T> results, bool includeInactive = false) where T : Component {
-        if (!includeInactive && !ActiveInHierarchy) {
+    /// <param name="onlyActive">(Optional) Only consider components which are active in the hierarchy.</param>
+    public void GetComponentsInChildren<T>(List<T> results, bool onlyActive = false) where T : Component {
+        if (onlyActive && !ActiveInHierarchy) {
             return;
         }
 
-        Components.FindAll(results, includeInactive);
+        Components.FindAll(results, onlyActive);
 
         for (int i = 0; i < ChildCount; i++) {
-            GetChildAt(i).GetComponentsInChildren(results, includeInactive);
+            GetChildAt(i).GetComponentsInChildren(results, onlyActive);
         }
     }
 
     /// <summary>
     /// Returns the first component of type <typeparamref name="T"/> found on this entity or any of its parents. Uses depth first search.
     /// </summary>
-    /// <remarks>
-    /// By default, this only searches for components which are active in the hierarchy.
-    /// Set <paramref name="includeInactive"/> to <see langword="true"/> to include inactive components in the search.
-    /// </remarks>
-    /// <param name="includeInactive">(Optional) Include inactive components in the search.</param>
-    public T GetComponentInParents<T>(bool includeInactive = false) where T : Component {
-        if (TryGetComponent(out T component) && (includeInactive || component.ActiveInHierarchy)) {
+    /// <param name="onlyActive">(Optional) Only consider components which are active in the hierarchy.</param>
+    public T GetComponentInParents<T>(bool onlyActive = false) where T : Component {
+        if (TryGetComponent(out T component) && (!onlyActive || component.ActiveInHierarchy)) {
             return component;
         }
 
         if (HasParent) {
-            return Parent.GetComponentInParents<T>(includeInactive);
+            return Parent.GetComponentInParents<T>(onlyActive);
         }
 
         return null;
@@ -407,16 +387,12 @@ public class Entity : BlueObject, IDestroyable {
     /// <summary>
     /// Adds all components of type <typeparamref name="T"/> attached to this entity or any of its parents to <paramref name="results"/>.
     /// </summary>
-    /// <remarks>
-    /// By default, this only searches for components which are active in the hierarchy.
-    /// Set <paramref name="includeInactive"/> to <see langword="true"/> to include inactive components in the search.
-    /// </remarks>
-    /// <param name="includeInactive">(Optional) Include inactive components in the search.</param>
-    public void GetComponentsInParents<T>(List<T> results, bool includeInactive = false) where T : Component {
-        Components.FindAll(results, includeInactive);
+    /// <param name="onlyActive">(Optional) Only consider components which are active in the hierarchy.</param>
+    public void GetComponentsInParents<T>(List<T> results, bool onlyActive = false) where T : Component {
+        Components.FindAll(results, onlyActive);
 
         if (HasParent) {
-            Parent.GetComponentsInParents(results, includeInactive);
+            Parent.GetComponentsInParents(results, onlyActive);
         }
     }
 
