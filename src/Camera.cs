@@ -64,7 +64,7 @@ public class Camera : Component {
     /// <summary>
     /// The world space bounds of this camera.
     /// </summary>
-    public RectangleF Bounds {
+    public Rect Bounds {
         get { UpdateBounds(); return bounds; }
     }
 
@@ -93,11 +93,6 @@ public class Camera : Component {
     }
 
     /// <summary>
-    /// The destination texture this camera will render to. If <see langword="null"/> (default), the camera will render directly to the back buffer.
-    /// </summary>
-    public RenderTarget2D RenderTarget;
-
-    /// <summary>
     /// The color this camera uses to clear the background.
     /// </summary>
     /// <remarks>By default, this is set to <see cref="Color.Black"/>.</remarks>
@@ -105,7 +100,7 @@ public class Camera : Component {
 
     Vector2 origin;
     float zoom = 1f;
-    RectangleF bounds;
+    Rect bounds;
 
     Matrix2D transformMatrix;
     Matrix2D inverseTransformMatrix;
@@ -159,7 +154,7 @@ public class Camera : Component {
     }
 
     protected override void OnDestroy() {
-        RenderTarget?.Dispose();
+        //RenderTarget?.Dispose();
     }
 
     /// <summary>

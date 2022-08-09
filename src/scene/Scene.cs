@@ -1,5 +1,6 @@
 ﻿using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
+using System;
 using System.Collections.Generic;
 
 namespace BlueFw;
@@ -20,23 +21,20 @@ public class Scene {
     /// <summary>
     /// This scene's collection of entites.
     /// </summary>
-    internal readonly EntityCollection Entities;
+    internal readonly EntityCollection Entities = new EntityCollection();
 
-    internal readonly ComponentCollection SceneComponents;
+    /// <summary>
+    /// This scene's global scene components.
+    /// </summary>
+    internal readonly ComponentCollection SceneComponents = new ComponentCollection();
 
-    readonly SceneUpdater sceneUpdater;
-    readonly SceneRenderer sceneRenderer;
+    readonly SceneUpdater sceneUpdater = new SceneUpdater();
+    readonly SceneRenderer sceneRenderer = new SceneRenderer();
 
     /// <summary>
     /// Creates a new <see cref="Scene"/>.
     /// </summary>
     public Scene() {
-        Entities = new EntityCollection();
-        SceneComponents = new ComponentCollection();
-
-        sceneUpdater = new SceneUpdater();
-        sceneRenderer = new SceneRenderer(this);
-
         Entity cameraEntity = new Entity("Main Camera");
         Camera = cameraEntity.AddComponent<Camera>();
         AddEntity(cameraEntity);
@@ -48,14 +46,16 @@ public class Scene {
     /// Adds a scene component.
     /// </summary>
     /// <remarks>
-    /// Scene components are ideal for components that will last the entire lifetime of the scene and don't require a <see cref="Transform"/>.
+    /// Scene components are ideal for components that will last the entire lifetime of the scene and don't require a <see cref="Transform"/>. <br/>
+    /// They must not be renderable (attach renderables to entities).
     /// </remarks>
-    /// <returns>
-    /// <see langword="true"/> if <paramref name="component"/> wasn't already a scene component iSn this scene and added successfully; otherwise <see langword="false"/>.
-    /// </returns>
-    public bool AddSceneComponent(Component component) {
+    public void AddSceneComponent(Component component) {
         if (!SceneComponents.Add(component)) {
-            return false;
+            return;
+        }
+
+        if (component is IRenderable) {
+            throw new ArgumentException("Scene components must not be an IRenderable! Attach renderables to entities.", nameof(component));
         }
 
         component.DetachFromOwner();
@@ -70,18 +70,14 @@ public class Scene {
         }
 
         RegisterComponent(component);
-        return true;
     }
 
     /// <summary>
     /// Removes the specified component as a scene component.
     /// </summary>
-    /// <returns>
-    /// <see langword="true"/> if <paramref name="component"/> was found and removed from this scene; otherwise <see langword="false"/>.
-    /// </returns>
-    public bool RemoveSceneComponent(Component component) {
+    public void RemoveSceneComponent(Component component) {
         if (!SceneComponents.Remove(component)) {
-            return false;
+            return;
         }
 
         component.Scene = null;
@@ -89,7 +85,6 @@ public class Scene {
         component.TryInvokeOnDisable();
 
         UnregisterComponent(component);
-        return true;
     }
 
     /// <summary>
@@ -253,7 +248,7 @@ public class Scene {
     }
 
     internal void Render(SpriteBatch spriteBatch) {
-        sceneRenderer.Render(spriteBatch);
+        sceneRenderer.Render(spriteBatch, Camera);
     }
 
     #endregion
@@ -267,6 +262,7 @@ public class Scene {
 
     /// <summary>
     /// Called when this scene is loaded and becomes the active scene.
+    /// Use this to load scene content.
     /// </summary>
     protected virtual void OnLoad() { }
 

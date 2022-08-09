@@ -6,20 +6,20 @@ namespace BlueFw;
 /// <summary>
 /// Describes a 2D rectangle. Does <b>not</b> support negative width/height.
 /// </summary>
-public struct RectangleF {
+public struct Rect {
 
     #region Statics
 
     /// <summary>
-    /// A <see cref="RectangleF"/> with X = 0, Y = 0, Width = 0, and Height = 0.
+    /// A <see cref="Rect"/> with X = 0, Y = 0, Width = 0, and Height = 0.
     /// </summary>
-    public static RectangleF Zero => zero;
-    static RectangleF zero = new RectangleF();
+    public static Rect Zero => zero;
+    static Rect zero = new Rect();
 
     /// <summary>
     /// Returns <see langword="true"/> if the provided rectangles overlap each other.
     /// </summary>
-    public static bool Overlaps(in RectangleF rect1, in RectangleF rect2) {
+    public static bool Overlaps(in Rect rect1, in Rect rect2) {
         Overlaps(rect1, rect2, out bool result);
         return result;
     }
@@ -27,7 +27,7 @@ public struct RectangleF {
     /// <summary>
     /// Checks if the provided rectangles overlap each other and stores the result in <paramref name="result"/>.
     /// </summary>
-    public static void Overlaps(in RectangleF rect1, in RectangleF rect2, out bool result) {
+    public static void Overlaps(in Rect rect1, in Rect rect2, out bool result) {
         result =
             rect1.MinX < rect2.MaxX &&
             rect1.MaxX > rect2.MinX &&
@@ -36,17 +36,17 @@ public struct RectangleF {
     }
 
     /// <summary>
-    /// Creates a new <see cref="RectangleF"/> that contains the overlapping region of the provided rectangles.
+    /// Creates a new <see cref="Rect"/> that contains the overlapping region of the provided rectangles.
     /// </summary>
-    public static RectangleF Intersect(in RectangleF rect1, in RectangleF rect2) {
-        Intersect(rect1, rect2, out RectangleF result);
+    public static Rect Intersect(in Rect rect1, in Rect rect2) {
+        Intersect(rect1, rect2, out Rect result);
         return result;
     }
 
     /// <summary>
     /// Gets the overlapping region of the provided rectangles and stores it in <paramref name="result"/>.
     /// </summary>
-    public static void Intersect(in RectangleF rect1, in RectangleF rect2, out RectangleF result) {
+    public static void Intersect(in Rect rect1, in Rect rect2, out Rect result) {
         if (!Overlaps(rect1, rect2)) {
             result = zero;
             return;
@@ -64,17 +64,17 @@ public struct RectangleF {
     }
 
     /// <summary>
-    /// Creates a new <see cref="RectangleF"/> that completely contains the provided rectangles.
+    /// Creates a new <see cref="Rect"/> that completely contains the provided rectangles.
     /// </summary>
-    public static RectangleF Union(in RectangleF rect1, in RectangleF rect2) {
-        Union(rect1, rect2, out RectangleF result);
+    public static Rect Union(in Rect rect1, in Rect rect2) {
+        Union(rect1, rect2, out Rect result);
         return result;
     }
 
     /// <summary>
-    /// Gets a <see cref="RectangleF"/> that completely contains the provided rectangles and stores it in <paramref name="result"/>.
+    /// Gets a <see cref="Rect"/> that completely contains the provided rectangles and stores it in <paramref name="result"/>.
     /// </summary>
-    public static void Union(in RectangleF rect1, in RectangleF rect2, out RectangleF result) {
+    public static void Union(in Rect rect1, in Rect rect2, out Rect result) {
         float left = MathHelper.Min(rect1.MinX, rect2.MinX);
         float right = MathHelper.Max(rect1.MaxX, rect2.MaxX);
         float top = MathHelper.Min(rect1.MinY, rect2.MinY);
@@ -87,17 +87,17 @@ public struct RectangleF {
     }
 
     /// <summary>
-    /// Returns a point inside a <see cref="RectangleF"/> given normalized coordinates.
+    /// Returns a point inside a <see cref="Rect"/> given normalized coordinates.
     /// </summary>
-    public static Vector2 NormalizedToPoint(in RectangleF rect, in Vector2 normalizedCoords) {
+    public static Vector2 NormalizedToPoint(in Rect rect, in Vector2 normalizedCoords) {
         NormalizedToPoint(rect, normalizedCoords, out Vector2 result);
         return result;
     }
 
     /// <summary>
-    /// Gets a point inside a <see cref="RectangleF"/> given normalized coordinates and stores it in <paramref name="result"/>.
+    /// Gets a point inside a <see cref="Rect"/> given normalized coordinates and stores it in <paramref name="result"/>.
     /// </summary>
-    public static void NormalizedToPoint(in RectangleF rect, in Vector2 normalizedCoords, out Vector2 result) {
+    public static void NormalizedToPoint(in Rect rect, in Vector2 normalizedCoords, out Vector2 result) {
         result.X = rect.X + rect.Width * normalizedCoords.X;
         result.Y = rect.Y + rect.Height * normalizedCoords.Y;
     }
@@ -105,7 +105,7 @@ public struct RectangleF {
     /// <summary>
     /// Returns the normalized coordinates corresponding the <paramref name="point"/>.
     /// </summary>
-    public static Vector2 PointToNormalized(in RectangleF rect, in Vector2 point) {
+    public static Vector2 PointToNormalized(in Rect rect, in Vector2 point) {
         PointToNormalized(rect, point, out Vector2 result);
         return result;
     }
@@ -113,7 +113,7 @@ public struct RectangleF {
     /// <summary>
     /// Gets the normalized coordinates corresponding the <paramref name="point"/> and stores them in <paramref name="result"/>.
     /// </summary>
-    public static void PointToNormalized(in RectangleF rect, in Vector2 point, out Vector2 result) {
+    public static void PointToNormalized(in Rect rect, in Vector2 point, out Vector2 result) {
         result.X = (point.X - rect.X) / rect.Width;
         result.Y = (point.Y - rect.Y) / rect.Height;
     }
@@ -121,7 +121,7 @@ public struct RectangleF {
     /// <summary>
     /// Returns the normalized coordinates corresponding the <paramref name="point"/>. The coordinates are clamped between 0 and 1.
     /// </summary>
-    public static Vector2 PointToNormalizedClamped(in RectangleF rect, in Vector2 point) {
+    public static Vector2 PointToNormalizedClamped(in Rect rect, in Vector2 point) {
         PointToNormalizedClamped(rect, point, out Vector2 result);
         return result;
     }
@@ -129,23 +129,23 @@ public struct RectangleF {
     /// <summary>
     /// Gets the normalized coordinates corresponding the <paramref name="point"/> and stores them in <paramref name="result"/>. The coordinates are clamped between 0 and 1.
     /// </summary>
-    public static void PointToNormalizedClamped(in RectangleF rect, in Vector2 point, out Vector2 result) {
-        result.X = MathHelper.Clamp((point.X - rect.X) / rect.Width, 0f, 1f);
-        result.Y = MathHelper.Clamp((point.Y - rect.Y) / rect.Height, 0f, 1f);
+    public static void PointToNormalizedClamped(in Rect rect, in Vector2 point, out Vector2 result) {
+        result.X = MathExt.Clamp01((point.X - rect.X) / rect.Width);
+        result.Y = MathExt.Clamp01((point.Y - rect.Y) / rect.Height);
     }
 
     /// <summary>
-    /// Creates a new <see cref="RectangleF"/> from min/max coordinate values.
+    /// Creates a new <see cref="Rect"/> from min/max coordinate values.
     /// </summary>
-    public static RectangleF FromMinMax(float minX, float maxX, float minY, float maxY) {
-        return new RectangleF(minX, minY, maxX - minX, maxY - minY);
+    public static Rect FromMinMax(float minX, float maxX, float minY, float maxY) {
+        return new Rect(minX, minY, maxX - minX, maxY - minY);
     }
 
     /// <summary>
-    /// Creates a new <see cref="RectangleF"/> from min/max coordinate values.
+    /// Creates a new <see cref="Rect"/> from min/max coordinate values.
     /// </summary>
-    public static RectangleF FromMinMax(in Vector2 min, in Vector2 max) {
-        return new RectangleF(min.X, min.Y, max.X - min.X, max.Y - min.Y);
+    public static Rect FromMinMax(in Vector2 min, in Vector2 max) {
+        return new Rect(min.X, min.Y, max.X - min.X, max.Y - min.Y);
     }
 
     #endregion
@@ -272,11 +272,11 @@ public struct RectangleF {
     #endregion
 
     /// <summary>
-    /// Creates a new <see cref="RectangleF"/> with the provided position and size.
+    /// Creates a new <see cref="Rect"/> with the provided position and size.
     /// </summary>
     /// <param name="position">The rectangle's position.</param>
     /// <param name="size">The rectangle's size.</param>
-    public RectangleF(in Vector2 position, in Vector2 size) {
+    public Rect(in Vector2 position, in Vector2 size) {
         X = position.X;
         Y = position.Y;
         Width = size.X;
@@ -284,13 +284,13 @@ public struct RectangleF {
     }
 
     /// <summary>
-    /// Creates a new <see cref="RectangleF"/> with the provided x, y, width, and height.
+    /// Creates a new <see cref="Rect"/> with the provided x, y, width, and height.
     /// </summary>
     /// <param name="x">The X coordinate of the rectangle.</param>
     /// <param name="y">The Y coordinate of the rectangle.</param>
     /// <param name="width">The width of the rectangle.</param>
     /// <param name="height">The height of the rectangle.</param>
-    public RectangleF(float x, float y, float width, float height) {
+    public Rect(float x, float y, float width, float height) {
         X = x;
         Y = y;
         Width = width;
@@ -366,7 +366,7 @@ public struct RectangleF {
     /// <summary>
     /// Returns <see langword="true"/> if the provided rectangle is completely contained within this one.
     /// </summary>
-    public bool Contains(in RectangleF other) {
+    public bool Contains(in Rect other) {
         return
             other.MinX > MinX &&
             other.MaxX < MaxX &&
@@ -377,7 +377,7 @@ public struct RectangleF {
     /// <summary>
     /// Checks if the provided rectangle is completely contained within this one and stores the result in <paramref name="result"/>.
     /// </summary>
-    public void Contains(in RectangleF other, out bool result) {
+    public void Contains(in Rect other, out bool result) {
         result =
             other.MinX > MinX &&
             other.MaxX < MaxX &&
@@ -388,7 +388,7 @@ public struct RectangleF {
     /// <summary>
     /// Returns <see langword="true"/> if the provided rectangle overlaps this one.
     /// </summary>
-    public bool Overlaps(in RectangleF other) {
+    public bool Overlaps(in Rect other) {
         return
             other.MinX < MaxX &&
             other.MaxX > MinX &&
@@ -399,7 +399,7 @@ public struct RectangleF {
     /// <summary>
     /// Checks if the provided rectangle overlaps this one and stores the result in <paramref name="result"/>.
     /// </summary>
-    public void Overlaps(in RectangleF other, out bool result) {
+    public void Overlaps(in Rect other, out bool result) {
         result =
             other.MinX < MaxX &&
             other.MaxX > MinX &&
@@ -456,7 +456,7 @@ public struct RectangleF {
 
     #region Operators
 
-    public static bool operator ==(in RectangleF rect1, in RectangleF rect2) {
+    public static bool operator ==(in Rect rect1, in Rect rect2) {
         return
             rect1.X == rect2.X &&
             rect1.Y == rect2.Y &&
@@ -464,7 +464,7 @@ public struct RectangleF {
             rect1.Height == rect2.Height;
     }
 
-    public static bool operator !=(in RectangleF rect1, in RectangleF rect2) {
+    public static bool operator !=(in Rect rect1, in Rect rect2) {
         return
             rect1.X != rect2.X ||
             rect1.Y != rect2.Y ||
@@ -472,7 +472,7 @@ public struct RectangleF {
             rect1.Height != rect2.Height;
     }
 
-    public static implicit operator Rectangle(in RectangleF rect) {
+    public static implicit operator Rectangle(in Rect rect) {
         return new Rectangle(
             (int)MathF.Round(rect.X),
             (int)MathF.Round(rect.Y),
@@ -493,7 +493,7 @@ public struct RectangleF {
     }
 
     public override bool Equals(object obj) {
-        return obj is RectangleF r && this == r;
+        return obj is Rect r && this == r;
     }
 
     public override int GetHashCode() {

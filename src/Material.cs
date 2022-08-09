@@ -8,7 +8,7 @@ public class Material {
     /// The default material.
     /// </summary>
     /// <remarks>
-    /// It's recommended to set this in the game's initialization.
+    /// Renderables with a <see langword="null"/> material will use this.
     /// </remarks>
     public static Material Default = new Material();
 

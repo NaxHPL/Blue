@@ -14,7 +14,7 @@ public class Blue : Game {
 
     /// <summary>
     /// Invoked when the instance is getting initialized.
-    /// Use this event to load non-graphical resources needed by the game.
+    /// Use this event to load non-graphical resources needed by the game and the first scene.
     /// </summary>
     public event Action Initializing;
 

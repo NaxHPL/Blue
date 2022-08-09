@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace BlueFw;
 
-internal interface IRenderable {
+public interface IRenderable {
 
     /// <summary>
     /// Defines if this renderable will be rendered.
@@ -13,7 +13,7 @@ internal interface IRenderable {
     /// <summary>
     /// The world space bounds of this renderable.
     /// </summary>
-    RectangleF Bounds { get; }
+    Rect Bounds { get; }
 
     /// <summary>
     /// The render layer this renderable is drawn on.

@@ -2,7 +2,7 @@
 
 namespace BlueFw;
 
-internal interface IUpdatable {
+public interface IUpdatable {
 
     /// <summary>
     /// Defines whether this updatable should be updated.

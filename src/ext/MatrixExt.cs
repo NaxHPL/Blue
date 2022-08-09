@@ -1,5 +1,4 @@
-﻿using BlueFw;
-using Microsoft.Xna.Framework;
+﻿using Microsoft.Xna.Framework;
 
 namespace BlueFw;
 

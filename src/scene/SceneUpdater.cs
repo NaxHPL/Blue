@@ -52,6 +52,8 @@ internal class SceneUpdater {
 
     public void Update() {
         ApplyPendingChanges();
+        EnsureUpdatablesSorted();
+
         for (int i = 0; i < updatables.Length; i++) {
             if (updatables.Buffer[i].Active) {
                 updatables.Buffer[i].Update();
@@ -62,31 +64,29 @@ internal class SceneUpdater {
     void ApplyPendingChanges() {
         if (updatablesPendingAdd.Count > 0) {
             foreach (IUpdatable updatable in updatablesPendingAdd) {
-                Add(updatable);
+                updatables.Add(updatable);
+                updatablesSet.Add(updatable);
             }
+
+            updateOrderDirty = true;
         }
 
         if (updatablesPendingRemove.Count > 0) {
             foreach (IUpdatable updatable in updatablesPendingRemove) {
-                Remove(updatable);
+                updatables.Remove(updatable);
+                updatablesSet.Remove(updatable);
             }
-        }
 
-        if (updateOrderDirty) {
-            updatables.Sort(updatableComparer);
-            updateOrderDirty = false;
+            updateOrderDirty = true;
         }
     }
 
-    void Add(IUpdatable updatable) {
-        updatables.Add(updatable);
-        updatablesSet.Add(updatable);
-        updateOrderDirty = true;
-    }
+    void EnsureUpdatablesSorted() {
+        if (!updateOrderDirty) {
+            return;
+        }
 
-    void Remove(IUpdatable updatable) {
-        updatables.Remove(updatable);
-        updatablesSet.Remove(updatable);
-        updateOrderDirty = true;
+        updatables.Sort(updatableComparer);
+        updateOrderDirty = false;
     }
 }

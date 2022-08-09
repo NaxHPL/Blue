@@ -1,15 +1,14 @@
-﻿using BlueFw;
-using Microsoft.Xna.Framework;
+﻿using Microsoft.Xna.Framework;
 
 namespace BlueFw;
 
 public static class RectangleExt {
 
     /// <summary>
-    /// Gets a <see cref="RectangleF"/> representation for this rectangle.
+    /// Gets a <see cref="Rect"/> representation for this rectangle.
     /// </summary>
-    public static RectangleF ToRect(this Rectangle rectangle) {
-        RectangleF r;
+    public static Rect ToRect(this Rectangle rectangle) {
+        Rect r;
         r.X = rectangle.X;
         r.Y = rectangle.Y;
         r.Width = rectangle.Width;
