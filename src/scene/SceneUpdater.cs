@@ -68,6 +68,7 @@ internal class SceneUpdater {
                 updatablesSet.Add(updatable);
             }
 
+            updatablesPendingAdd.Clear();
             updateOrderDirty = true;
         }
 
@@ -77,7 +78,7 @@ internal class SceneUpdater {
                 updatablesSet.Remove(updatable);
             }
 
-            updateOrderDirty = true;
+            updatablesPendingRemove.Clear();
         }
     }
 

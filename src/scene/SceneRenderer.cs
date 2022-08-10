@@ -67,6 +67,7 @@ internal class SceneRenderer {
                 renderablesSet.Add(renderable);
             }
 
+            renderablesPendingAdd.Clear();
             renderableOrderDirty = true;
         }
 
@@ -75,6 +76,8 @@ internal class SceneRenderer {
                 renderables.Remove(renderable);
                 renderablesSet.Remove(renderable);
             }
+
+            renderablesPendingRemove.Clear();
         }
     }
 
