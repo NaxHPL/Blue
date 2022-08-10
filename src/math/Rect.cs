@@ -17,6 +17,12 @@ public struct Rect {
     static Rect zero = new Rect();
 
     /// <summary>
+    /// The largest possible <see cref="Rect"/>.
+    /// </summary>
+    public static Rect MaxRect => maxRect;
+    static Rect maxRect = new Rect(-float.MaxValue / 2f, -float.MaxValue / 2f, float.MaxValue, float.MaxValue);
+
+    /// <summary>
     /// Returns <see langword="true"/> if the provided rectangles overlap each other.
     /// </summary>
     public static bool Overlaps(in Rect rect1, in Rect rect2) {
