@@ -31,9 +31,34 @@ public static class Input {
         /// </summary>
         public static KeyboardState CurrentState { get; private set; }
 
+        /// <summary>
+        /// Returns true if any key is held down this frame.
+        /// </summary>
+        public static bool AnyKeyPressed { get; private set; }
+
+        /// <summary>
+        /// Returns true if any key was pressed this frame.
+        /// </summary>
+        public static bool AnyKeyDown { get; private set; }
+
+        /// <summary>
+        /// Returns true if any key was released this frame.
+        /// </summary>
+        public static bool AnyKeyUp { get; private set; }
+
+        static int previousPressedKeyCount;
+        static int currentPressedKeyCount;
+
         internal static void Update() {
             PreviousState = CurrentState;
+            previousPressedKeyCount = currentPressedKeyCount;
+
             CurrentState = Keyboard.GetState();
+            currentPressedKeyCount = CurrentState.GetPressedKeyCount();
+
+            AnyKeyPressed = currentPressedKeyCount > 0;
+            AnyKeyDown = previousPressedKeyCount < currentPressedKeyCount;
+            AnyKeyUp = previousPressedKeyCount > currentPressedKeyCount;
         }
 
         /// <summary>

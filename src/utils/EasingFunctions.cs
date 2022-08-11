@@ -9,14 +9,14 @@ public static class EasingFunctions {
 
     public static readonly Func<float, float> SineIn = x => 1f - MathF.Cos(x * MathHelper.PiOver2);
     public static readonly Func<float, float> SineOut = x => MathF.Sin(x * MathHelper.PiOver2);
-    public static readonly Func<float, float> SineInOut = x => -(MathF.Cos(x * MathHelper.Pi) - 1f) * 0.5f;
+    public static readonly Func<float, float> SineInOut = x => -(MathF.Cos(x * MathHelper.Pi) - 1f) / 2f;
 
     public static readonly Func<float, float> QuadIn = x => x * x;
     public static readonly Func<float, float> QuadOut = x => 1f - MathF.Pow(1f - x, 2f);
     public static readonly Func<float, float> QuadInOut = x => {
         return x < 0.5f ?
             2f * x * x :
-            1f - MathF.Pow(-2f * x + 2f, 2f) * 0.5f;
+            1f - MathF.Pow(-2f * x + 2f, 2f) / 2f;
     };
 
     public static readonly Func<float, float> CubicIn = x => x * x * x;
@@ -24,7 +24,7 @@ public static class EasingFunctions {
     public static readonly Func<float, float> CubicInOut = x => {
         return x < 0.5f ?
             4f * x * x * x :
-            1f - MathF.Pow(-2f * x + 2f, 3f) * 0.5f;
+            1f - MathF.Pow(-2f * x + 2f, 3f) / 2f;
     };
 
     public static readonly Func<float, float> QuartIn = x => x * x * x * x;
@@ -32,7 +32,7 @@ public static class EasingFunctions {
     public static readonly Func<float, float> QuartInOut = x => {
         return x < 0.5f ?
             8f * x * x * x * x :
-            1f - MathF.Pow(-2f * x + 2f, 4f) * 0.5f;
+            1f - MathF.Pow(-2f * x + 2f, 4f) / 2f;
     };
 
     public static readonly Func<float, float> QuintIn = x => x * x * x * x * x;
@@ -40,7 +40,7 @@ public static class EasingFunctions {
     public static readonly Func<float, float> QuintInOut = x => {
         return x < 0.5f ?
             16f * x * x * x * x * x :
-            1f - MathF.Pow(-2f * x + 2f, 5f) * 0.5f;
+            1f - MathF.Pow(-2f * x + 2f, 5f) / 2f;
     };
 
     public static readonly Func<float, float> ExpoIn = x => x == 0f ? 0f : MathF.Pow(2f, 10f * x - 10f);
@@ -51,16 +51,16 @@ public static class EasingFunctions {
         }
 
         return x < 0.5f ?
-            MathF.Pow(2f, 20f * x - 10f) * 0.5f :
-            (2f - MathF.Pow(2f, -20f * x + 10f)) * 0.5f;
+            MathF.Pow(2f, 20f * x - 10f) / 2f :
+            (2f - MathF.Pow(2f, -20f * x + 10f)) / 2f;
     };
 
     public static readonly Func<float, float> CircIn = x => 1f - MathF.Sqrt(1f - x * x);
     public static readonly Func<float, float> CircOut = x => MathF.Sqrt(1f - MathF.Pow(x - 1f, 2f));
     public static readonly Func<float, float> CircInOut = x => {
         return x < 0.5f ?
-            (1f - MathF.Sqrt(1f - 4f * x * x)) * 0.5f :
-            (MathF.Sqrt(1f - MathF.Pow(-2f * x + 2f, 2f)) + 1f) * 0.5f;
+            (1f - MathF.Sqrt(1f - 4f * x * x)) / 2f :
+            (MathF.Sqrt(1f - MathF.Pow(-2f * x + 2f, 2f)) + 1f) / 2f;
     };
 
     public static readonly Func<float, float> BackIn = x => BackInExt(x, 1.7016f);
@@ -108,7 +108,7 @@ public static class EasingFunctions {
     };
     public static readonly Func<float, float> BounceInOut = x => {
         return x < 0.5f ?
-            (1f - BounceOut(1f - 2f * x)) * 0.5f :
-            (1f + BounceOut(2f * x - 1f)) * 0.5f;
+            (1f - BounceOut(1f - 2f * x)) / 2f :
+            (1f + BounceOut(2f * x - 1f)) / 2f;
     };
 }

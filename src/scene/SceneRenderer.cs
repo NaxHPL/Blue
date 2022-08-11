@@ -89,22 +89,30 @@ internal class SceneRenderer {
 
         bool seenByCamera;
         bool startedFirstBatch = false;
-        Material currentMaterial = Material.Default;
+        Material currentMaterial = null;
 
         for (int i = 0; i < renderables.Length; i++) {
-            Rect.Overlaps(renderables.Buffer[i].Bounds, camera.Bounds, out seenByCamera);
-            if (renderables.Buffer[i].Active && seenByCamera) {
-                if (startedFirstBatch) {
-                    EnsureStateForRenderable(renderables.Buffer[i], currentMaterial, spriteBatch, camera);
-                }
-                else {
-                    currentMaterial = renderables.Buffer[i].Material ?? Material.Default;
-                    spriteBatch.Begin(currentMaterial, camera.TransformMatrix);
-                    startedFirstBatch = true;
-                }
-
-                renderables.Buffer[i].Render(spriteBatch);
+            // Don't render if inactive
+            if (!renderables.Buffer[i].Active) {
+                continue;
             }
+
+            // Don't render if the camera can't see it
+            Rect.Overlaps(renderables.Buffer[i].Bounds, camera.Bounds, out seenByCamera);
+            if (!seenByCamera) {
+                continue;
+            }
+
+            if (startedFirstBatch) {
+                EnsureStateForRenderable(renderables.Buffer[i], currentMaterial, spriteBatch, camera);
+            }
+            else {
+                currentMaterial = renderables.Buffer[i].Material ?? Material.Default;
+                spriteBatch.Begin(currentMaterial, camera.TransformMatrix);
+                startedFirstBatch = true;
+            }
+
+            renderables.Buffer[i].Render(spriteBatch, camera);
         }
 
         if (startedFirstBatch) {

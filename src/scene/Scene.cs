@@ -2,6 +2,7 @@
 using Microsoft.Xna.Framework.Graphics;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 
 namespace BlueFw;
 
@@ -43,6 +44,19 @@ public class Scene {
     #region Entities/Components
 
     /// <summary>
+    /// Adds a scene component of type <typeparamref name="T"/>.
+    /// </summary>
+    /// <remarks>
+    /// Scene components are ideal for components that will last the entire lifetime of the scene and don't require a <see cref="Transform"/>. <br/>
+    /// They must not be renderable (attach renderables to entities).
+    /// </remarks>
+    public T AddSceneComponent<T>() where T : Component, new() {
+        T component = new T();
+        AddSceneComponent(component);
+        return component;
+    }
+
+    /// <summary>
     /// Adds a scene component.
     /// </summary>
     /// <remarks>
@@ -70,6 +84,15 @@ public class Scene {
         }
 
         RegisterComponent(component);
+    }
+
+    /// <summary>
+    /// Removes the first scene component of type <typeparamref name="T"/>.
+    /// </summary>
+    public void RemoveSceneComponent<T>() where T : Component {
+        if (TryGetSceneComponent(out T component)) {
+            RemoveSceneComponent(component);
+        }
     }
 
     /// <summary>
@@ -165,6 +188,14 @@ public class Scene {
     /// </summary>
     public T GetSceneComponent<T>() where T : Component {
         return SceneComponents.Find<T>();
+    }
+
+    /// <summary>
+    /// Tries to get the first scene component of type <typeparamref name="T"/>. If successful, the component is stored in <paramref name="component"/>.
+    /// </summary>
+    public bool TryGetSceneComponent<T>(out T component) where T : Component {
+        component = SceneComponents.Find<T>();
+        return component != null;
     }
 
     /// <summary>

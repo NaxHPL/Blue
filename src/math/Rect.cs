@@ -109,6 +109,22 @@ public struct Rect {
     }
 
     /// <summary>
+    /// Returns a point inside a <see cref="Rect"/> given normalized coordinates. The point is clamped within the bounds of <paramref name="rect"/>.
+    /// </summary>
+    public static Vector2 NormalizedToPointClamped(in Rect rect, in Vector2 normalizedCoords) {
+        NormalizedToPointClamped(rect, normalizedCoords, out Vector2 result);
+        return result;
+    }
+
+    /// <summary>
+    /// Gets a point inside a <see cref="Rect"/> given normalized coordinates and stores it in <paramref name="result"/>. The point is clamped within the bounds of <paramref name="rect"/>.
+    /// </summary>
+    public static void NormalizedToPointClamped(in Rect rect, in Vector2 normalizedCoords, out Vector2 result) {
+        result.X = rect.X + MathHelper.Clamp(rect.Width * normalizedCoords.X, rect.MinX, rect.MaxX);
+        result.Y = rect.Y + MathHelper.Clamp(rect.Height * normalizedCoords.Y, rect.MinY, rect.MaxY);
+    }
+
+    /// <summary>
     /// Returns the normalized coordinates corresponding the <paramref name="point"/>.
     /// </summary>
     public static Vector2 PointToNormalized(in Rect rect, in Vector2 point) {
@@ -161,7 +177,7 @@ public struct Rect {
     /// <summary>
     /// A point located at the center of the rectangle.
     /// </summary>
-    public Vector2 Center => new Vector2(X + Width * 0.5f, Y + Height * 0.5f);
+    public Vector2 Center => new Vector2(X + Width / 2f, Y + Height / 2f);
 
     /// <summary>
     /// The X and Y position of the rectangle.
@@ -203,7 +219,7 @@ public struct Rect {
     /// <remarks>Setting this value will change the width to preserve <see cref="MinX"/>.</remarks>
     public float MaxX {
         get => X + Width;
-        set => Width += value - X + Width;
+        set => Width = value - X;
     }
 
     /// <summary>
@@ -224,7 +240,7 @@ public struct Rect {
     /// <remarks>Setting this value will change the height to preserve <see cref="MinY"/>.</remarks>
     public float MaxY {
         get => Y + Height;
-        set => Height += value - X + Height;
+        set => Height = value - Y;
     }
 
     /// <summary>

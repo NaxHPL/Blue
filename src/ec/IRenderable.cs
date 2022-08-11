@@ -42,7 +42,7 @@ public interface IRenderable {
     /// <summary>
     /// Renders this renderable using the specified sprite batch.
     /// </summary>
-    void Render(SpriteBatch spriteBatch);
+    void Render(SpriteBatch spriteBatch, Camera camera);
 }
 
 internal class RenderableOrderComparer : IComparer<IRenderable> {

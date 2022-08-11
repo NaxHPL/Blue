@@ -282,7 +282,7 @@ public class Entity : BlueObject, IDestroyable {
     }
 
     /// <summary>
-    /// Removes the first occurrence of component class <typeparamref name="T"/> from this entity.
+    /// Removes the first occurrence of component type <typeparamref name="T"/> from this entity.
     /// </summary>
     public void RemoveComponent<T>() where T : Component {
         if (TryGetComponent(out T component)) {

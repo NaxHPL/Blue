@@ -176,11 +176,11 @@ public class FastList<T> {
 
         Length--;
 
-        if (index < Length) {
-            Array.Copy(Buffer, index + 1, Buffer, index, Length - index);
-        }
+        Array.Copy(Buffer, index + 1, Buffer, index, Length - index);
 
-        Buffer[Length] = default;
+        if (isReferenceType) {
+            Buffer[Length] = default;
+        }
     }
 
     /// <summary>
