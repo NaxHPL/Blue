@@ -81,6 +81,7 @@ public class Blue : Game {
         }
 
         ActiveScene?.Update();
+        BlueObject.Update();
     }
 
     protected override void Draw(GameTime gameTime) {
@@ -91,9 +92,7 @@ public class Blue : Game {
     /// Loads a scene. The scene will load at the start of the next frame.
     /// </summary>
     public void LoadScene(Scene scene) {
-        if (scene == null) {
-            throw new ArgumentNullException(nameof(scene));
-        }
+        ArgumentNullException.ThrowIfNull(scene, nameof(scene));
 
         if (scene == ActiveScene) {
             throw new ArgumentException("The scene you're trying to load is already active!", nameof(scene));
@@ -103,13 +102,23 @@ public class Blue : Game {
     }
 
     void LoadSceneImmediate(Scene scene) {
-        if (ActiveScene != null) {
-            ActiveScene.Unload();
-            ActiveScene = null;
-            GC.Collect();
+        UnloadActiveScene();
+        ActiveScene = scene; // Must get set as active scene before scene.Load()!
+        scene.Load();
+    }
+
+    void UnloadActiveScene() {
+        if (ActiveScene == null) {
+            return;
         }
 
-        scene.Load();
-        ActiveScene = scene;
+        ActiveScene.Unload();
+        ActiveScene = null;
+        GC.Collect();
+    }
+
+    protected override void OnExiting(object sender, EventArgs args) {
+        UnloadActiveScene();
+        base.OnExiting(sender, args);
     }
 }

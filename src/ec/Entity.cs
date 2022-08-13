@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace BlueFw;
 
@@ -6,27 +7,22 @@ public class Entity : BlueObject {
 
     /// <summary>
     /// Gets whether this entity is active in the scene hierarchy.
-    /// This is true if it's enabled and its parent is active.
+    /// This is true if it's attached to an active scene, enabled, and its parent is active.
     /// </summary>
-    public bool Active {
-        get {
-            if (activeInHierachyDirty) {
-                activeInHierachy = enabled && (!HasParent || Parent.Active);
-                activeInHierachyDirty = false;
-            }
-            return activeInHierachy;
-        }
-    }
+    public bool Active { get; private set; }
 
     /// <summary>
     /// The scene this entity is attached to.
     /// </summary>
-    public Scene Scene { get; internal set; }
+    public Scene Scene {
+        get => scene;
+        internal set => SetScene(value);
+    }
 
     /// <summary>
     /// Returns <see langword="true"/> if this entity is attached to a scene.
     /// </summary>
-    public bool AttachedToScene => Scene != null;
+    public bool AttachedToScene => scene != null;
 
     /// <summary>
     /// Gets or sets whether this entity is enabled.
@@ -51,9 +47,9 @@ public class Entity : BlueObject {
     /// </summary>
     internal readonly ComponentCollection Components;
 
+    Scene scene;
+    bool isAwake = false;
     bool enabled = true;
-    bool activeInHierachy;
-    bool activeInHierachyDirty = true;
 
     /// <summary>
     /// Creates a new <see cref="Entity"/> with the specified name.
@@ -69,6 +65,29 @@ public class Entity : BlueObject {
     /// </summary>
     public Entity() : this(null) { }
 
+    internal bool TryInvokeAwake() {
+        if (isAwake || !Active) {
+            return false;
+        }
+
+        isAwake = true;
+
+        for (int i = 0; i < Components.Count; i++) {
+            Components[i].TryInvokeAwake();
+        }
+
+        return true;
+    }
+
+    internal void SetScene(Scene scene) {
+        if (this.scene == scene) {
+            return;
+        }
+
+        this.scene = scene;
+        UpdateActive();
+    }
+
     /// <summary>
     /// Sets this entity's parent.
     /// </summary>
@@ -79,32 +98,39 @@ public class Entity : BlueObject {
 
         if (entity == null) {
             Transform.SetParent(null);
-            FlagActiveInHierarchyDirty();
-
-            if (enabled) {
-                TryInvokeOnEnableOnAllChildComponents();
-            }
-
+            UpdateActive();
             return;
         }
 
-        bool activeInHierarchyBefore = Active;
         Transform.SetParent(entity.Transform);
-        FlagActiveInHierarchyDirty();
-
-        if (!activeInHierarchyBefore && Active) {
-            TryInvokeOnEnableOnAllChildComponents();
-        }
-        else if (activeInHierarchyBefore && !Active) {
-            TryInvokeOnDisableOnAllChildComponents();
-        }
+        UpdateActive();
     }
 
     /// <summary>
-    /// Detaches this entity from its parent.
+    /// Adds a child entity to this entity.
     /// </summary>
-    public void DetachFromParent() {
-        SetParent(null);
+    public Entity AddChild(string name = null) {
+        return AddChild<Entity>(name);
+    }
+
+    /// <summary>
+    /// Adds a child entity of type <typeparamref name="T"/> to this entity.
+    /// </summary>
+    public T AddChild<T>(string name = null) where T : Entity, new() {
+        T entity;
+
+        if (AttachedToScene) {
+            entity = scene.AddEntity<T>(name);
+        }
+        else {
+            entity = new T();
+            if (string.IsNullOrEmpty(name)) {
+                entity.Name = name;
+            }
+        }
+
+        entity.Parent = this;
+        return entity;
     }
 
     /// <summary>
@@ -115,57 +141,33 @@ public class Entity : BlueObject {
             return;
         }
 
-        bool activeInHierarchyBefore = Active;
         this.enabled = enabled;
-        FlagActiveInHierarchyDirty();
-
-        if (!activeInHierarchyBefore && Active) {
-            TryInvokeOnEnableOnAllChildComponents();
-        }
-        else if (activeInHierarchyBefore && !Active) {
-            TryInvokeOnDisableOnAllChildComponents();
-        }
+        UpdateActive();
     }
 
-    void TryInvokeOnEnableOnAllChildComponents() {
+    internal void UpdateActive() {
+        bool wasActiveBefore = Active;
+        Active = enabled && AttachedToScene && Scene.IsActive && (!HasParent || Parent.Active);
+
+        // Return early if active state didn't change
+        if (wasActiveBefore == Active) {
+            return;
+        }
+
+        TryInvokeAwake();
+
+        // Invoke OnEnable or OnDisable for all components
         for (int i = 0; i < Components.Count; i++) {
-            if (Components[i].Enabled) {
-                Components[i].TryInvokeOnEnable();
+            if (Components[i].Active) {
+                Components[i].TryInvokeOnActive();
+            }
+            else {
+                Components[i].TryInvokeOnInactive();
             }
         }
 
         for (int i = ChildCount - 1; i >= 0; i--) {
-            Entity child = GetChildAt(i);
-            if (child.enabled) {
-                child.TryInvokeOnEnableOnAllChildComponents();
-            }
-        }
-    }
-
-    void TryInvokeOnDisableOnAllChildComponents() {
-        for (int i = 0; i < Components.Count; i++) {
-            if (Components[i].Enabled) {
-                Components[i].TryInvokeOnDisable();
-            }
-        }
-
-        for (int i = ChildCount - 1; i >= 0; i--) {
-            Entity child = GetChildAt(i);
-            if (child.enabled) {
-                child.TryInvokeOnDisableOnAllChildComponents();
-            }
-        }
-    }
-
-    void FlagActiveInHierarchyDirty() {
-        activeInHierachyDirty = true;
-
-        for (int i = 0; i < Components.Count; i++) {
-            Components[i].FlagActiveInHierarchyDirty();
-        }
-
-        for (int i = ChildCount - 1; i >= 0; i--) {
-            GetChildAt(i).FlagActiveInHierarchyDirty();
+            GetChildAt(i).UpdateActive();
         }
     }
 
@@ -214,60 +216,42 @@ public class Entity : BlueObject {
     #region Components
 
     /// <summary>
-    /// Adds the specified component to this entity.
-    /// </summary>
-    /// <returns>
-    /// <see langword="true"/> if <paramref name="component"/> wasn't already attached to this entity and added successfully; otherwise <see langword="false"/>.
-    /// </returns>
-    public bool AddComponent(Component component) {
-        if (!Components.Add(component)) {
-            return false;
-        }
-
-        component.DetachFromOwner();
-        component.Entity = this;
-        component.FlagActiveInHierarchyDirty();
-        component.OnAddedToEntity(this);
-
-        if (component.Active) {
-            component.TryInvokeOnEnable();
-        }
-        else {
-            component.TryInvokeOnDisable();
-        }
-
-        if (AttachedToScene) {
-            Scene.RegisterComponent(component);
-        }
-
-        return true;
-    }
-
-    /// <summary>
     /// Adds a component class of type <typeparamref name="T"/> to this entity.
     /// </summary>
     /// <returns>The component that was added.</returns>
     public T AddComponent<T>() where T : Component, new() {
         T component = new T();
-        AddComponent(component);
+        AddComponentInternal(component);
         return component;
     }
 
-    /// <summary>
-    /// Removes the specified component from this entity.
-    /// </summary>
-    /// <returns>
-    /// <see langword="true"/> if <paramref name="component"/> was found and removed from this entity; otherwise <see langword="false"/>.
-    /// </returns>
-    public bool RemoveComponent(Component component) {
+    void AddComponentInternal(Component component) {
+        if (!Components.Add(component)) {
+            return;
+        }
+
+        component.Entity = this;
+
+        if (isAwake && Active) {
+            component.TryInvokeAwake();
+        }
+
+        if (component.Active) {
+            component.TryInvokeOnActive();
+        }
+
+        if (AttachedToScene) {
+            Scene.RegisterComponent(component);
+        }
+    }
+
+    internal bool RemoveComponent(Component component) {
         if (!Components.Remove(component)) {
             return false;
         }
 
         component.Entity = null;
-        component.FlagActiveInHierarchyDirty();
-        component.OnRemovedFromEntity(this);
-        component.TryInvokeOnDisable();
+        component.TryInvokeOnInactive();
 
         if (AttachedToScene) {
             Scene.UnregisterComponent(component);
@@ -277,28 +261,10 @@ public class Entity : BlueObject {
     }
 
     /// <summary>
-    /// Removes the first occurrence of component type <typeparamref name="T"/> from this entity.
-    /// </summary>
-    public void RemoveComponent<T>() where T : Component {
-        if (TryGetComponent(out T component)) {
-            RemoveComponent(component);
-        }
-    }
-
-    /// <summary>
-    /// Removes all components attached to this entity.
-    /// </summary>
-    public void RemoveAllComponents() {
-        for (int i = Components.Count - 1; i >= 0; i--) {
-            RemoveComponent(Components[i]);
-        }
-    }
-
-    /// <summary>
     /// Returns <see langword="true"/> if this entity has a component of type <typeparamref name="T"/>.
     /// </summary>
     public bool HasComponent<T>() where T : Component {
-        return Components.Find<T>() != null;
+        return TryGetComponent<T>(out _);
     }
 
     /// <summary>
@@ -401,30 +367,19 @@ public class Entity : BlueObject {
 
     #endregion
 
-    #region Lifecycle Methods
-
-    /// <summary>
-    /// Called when this entity gets destroyed.
-    /// </summary>
-    public virtual void OnDestroy() { }
-
-    #endregion
-
     /// <summary>
     /// Destroys this entity, all of its components, and all of of its children entities.
     /// </summary>
-    public override void Destroy() {
-        for (int i = Components.Count - 1; i >= 0; i--) {
-            Components[i].Destroy();
-        }
-
-        Scene.RemoveEntity(this);
-        Transform.DetachFromParent();
-
-        OnDestroy();
-
+    protected override void Destroy() {
         for (int i = ChildCount - 1; i >= 0; i++) {
             GetChildAt(i).Destroy();
         }
+
+        for (int i = Components.Count - 1; i >= 0; i--) {
+            DestroyImmediate(Components[i]);
+        }
+
+        Transform.DetachFromParent();
+        Scene?.RemoveEntity(this);
     }
 }

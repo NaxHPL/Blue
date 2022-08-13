@@ -39,7 +39,7 @@ public class Transform {
     /// </summary>
     public Transform Parent {
         get => parent;
-        set => SetParent(value);
+        internal set => SetParent(value);
     }
 
     /// <summary>
@@ -535,7 +535,7 @@ public class Transform {
     /// Sets the parent of this <see cref="Transform"/>.
     /// </summary>
     /// <param name="transform">The new parent transform.</param>
-    public void SetParent(Transform transform) {
+    internal void SetParent(Transform transform) {
         if (parent == transform) {
             return;
         }
@@ -557,14 +557,14 @@ public class Transform {
     /// <summary>
     /// Removes this <see cref="Transform"/> from its parent.
     /// </summary>
-    public void DetachFromParent() {
+    internal void DetachFromParent() {
         SetParent(null);
     }
 
     /// <summary>
     /// Detaches all children transforms from this one.
     /// </summary>
-    public void DetachChildren() {
+    internal void DetachChildren() {
         for (int i = children.Length - 1; i >= 0; i--) {
             children.Buffer[i].DetachFromParent();
         }

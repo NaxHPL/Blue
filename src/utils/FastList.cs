@@ -58,9 +58,7 @@ public class FastList<T> {
     /// </summary>
     /// <param name="enumerable"></param>
     public FastList(IEnumerable<T> enumerable) {
-        if (enumerable == null) {
-            throw new ArgumentNullException(nameof(enumerable));
-        }
+        ArgumentNullException.ThrowIfNull(enumerable, nameof(enumerable));
 
         if (enumerable is ICollection<T> c) {
             int count = c.Count;
@@ -99,9 +97,7 @@ public class FastList<T> {
     /// Adds all items from <paramref name="enumerable"/>.
     /// </summary>
     public void AddRange(IEnumerable<T> enumerable) {
-        if (enumerable == null) {
-            throw new ArgumentNullException(nameof(enumerable));
-        }
+        ArgumentNullException.ThrowIfNull(enumerable, nameof(enumerable));
 
         if (enumerable == this || enumerable == Buffer) {
             int LengthX2 = Length * 2;

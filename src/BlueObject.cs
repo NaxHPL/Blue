@@ -1,9 +1,57 @@
-﻿namespace BlueFw;
+﻿using System.Collections.Generic;
+
+namespace BlueFw;
 
 /// <summary>
 /// Base class for all Blue objects.
 /// </summary>
 public abstract class BlueObject {
+
+    #region Statics
+
+    static uint nextInstanceId = 0;
+
+    static FastList<BlueObject> objectsToDestroy = new FastList<BlueObject>();
+    static HashSet<uint> objectsToDestroyInstanceIds = new HashSet<uint>();
+
+    /// <summary>
+    /// Destroys an entity or component.
+    /// Actual object destruction is delayed until after the current Update loop, but before rendering.
+    /// </summary>
+    public static void Destroy(BlueObject obj) {
+        if (obj == null || obj.isDestroyed) {
+            return;
+        }
+
+        if (objectsToDestroyInstanceIds.Add(obj.InstanceID)) {
+            objectsToDestroy.Add(obj);
+        }
+    }
+
+    /// <summary>
+    /// Destroys an entity or component immediately.
+    /// It is recommended to use <see cref="Destroy(BlueObject)"/> instead.
+    /// </summary>
+    public static void DestroyImmediate(BlueObject obj) {
+        if (obj == null || obj.isDestroyed) {
+            return;
+        }
+
+        obj.Destroy();
+        obj.isDestroyed = true;
+    }
+
+    internal static void Update() {
+        if (objectsToDestroy.Length > 0) {
+            for (int i = 0; i < objectsToDestroy.Length; i++) {
+                DestroyImmediate(objectsToDestroy.Buffer[i]);
+            }
+            objectsToDestroy.Clear();
+            objectsToDestroyInstanceIds.Clear();
+        }
+    }
+
+    #endregion
 
     /// <summary>
     /// A unique identifier for this object.
@@ -11,22 +59,29 @@ public abstract class BlueObject {
     /// <remarks>This ID is <b>not</b> guaranteed to be the same between sessions.</remarks>
     public uint InstanceID { get; private set; }
 
-    static uint nextUniqueId = 0;
+    bool isDestroyed = false;
 
     internal BlueObject() {
-        InstanceID = nextUniqueId++;
+        InstanceID = nextInstanceId++;
     }
 
-    public abstract void Destroy();
+    protected abstract void Destroy();
+
+    public override int GetHashCode() {
+        return InstanceID.GetHashCode();
+    }
+
+    #region Equality
 
     public static bool operator ==(BlueObject obj1, BlueObject obj2) {
-        bool obj1Null = ReferenceEquals(obj1, null);
-        bool obj2Null = ReferenceEquals(obj2, null);
+        bool obj1Null = obj1 is null || obj1.isDestroyed;
+        bool obj2Null = obj2 is null || obj2.isDestroyed;
 
         if (obj1Null && obj2Null) {
             return true;
         }
-        else if ((obj1Null && !obj2Null) || (obj2Null && !obj1Null)) {
+        else if ((obj1Null && !obj2Null) ||
+                 (obj2Null && !obj1Null)) {
             return false;
         }
 
@@ -45,7 +100,5 @@ public abstract class BlueObject {
         return obj is BlueObject blObj && this == blObj;
     }
 
-    public override int GetHashCode() {
-        return InstanceID.GetHashCode();
-    }
+    #endregion
 }

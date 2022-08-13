@@ -2,11 +2,15 @@
 using Microsoft.Xna.Framework.Graphics;
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 
 namespace BlueFw;
 
 public class Scene {
+
+    /// <summary>
+    /// Gets whether this scene is the active scene.
+    /// </summary>
+    public bool IsActive => this == Blue.Instance.ActiveScene;
 
     /// <summary>
     /// The <see cref="ContentManager"/> of this scene. Use this for scene specific content.
@@ -36,84 +40,33 @@ public class Scene {
     /// Creates a new <see cref="Scene"/>.
     /// </summary>
     public Scene() {
-        Entity cameraEntity = new Entity("Main Camera");
-        Camera = cameraEntity.AddComponent<Camera>();
-        AddEntity(cameraEntity);
+        Camera = AddEntity("Main Camera").AddComponent<Camera>();
     }
 
-    #region Entities/Components
+    #region Entities
 
     /// <summary>
-    /// Adds a scene component of type <typeparamref name="T"/>.
+    /// Instantiates an <see cref="Entity"/> and adds it to this scene.
     /// </summary>
-    /// <remarks>
-    /// Scene components are ideal for components that will last the entire lifetime of the scene and don't require a <see cref="Transform"/>. <br/>
-    /// They must not be renderable (attach renderables to entities).
-    /// </remarks>
-    public T AddSceneComponent<T>() where T : Component, new() {
-        T component = new T();
-        AddSceneComponent(component);
-        return component;
+    public Entity AddEntity(string name = null) {
+        return AddEntity<Entity>(name);
     }
 
     /// <summary>
-    /// Adds a scene component.
+    /// Instantiates an entity of type <typeparamref name="T"/> and adds it to this scene.
     /// </summary>
-    /// <remarks>
-    /// Scene components are ideal for components that will last the entire lifetime of the scene and don't require a <see cref="Transform"/>. <br/>
-    /// They must not be renderable (attach renderables to entities).
-    /// </remarks>
-    public void AddSceneComponent(Component component) {
-        if (!SceneComponents.Add(component)) {
-            return;
+    public T AddEntity<T>(string name = null) where T : Entity, new() {
+        T entity = new T();
+
+        if (!string.IsNullOrEmpty(name)) {
+            entity.Name = name;
         }
 
-        if (component is IRenderable) {
-            throw new ArgumentException("Scene components must not be an IRenderable! Attach renderables to entities.", nameof(component));
-        }
-
-        component.DetachFromOwner();
-        component.Scene = this;
-        component.FlagActiveInHierarchyDirty();
-
-        if (component.Active) {
-            component.TryInvokeOnEnable();
-        }
-        else {
-            component.TryInvokeOnDisable();
-        }
-
-        RegisterComponent(component);
+        AddEntityInternal(entity);
+        return entity;
     }
 
-    /// <summary>
-    /// Removes the first scene component of type <typeparamref name="T"/>.
-    /// </summary>
-    public void RemoveSceneComponent<T>() where T : Component {
-        if (TryGetSceneComponent(out T component)) {
-            RemoveSceneComponent(component);
-        }
-    }
-
-    /// <summary>
-    /// Removes the specified component as a scene component.
-    /// </summary>
-    public void RemoveSceneComponent(Component component) {
-        if (!SceneComponents.Remove(component)) {
-            return;
-        }
-
-        component.Scene = null;
-        component.FlagActiveInHierarchyDirty();
-        component.TryInvokeOnDisable();
-
-        UnregisterComponent(component);
-    }
-
-    /// <summary>
-    /// Adds an <see cref="Entity"/> and all of its children entities to this scene.
-    /// </summary>
-    public void AddEntity(Entity entity) {
+    void AddEntityInternal(Entity entity) {
         if (!Entities.Add(entity)) {
             return;
         }
@@ -122,17 +75,16 @@ public class Scene {
         RegisterComponents(entity.Components);
 
         for (int i = 0; i < entity.ChildCount; i++) {
-            AddEntity(entity.GetChildAt(i));
+            AddEntityInternal(entity.GetChildAt(i));
         }
     }
 
     /// <summary>
     /// Removes an <see cref="Entity"/> and all of its children entities from the scene.
     /// </summary>
-    /// <returns><see langword="true"/> if <paramref name="entity"/> was found and removed; otherwise <see langword="false"/>.</returns>
-    public bool RemoveEntity(Entity entity) {
+    internal void RemoveEntity(Entity entity) {
         if (!Entities.Remove(entity)) {
-            return false;
+            return;
         }
 
         entity.Scene = null;
@@ -141,8 +93,6 @@ public class Scene {
         for (int i = 0; i < entity.ChildCount; i++) {
             RemoveEntity(entity.GetChildAt(i));
         }
-
-        return true;
     }
 
     /// <summary>
@@ -180,6 +130,51 @@ public class Scene {
     /// <param name="onlyActive">(Optional) Only consider entities which are active in the hierarchy.</param>
     public T[] FindEntities<T>(bool onlyActive = false) where T : Entity {
         return Entities.FindAll<T>(onlyActive);
+    }
+
+    #endregion
+
+    #region Components
+
+    /// <summary>
+    /// Adds a scene component of type <typeparamref name="T"/>.
+    /// </summary>
+    /// <remarks>
+    /// Scene components are ideal for components that will last the entire lifetime of the scene and don't require a <see cref="Transform"/>. <br/>
+    /// They must not be renderable (attach renderables to entities).
+    /// </remarks>
+    public T AddSceneComponent<T>() where T : Component, new() {
+        T component = new T();
+        AddSceneComponentInternal(component);
+        return component;
+    }
+
+    void AddSceneComponentInternal(Component component) {
+        if (component is IRenderable) {
+            throw new ArgumentException("Scene components must not be an IRenderable! Attach renderables to entities.", nameof(component));
+        }
+
+        if (!SceneComponents.Add(component)) {
+            return;
+        }
+
+        component.Scene = this;
+
+        component.TryInvokeAwake();
+        component.TryInvokeOnActive();
+
+        RegisterComponent(component);
+    }
+
+    internal void RemoveSceneComponent(Component component) {
+        if (!SceneComponents.Remove(component)) {
+            return;
+        }
+
+        component.Scene = null;
+        component.TryInvokeOnInactive();
+
+        UnregisterComponent(component);
     }
 
     /// <summary>
@@ -284,28 +279,41 @@ public class Scene {
 
     #endregion
 
-    #region Lifecycle Methods
-
     internal void Load() {
         Content = new ContentManager(Blue.Instance.Services, Blue.Instance.Content.RootDirectory);
+
+        for (int i = 0; i < SceneComponents.Count; i++) {
+            SceneComponents[i].TryInvokeAwake();
+            SceneComponents[i].TryInvokeOnActive();
+        }
+        for (int i = 0; i < Entities.Count; i++) {
+            Entities[i].TryInvokeAwake();
+            Entities[i].UpdateActive();
+        }
+
         OnLoad();
     }
 
-    /// <summary>
-    /// Called when this scene is loaded and becomes the active scene.
-    /// Use this to load scene content.
-    /// </summary>
-    protected virtual void OnLoad() { }
-
     public void Unload() {
-        for (int i = 0; i < Entities.Count; i++) {
-            Entities[i].Destroy();
+        for (int i = SceneComponents.Count - 1; i >= 0; i--) {
+            BlueObject.DestroyImmediate(SceneComponents[i]);
+        }
+        for (int i = Entities.Count - 1; i >= 0; i--) {
+            BlueObject.DestroyImmediate(Entities[i]);
         }
 
         Content?.Dispose();
 
         OnUnload();
     }
+
+    #region Lifecycle Methods
+
+    /// <summary>
+    /// Called when this scene is loaded and becomes the active scene.
+    /// Use this to load scene content.
+    /// </summary>
+    protected virtual void OnLoad() { }
 
     /// <summary>
     /// Called when this scene is unloaded and is no longer the active scene.
