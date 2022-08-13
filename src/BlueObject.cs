@@ -3,7 +3,7 @@
 /// <summary>
 /// Base class for all Blue objects.
 /// </summary>
-public class BlueObject {
+public abstract class BlueObject {
 
     /// <summary>
     /// A unique identifier for this object.
@@ -13,9 +13,11 @@ public class BlueObject {
 
     static uint nextUniqueId = 0;
 
-    public BlueObject() {
+    internal BlueObject() {
         InstanceID = nextUniqueId++;
     }
+
+    public abstract void Destroy();
 
     public static bool operator ==(BlueObject obj1, BlueObject obj2) {
         bool obj1Null = ReferenceEquals(obj1, null);

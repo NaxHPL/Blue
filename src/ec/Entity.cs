@@ -2,7 +2,7 @@
 
 namespace BlueFw;
 
-public class Entity : BlueObject, IDestroyable {
+public class Entity : BlueObject {
 
     /// <summary>
     /// Gets whether this entity is active in the scene hierarchy.
@@ -40,11 +40,6 @@ public class Entity : BlueObject, IDestroyable {
     /// The name of this entity.
     /// </summary>
     public string Name;
-
-    /// <summary>
-    /// Defines whether this entity has been destroyed.
-    /// </summary>
-    public bool IsDestroyed { get; private set; }
 
     /// <summary>
     /// The transform attached to this entity.
@@ -418,13 +413,7 @@ public class Entity : BlueObject, IDestroyable {
     /// <summary>
     /// Destroys this entity, all of its components, and all of of its children entities.
     /// </summary>
-    public void Destroy() {
-        if (IsDestroyed) {
-            return;
-        }
-
-        IsDestroyed = true;
-
+    public override void Destroy() {
         for (int i = Components.Count - 1; i >= 0; i--) {
             Components[i].Destroy();
         }

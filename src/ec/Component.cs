@@ -3,7 +3,7 @@
 /// <summary>
 /// Base component class.
 /// </summary>
-public abstract class Component : BlueObject, IDestroyable {
+public abstract class Component : BlueObject {
 
     enum LifecycleEnabledMethod {
         OnEnable,
@@ -51,11 +51,6 @@ public abstract class Component : BlueObject, IDestroyable {
     public Transform Transform => Entity?.Transform;
 
     /// <summary>
-    /// Defines whether this component has been destroyed.
-    /// </summary>
-    public bool IsDestroyed { get; private set; }
-
-    /// <summary>
     /// Defines whether this component has been initialized (had its Initialize method called).
     /// </summary>
     public bool IsInitialized { get; private set; }
@@ -87,7 +82,7 @@ public abstract class Component : BlueObject, IDestroyable {
         this.enabled = enabled;
         FlagActiveInHierarchyDirty();
 
-        if (enabled) {
+        if (Active) {
             TryInvokeOnEnable();
         }
         else {
@@ -104,15 +99,14 @@ public abstract class Component : BlueObject, IDestroyable {
     /// </summary>
     /// <returns><see langword="true"/> if OnEnable was successfully invoked; <see langword="false"/> otherwise.</returns>
     internal bool TryInvokeOnEnable() {
-        TryInvokeInitialize(); // Initialize should be called the first time this component gets enabled.
-
-        if (nextEnabledMethodToInvoke == LifecycleEnabledMethod.OnEnable) {
-            nextEnabledMethodToInvoke = LifecycleEnabledMethod.OnDisable;
-            OnEnable();
-            return true;
+        if (nextEnabledMethodToInvoke != LifecycleEnabledMethod.OnEnable) {
+            return false;
         }
 
-        return false;
+        nextEnabledMethodToInvoke = LifecycleEnabledMethod.OnDisable;
+        TryInvokeInitialize(); // Initialize should be called the first time this component gets enabled.
+        OnEnable();
+        return true;
     }
 
     /// <summary>
@@ -123,8 +117,8 @@ public abstract class Component : BlueObject, IDestroyable {
             return false;
         }
 
-        Initialize();
         IsInitialized = true;
+        Initialize();
         return true;
     }
 
@@ -133,13 +127,13 @@ public abstract class Component : BlueObject, IDestroyable {
     /// </summary>
     /// <returns><see langword="true"/> if OnDisable was successfully invoked; <see langword="false"/> otherwise.</returns>
     internal bool TryInvokeOnDisable() {
-        if (nextEnabledMethodToInvoke == LifecycleEnabledMethod.OnDisable) {
-            nextEnabledMethodToInvoke = LifecycleEnabledMethod.OnEnable;
-            OnDisable();
-            return true;
+        if (nextEnabledMethodToInvoke != LifecycleEnabledMethod.OnDisable) {
+            return false;
         }
 
-        return false;
+        nextEnabledMethodToInvoke = LifecycleEnabledMethod.OnEnable;
+        OnDisable();
+        return true;
     }
 
     /// <summary>
@@ -203,17 +197,11 @@ public abstract class Component : BlueObject, IDestroyable {
     #endregion
 
     /// <summary>
-    /// Removes this component from its entity and destroys it.
+    /// Destroys this component and removes it from its entity.
     /// </summary>
-    public void Destroy() {
-        if (IsDestroyed) {
-            return;
-        }
-
-        IsDestroyed = true;
-
+    public override void Destroy() {
+        Entity.RemoveComponent(this);
         TryInvokeOnDisable();
         OnDestroy();
-        Entity.RemoveComponent(this);
     }
 }
