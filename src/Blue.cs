@@ -92,7 +92,7 @@ public class Blue : Game {
     /// </summary>
     public void LoadScene(Scene scene) {
         if (scene == null) {
-            throw new ArgumentNullException(nameof(scene), "The scene you're trying to load is null!");
+            throw new ArgumentNullException(nameof(scene));
         }
 
         if (scene == ActiveScene) {

@@ -25,7 +25,7 @@ public class ObjectPool<T> where T : class {
     /// <param name="initialPoolSize">(Optional) The number of objects to initialize the pool with.</param>
     /// <exception cref="ArgumentNullException"/>
     public ObjectPool(Func<T> factoryMethod, int initialPoolSize = 0) {
-        factory = factoryMethod ?? throw new ArgumentNullException(nameof(factoryMethod), "An object pool's factory method cannot be null.");
+        factory = factoryMethod ?? throw new ArgumentNullException(nameof(factoryMethod));
         availableObjects = new Stack<T>(initialPoolSize);
 
         for (int i = 0; i < initialPoolSize; i++) {
