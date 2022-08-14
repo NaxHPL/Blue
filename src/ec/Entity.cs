@@ -133,7 +133,7 @@ public class Entity : BlueObject {
 
         TryInvokeAwake();
 
-        // Invoke OnEnable or OnDisable for all components
+        // Invoke OnActive or OnInactive for all components
         for (int i = 0; i < Components.Count; i++) {
             if (Components[i].Active) {
                 Components[i].TryInvokeOnActive();

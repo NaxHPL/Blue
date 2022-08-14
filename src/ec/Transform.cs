@@ -26,12 +26,12 @@ public class Transform {
 
     [Flags]
     enum DirtyFlags {
-        Clean           = 0x00,
-        PositionDirty   = 0x01,
-        ScaleDirty      = 0x02,
-        RotationDirty   = 0x04,
+        Clean       = 0x00,
+        Position    = 0x01,
+        Scale       = 0x02,
+        Rotation    = 0x04,
 
-        All = PositionDirty | ScaleDirty | RotationDirty
+        All = Position | Scale | Rotation
     }
 
     /// <summary>
@@ -86,7 +86,7 @@ public class Transform {
     /// </summary>
     public float RotationDegrees {
         get => MathHelper.ToDegrees(Rotation);
-        set => Rotation = MathHelper.ToRadians(value);
+        set => SetRotation(MathHelper.ToRadians(value));
     }
 
     /// <summary>
@@ -118,7 +118,7 @@ public class Transform {
     /// </summary>
     public float LocalRotationDegrees {
         get => MathHelper.ToDegrees(LocalRotation);
-        set => LocalRotation = MathHelper.ToRadians(value);
+        set => SetLocalRotation(MathHelper.ToRadians(value));
     }
 
     /// <summary>
@@ -139,26 +139,14 @@ public class Transform {
     /// The positive X direction of this <see cref="Transform"/> in local space.
     /// </summary>
     public Vector2 Right {
-        get {
-            if (worldToLocalDirty) {
-                Vector2Ext.Transform(Vector2.UnitX, WorldToLocalMatrix, out right);
-            }
-
-            return right;
-        }
+        get { UpdateWorldToLocal(); return right; }
     }
 
     /// <summary>
     /// The positive Y direction of this <see cref="Transform"/> in local space.
     /// </summary>
     public Vector2 Down {
-        get {
-            if (worldToLocalDirty) {
-                Vector2Ext.Transform(Vector2.UnitY, WorldToLocalMatrix, out down);
-            }
-
-            return down;
-        }
+        get { UpdateWorldToLocal(); return down; }
     }
 
     /// <summary>
@@ -169,13 +157,13 @@ public class Transform {
     Transform parent;
     readonly FastList<Transform> children = new FastList<Transform>();
 
-    Vector2 position;
+    Vector2 position = Vector2.Zero;
     Vector2 scale = Vector2.One;
-    float rotation;
+    float rotation = 0f;
 
-    Vector2 localPosition;
+    Vector2 localPosition = Vector2.Zero;
     Vector2 localScale = Vector2.One;
-    float localRotation;
+    float localRotation = 0f;
 
     Matrix2D translationMatrix;
     Matrix2D scaleMatrix;
@@ -188,10 +176,10 @@ public class Transform {
     Vector2 right = Vector2.UnitX;
     Vector2 down = Vector2.UnitY;
 
-    DirtyFlags hierarchyDirty;
-    DirtyFlags localDirty;
-    bool positionDirty;
-    bool worldToLocalDirty;
+    DirtyFlags hierarchyDirty = DirtyFlags.All;
+    DirtyFlags localDirty = DirtyFlags.All;
+    bool positionDirty = true;
+    bool worldToLocalDirty = true;
 
     /// <summary>
     /// Creates a new <see cref="Transform"/>.
@@ -290,9 +278,9 @@ public class Transform {
 
         localPosition = position;
 
-        localDirty |= DirtyFlags.PositionDirty;
+        localDirty = DirtyFlags.All;
         positionDirty = true;
-        SetHierarchyDirty(DirtyFlags.PositionDirty);
+        SetHierarchyDirty(DirtyFlags.Position);
     }
 
     /// <summary>
@@ -319,8 +307,9 @@ public class Transform {
 
         localScale = scale;
 
-        localDirty |= DirtyFlags.ScaleDirty;
-        SetHierarchyDirty(DirtyFlags.ScaleDirty);
+        localDirty |= DirtyFlags.Scale;
+        positionDirty = true;
+        SetHierarchyDirty(DirtyFlags.Scale);
     }
 
     /// <summary>
@@ -340,8 +329,9 @@ public class Transform {
 
         localRotation = radians;
 
-        localDirty |= DirtyFlags.RotationDirty;
-        SetHierarchyDirty(DirtyFlags.RotationDirty);
+        localDirty = DirtyFlags.All;
+        positionDirty = true;
+        SetHierarchyDirty(DirtyFlags.Rotation);
     }
 
     #endregion
@@ -369,16 +359,16 @@ public class Transform {
         }
 
         if (localDirty != DirtyFlags.Clean) {
-            if (localDirty.HasFlag(DirtyFlags.PositionDirty)) {
+            if (localDirty.HasFlag(DirtyFlags.Position)) {
                 Matrix2D.CreateTranslation(localPosition, out translationMatrix);
             }
 
-            if (localDirty.HasFlag(DirtyFlags.ScaleDirty)) {
-                Matrix2D.CreateScale(localScale, out scaleMatrix);
+            if (localDirty.HasFlag(DirtyFlags.Rotation)) {
+                Matrix2D.CreateRotation(localRotation, out rotationMatrix);
             }
 
-            if (localDirty.HasFlag(DirtyFlags.RotationDirty)) {
-                Matrix2D.CreateRotation(localRotation, out rotationMatrix);
+            if (localDirty.HasFlag(DirtyFlags.Scale)) {
+                Matrix2D.CreateScale(localScale, out scaleMatrix);
             }
 
             Matrix2D.Multiply(scaleMatrix, rotationMatrix, out localMatrix);
@@ -433,6 +423,9 @@ public class Transform {
             worldToLocalMatrix = Matrix2D.Identity;
         }
 
+        Vector2Ext.Transform(Vector2.UnitX, worldToLocalMatrix, out right);
+        Vector2Ext.Transform(Vector2.UnitY, worldToLocalMatrix, out down);
+
         worldToLocalDirty = false;
     }
 
@@ -481,7 +474,7 @@ public class Transform {
         Vector2 vectorToAlignTo = Position - position;
         vectorToAlignTo.Normalize();
 
-        float sign = Position.X > position.X ? -1f : 1f;
+        int sign = Position.X > position.X ? -1 : 1;
         float dot = Vector2.Dot(vectorToAlignTo, Vector2.UnitY);
 
         SetRotation(sign * MathF.Acos(dot));
