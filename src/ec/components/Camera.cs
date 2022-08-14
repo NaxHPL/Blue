@@ -72,31 +72,31 @@ public class Camera : Component {
     /// The camera's position.
     /// </summary>
     public Vector2 Position {
-        get => Entity.Transform.Position;
-        set => Entity.Transform.SetPosition(value);
+        get => Transform.Position;
+        set => Transform.SetPosition(value);
     }
 
     /// <summary>
     /// The camera's rotation in radians.
     /// </summary>
     public float Rotation {
-        get => Entity.Transform.Rotation;
-        set => Entity.Transform.SetRotation(value);
+        get => Transform.Rotation;
+        set => Transform.SetRotation(value);
     }
 
     /// <summary>
     /// The camera's rotation in degrees.
     /// </summary>
     public float RotationDegrees {
-        get => Entity.Transform.RotationDegrees;
-        set => Entity.Transform.SetRotationDegrees(value);
+        get => Transform.RotationDegrees;
+        set => Transform.SetRotationDegrees(value);
     }
 
     /// <summary>
     /// The color this camera uses to clear the background.
     /// </summary>
     /// <remarks>By default, this is set to <see cref="Color.Black"/>.</remarks>
-    public Color ClearColor = Color.Black;
+    public Color ClearColor = Color.DarkSlateBlue;
 
     Vector2 origin;
     float zoom = 1f;
@@ -194,15 +194,15 @@ public class Camera : Component {
             return;
         }
 
-        Matrix2D.CreateTranslation(-Entity.Transform.Position, out transformMatrix);
+        Matrix2D.CreateTranslation(-Transform.Position, out transformMatrix);
 
         if (zoom != 1f) {
             Matrix2D.CreateScale(zoom, out tempMatrix);
             Matrix2D.Multiply(transformMatrix, tempMatrix, out transformMatrix);
         }
 
-        if (Entity.Transform.Rotation != 0f) {
-            Matrix2D.CreateRotation(Entity.Transform.Rotation, out tempMatrix);
+        if (Transform.Rotation != 0f) {
+            Matrix2D.CreateRotation(Transform.Rotation, out tempMatrix);
             Matrix2D.Multiply(transformMatrix, tempMatrix, out transformMatrix);
         }
 
@@ -225,7 +225,7 @@ public class Camera : Component {
         Vector2 topLeft = ScreenToWorldPoint(new Vector2(viewport.X, viewport.Y));
         Vector2 bottomRight = ScreenToWorldPoint(new Vector2(viewport.Width, viewport.Height));
 
-        if (Entity.Transform.Rotation == 0f) {
+        if (Transform.Rotation == 0f) {
             bounds.Position = topLeft;
             bounds.Width = bottomRight.X - topLeft.X;
             bounds.Height = bottomRight.Y - topLeft.Y;
