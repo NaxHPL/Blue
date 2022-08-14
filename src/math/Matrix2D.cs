@@ -488,33 +488,14 @@ public struct Matrix2D : IEquatable<Matrix2D> {
     /// Converts this <see cref="Matrix2D"/> to a <see cref="Matrix"/> and returns it.
     /// </summary>
     public Matrix ToMatrix4() {
-        ToMatrix4(this, out Matrix result);
-        return result;
+        return this; // implicit conversion
     }
 
     /// <summary>
     /// Converts a <see cref="Matrix2D"/> to a <see cref="Matrix"/> and stores it in <paramref name="matrix4"/>.
     /// </summary>
     public static void ToMatrix4(in Matrix2D matrix2, out Matrix matrix4) {
-        matrix4.M11 = matrix2.M11;
-        matrix4.M12 = matrix2.M12;
-        matrix4.M13 = 0f;
-        matrix4.M14 = 0f;
-
-        matrix4.M21 = matrix2.M21;
-        matrix4.M22 = matrix2.M22;
-        matrix4.M23 = 0f;
-        matrix4.M24 = 0f;
-
-        matrix4.M31 = 0f;
-        matrix4.M32 = 0f;
-        matrix4.M33 = 1f;
-        matrix4.M34 = 0f;
-
-        matrix4.M41 = matrix2.M31;
-        matrix4.M42 = matrix2.M32;
-        matrix4.M43 = 0f;
-        matrix4.M44 = 1f;
+        matrix4 = matrix2; // implicit conversion
     }
 
     #endregion
@@ -583,6 +564,32 @@ public struct Matrix2D : IEquatable<Matrix2D> {
     public static Matrix2D operator *(in Matrix2D matrix1, in Matrix2D matrix2) {
         Multiply(matrix1, matrix2, out Matrix2D result);
         return result;
+    }
+
+    public static implicit operator Matrix(in Matrix2D matrix2d) {
+        Matrix matrix;
+
+        matrix.M11 = matrix2d.M11;
+        matrix.M12 = matrix2d.M12;
+        matrix.M13 = 0f;
+        matrix.M14 = 0f;
+
+        matrix.M21 = matrix2d.M21;
+        matrix.M22 = matrix2d.M22;
+        matrix.M23 = 0f;
+        matrix.M24 = 0f;
+
+        matrix.M31 = 0f;
+        matrix.M32 = 0f;
+        matrix.M33 = 1f;
+        matrix.M34 = 0f;
+
+        matrix.M41 = matrix2d.M31;
+        matrix.M42 = matrix2d.M32;
+        matrix.M43 = 0f;
+        matrix.M44 = 1f;
+
+        return matrix;
     }
 
     /// <summary>

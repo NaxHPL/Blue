@@ -66,7 +66,7 @@ public static class SpriteBatchExt {
             material.DepthStencilState,
             material.RasterizerState,
             material.Effect,
-            transformMatrix.ToMatrix4()
+            transformMatrix
         );
     }
 
