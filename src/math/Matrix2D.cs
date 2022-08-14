@@ -14,8 +14,9 @@ public struct Matrix2D : IEquatable<Matrix2D> {
     /// The identity matrix.
     /// </summary>
     public static readonly Matrix2D Identity = new Matrix2D(
-        1f, 0f, 0f,
-        0f, 1f, 0f
+        1f, 0f,
+        0f, 1f,
+        0f, 0f
     );
 
     /// <summary>
@@ -27,10 +28,10 @@ public struct Matrix2D : IEquatable<Matrix2D> {
     /// The translation stored in this matrix.
     /// </summary>
     public Vector2 Translation {
-        get => new Vector2(M13, M23);
+        get => new Vector2(M31, M32);
         set {
-            M13 = value.X;
-            M23 = value.Y;
+            M31 = value.X;
+            M32 = value.Y;
         }
     }
 
@@ -71,16 +72,19 @@ public struct Matrix2D : IEquatable<Matrix2D> {
 
     #endregion
 
-    public float M11, M12, M13;
-    public float M21, M22, M23;
+    public float M11, M12;
+    public float M21, M22;
+    public float M31, M32;
 
     /// <summary>
     /// Creates a new <see cref="Matrix2D"/> with the specified values.
     /// </summary>
-    public Matrix2D(float m11, float m12, float m13,
-                    float m21, float m22, float m23) {
-        M11 = m11; M12 = m12; M13 = m13;
-        M21 = m21; M22 = m22; M23 = m23;
+    public Matrix2D(float m11, float m12,
+                    float m21, float m22,
+                    float m31, float m32) {
+        M11 = m11; M12 = m12;
+        M21 = m21; M22 = m22;
+        M31 = m31; M32 = m32;
     }
 
     #region Translation
@@ -122,11 +126,12 @@ public struct Matrix2D : IEquatable<Matrix2D> {
     public static void CreateTranslation(float posX, float posY, out Matrix2D result) {
         result.M11 = 1f;
         result.M12 = 0f;
-        result.M13 = posX;
 
         result.M21 = 0f;
         result.M22 = 1f;
-        result.M23 = posY;
+
+        result.M31 = posX;
+        result.M32 = posY;
     }
 
     #endregion
@@ -188,11 +193,12 @@ public struct Matrix2D : IEquatable<Matrix2D> {
     public static void CreateScale(float scaleX, float scaleY, out Matrix2D result) {
         result.M11 = scaleX;
         result.M12 = 0f;
-        result.M13 = 0f;
 
         result.M21 = 0f;
         result.M22 = scaleY;
-        result.M23 = 0f;
+
+        result.M31 = 0f;
+        result.M32 = 0f;
     }
 
     #endregion
@@ -237,11 +243,12 @@ public struct Matrix2D : IEquatable<Matrix2D> {
 
         result.M11 = cos;
         result.M12 = sin;
-        result.M13 = 0f;
 
         result.M21 = -sin;
         result.M22 = cos;
-        result.M23 = 0f;
+
+        result.M31 = 0f;
+        result.M32 = 0f;
     }
 
     #endregion
@@ -263,11 +270,12 @@ public struct Matrix2D : IEquatable<Matrix2D> {
     public static void Add(in Matrix2D matrix1, in Matrix2D matrix2, out Matrix2D result) {
         result.M11 = matrix1.M11 + matrix2.M11;
         result.M12 = matrix1.M12 + matrix2.M12;
-        result.M13 = matrix1.M13 + matrix2.M13;
 
         result.M21 = matrix1.M21 + matrix2.M21;
         result.M22 = matrix1.M22 + matrix2.M22;
-        result.M23 = matrix1.M23 + matrix2.M23;
+
+        result.M31 = matrix1.M31 + matrix2.M31;
+        result.M32 = matrix1.M32 + matrix2.M32;
     }
 
     /// <summary>
@@ -289,11 +297,12 @@ public struct Matrix2D : IEquatable<Matrix2D> {
     public static void Subtract(in Matrix2D matrix1, in Matrix2D matrix2, out Matrix2D result) {
         result.M11 = matrix1.M11 - matrix2.M11;
         result.M12 = matrix1.M12 - matrix2.M12;
-        result.M13 = matrix1.M13 - matrix2.M13;
 
         result.M21 = matrix1.M21 - matrix2.M21;
         result.M22 = matrix1.M22 - matrix2.M22;
-        result.M23 = matrix1.M23 - matrix2.M23;
+
+        result.M31 = matrix1.M31 - matrix2.M31;
+        result.M32 = matrix1.M32 - matrix2.M32;
     }
 
     /// <summary>
@@ -311,11 +320,12 @@ public struct Matrix2D : IEquatable<Matrix2D> {
     public static void Multiply(in Matrix2D matrix, float scalar, out Matrix2D result) {
         result.M11 = matrix.M11 * scalar;
         result.M12 = matrix.M12 * scalar;
-        result.M13 = matrix.M13 * scalar;
 
         result.M21 = matrix.M21 * scalar;
         result.M22 = matrix.M22 * scalar;
-        result.M23 = matrix.M23 * scalar;
+
+        result.M31 = matrix.M31 * scalar;
+        result.M32 = matrix.M32 * scalar;
     }
 
     /// <summary>
@@ -337,11 +347,12 @@ public struct Matrix2D : IEquatable<Matrix2D> {
     public static void Multiply(in Matrix2D matrix1, in Matrix2D matrix2, out Matrix2D result) {
         result.M11 = matrix1.M11 * matrix2.M11 + matrix1.M12 * matrix2.M21;
         result.M12 = matrix1.M11 * matrix2.M12 + matrix1.M12 * matrix2.M22;
-        result.M13 = matrix1.M13 * matrix2.M11 + matrix1.M23 * matrix2.M21 + matrix2.M13;
 
         result.M21 = matrix1.M21 * matrix2.M11 + matrix1.M22 * matrix2.M21;
         result.M22 = matrix1.M21 * matrix2.M12 + matrix1.M22 * matrix2.M22;
-        result.M23 = matrix1.M13 * matrix2.M12 + matrix1.M23 * matrix2.M22 + matrix2.M23;
+
+        result.M31 = matrix1.M31 * matrix2.M11 + matrix1.M32 * matrix2.M21 + matrix2.M31;
+        result.M32 = matrix1.M31 * matrix2.M12 + matrix1.M32 * matrix2.M22 + matrix2.M32;
     }
 
     /// <summary>
@@ -361,11 +372,12 @@ public struct Matrix2D : IEquatable<Matrix2D> {
 
         result.M11 = matrix.M11 * oneOverDiv;
         result.M12 = matrix.M12 * oneOverDiv;
-        result.M13 = matrix.M13 * oneOverDiv;
 
         result.M21 = matrix.M21 * oneOverDiv;
         result.M22 = matrix.M22 * oneOverDiv;
-        result.M23 = matrix.M23 * oneOverDiv;
+
+        result.M31 = matrix.M31 * oneOverDiv;
+        result.M32 = matrix.M32 * oneOverDiv;
     }
 
     /// <summary>
@@ -387,11 +399,12 @@ public struct Matrix2D : IEquatable<Matrix2D> {
     public static void Divide(in Matrix2D matrix1, in Matrix2D matrix2, out Matrix2D result) {
         result.M11 = matrix1.M11 / matrix2.M11;
         result.M12 = matrix1.M12 / matrix2.M12;
-        result.M13 = matrix1.M13 / matrix2.M13;
 
         result.M21 = matrix1.M21 / matrix2.M21;
         result.M22 = matrix1.M22 / matrix2.M22;
-        result.M23 = matrix1.M23 / matrix2.M23;
+
+        result.M31 = matrix1.M31 / matrix2.M31;
+        result.M32 = matrix1.M32 / matrix2.M32;
     }
 
     #endregion
@@ -415,11 +428,12 @@ public struct Matrix2D : IEquatable<Matrix2D> {
 
         result.M11 = matrix.M22 * oneOverDet;
         result.M12 = -matrix.M12 * oneOverDet;
-        result.M13 = (matrix.M23 * matrix.M21 - matrix.M13 * matrix.M22) * oneOverDet;
 
         result.M21 = -matrix.M21 * oneOverDet;
         result.M22 = matrix.M11 * oneOverDet;
-        result.M23 = -(matrix.M23 * matrix.M11 - matrix.M13 * matrix.M12) * oneOverDet;
+
+        result.M31 = (matrix.M32 * matrix.M21 - matrix.M31 * matrix.M22) * oneOverDet;
+        result.M32 = -(matrix.M32 * matrix.M11 - matrix.M31 * matrix.M12) * oneOverDet;
     }
 
     /// <summary>
@@ -437,11 +451,12 @@ public struct Matrix2D : IEquatable<Matrix2D> {
     public static void Transpose(in Matrix2D matrix, out Matrix2D result) {
         result.M11 = matrix.M11;
         result.M12 = matrix.M21;
-        result.M13 = 0f;
 
         result.M21 = matrix.M12;
         result.M22 = matrix.M22;
-        result.M23 = 0f;
+
+        result.M31 = 0f;
+        result.M32 = 0f;
     }
 
     /// <summary>
@@ -459,13 +474,14 @@ public struct Matrix2D : IEquatable<Matrix2D> {
     /// <param name="value">The interpolation value.</param>
     /// <param name="result">The result <see cref="Matrix2D"/> as an output parameter.</param>
     public static void Lerp(in Matrix2D matrix1, in Matrix2D matrix2, float value, out Matrix2D result) {
-        result.M11 = matrix2.M11 + (matrix2.M11 - matrix1.M11) * value;
-        result.M12 = matrix2.M12 + (matrix2.M12 - matrix1.M12) * value;
-        result.M13 = matrix2.M13 + (matrix2.M13 - matrix1.M13) * value;
+        result.M11 = MathHelper.Lerp(matrix1.M11, matrix2.M11, value);
+        result.M12 = MathHelper.Lerp(matrix1.M12, matrix2.M12, value);
 
-        result.M21 = matrix2.M21 + (matrix2.M21 - matrix1.M21) * value;
-        result.M22 = matrix2.M22 + (matrix2.M22 - matrix1.M22) * value;
-        result.M23 = matrix2.M23 + (matrix2.M23 - matrix1.M23) * value;
+        result.M21 = MathHelper.Lerp(matrix1.M21, matrix2.M21, value);
+        result.M22 = MathHelper.Lerp(matrix1.M22, matrix2.M22, value);
+
+        result.M31 = MathHelper.Lerp(matrix1.M31, matrix2.M31, value);
+        result.M32 = MathHelper.Lerp(matrix1.M32, matrix2.M32, value);
     }
 
     /// <summary>
@@ -484,16 +500,19 @@ public struct Matrix2D : IEquatable<Matrix2D> {
         matrix4.M12 = matrix2.M12;
         matrix4.M13 = 0f;
         matrix4.M14 = 0f;
+
         matrix4.M21 = matrix2.M21;
         matrix4.M22 = matrix2.M22;
         matrix4.M23 = 0f;
         matrix4.M24 = 0f;
+
         matrix4.M31 = 0f;
         matrix4.M32 = 0f;
         matrix4.M33 = 1f;
         matrix4.M34 = 0f;
-        matrix4.M41 = matrix2.M13;
-        matrix4.M42 = matrix2.M23;
+
+        matrix4.M41 = matrix2.M31;
+        matrix4.M42 = matrix2.M32;
         matrix4.M43 = 0f;
         matrix4.M44 = 1f;
     }
@@ -505,16 +524,9 @@ public struct Matrix2D : IEquatable<Matrix2D> {
     /// <summary>
     /// Adds two matrices.
     /// </summary>
-    public static Matrix2D operator +(Matrix2D matrix1, in Matrix matrix2) {
-        matrix1.M11 += matrix2.M11;
-        matrix1.M12 += matrix2.M12;
-        matrix1.M13 += matrix2.M13;
-
-        matrix1.M21 += matrix2.M21;
-        matrix1.M22 += matrix2.M22;
-        matrix1.M23 += matrix2.M23;
-
-        return matrix1;
+    public static Matrix2D operator +(in Matrix2D matrix1, in Matrix2D matrix2) {
+        Add(matrix1, matrix2, out Matrix2D result);
+        return result;
     }
 
     /// <summary>
@@ -523,11 +535,12 @@ public struct Matrix2D : IEquatable<Matrix2D> {
     public static Matrix2D operator -(Matrix2D matrix) {
         matrix.M11 = -matrix.M11;
         matrix.M12 = -matrix.M12;
-        matrix.M13 = -matrix.M13;
 
         matrix.M21 = -matrix.M21;
         matrix.M22 = -matrix.M22;
-        matrix.M23 = -matrix.M23;
+
+        matrix.M31 = -matrix.M31;
+        matrix.M32 = -matrix.M32;
 
         return matrix;
     }
@@ -535,86 +548,41 @@ public struct Matrix2D : IEquatable<Matrix2D> {
     /// <summary>
     /// Subtracts two matrices.
     /// </summary>
-    public static Matrix2D operator -(Matrix2D matrix1, in Matrix matrix2) {
-        matrix1.M11 -= matrix2.M11;
-        matrix1.M12 -= matrix2.M12;
-        matrix1.M13 -= matrix2.M13;
-
-        matrix1.M21 -= matrix2.M21;
-        matrix1.M22 -= matrix2.M22;
-        matrix1.M23 -= matrix2.M23;
-
-        return matrix1;
+    public static Matrix2D operator -(in Matrix2D matrix1, in Matrix2D matrix2) {
+        Subtract(matrix1, matrix2, out Matrix2D result);
+        return result;
     }
 
     /// <summary>
     /// Divides a matrix's elements by the divisor.
     /// </summary>
-    public static Matrix2D operator /(Matrix2D matrix, float divisor) {
-        float oneOverDiv = 1f / divisor;
-
-        matrix.M11 *= oneOverDiv;
-        matrix.M12 *= oneOverDiv;
-        matrix.M13 *= oneOverDiv;
-
-        matrix.M21 *= oneOverDiv;
-        matrix.M22 *= oneOverDiv;
-        matrix.M23 *= oneOverDiv;
-
-        return matrix;
+    public static Matrix2D operator /(in Matrix2D matrix, float divisor) {
+        Divide(matrix, divisor, out Matrix2D result);
+        return result;
     }
 
     /// <summary>
     /// Divides a the elements of the first matrix by the elements of the second matrix.
     /// </summary>
-    public static Matrix2D operator /(Matrix2D matrix1, in Matrix2D matrix2) {
-        matrix1.M11 /= matrix2.M11;
-        matrix1.M12 /= matrix2.M12;
-        matrix1.M13 /= matrix2.M13;
-
-        matrix1.M21 /= matrix2.M21;
-        matrix1.M22 /= matrix2.M22;
-        matrix1.M23 /= matrix2.M23;
-
-        return matrix1;
+    public static Matrix2D operator /(in Matrix2D matrix1, in Matrix2D matrix2) {
+        Divide(matrix1, matrix2, out Matrix2D result);
+        return result;
     }
 
     /// <summary>
     /// Multiplies a matrix by a scalar.
     /// </summary>
-    public static Matrix2D operator *(Matrix2D matrix, float scalar) {
-        matrix.M11 *= scalar;
-        matrix.M12 *= scalar;
-        matrix.M13 *= scalar;
-
-        matrix.M21 *= scalar;
-        matrix.M22 *= scalar;
-        matrix.M23 *= scalar;
-
-        return matrix;
+    public static Matrix2D operator *(in Matrix2D matrix, float scalar) {
+        Multiply(matrix, scalar, out Matrix2D result);
+        return result;
     }
 
     /// <summary>
     /// Multiplies two matrices.
     /// </summary>
-    public static Matrix2D operator *(Matrix2D matrix1, in Matrix2D matrix2) {
-        float m11 = matrix1.M11 * matrix2.M11 + matrix1.M12 * matrix2.M21;
-        float m12 = matrix1.M11 * matrix2.M12 + matrix1.M12 * matrix2.M22;
-        float m13 = matrix1.M13 * matrix2.M11 + matrix1.M23 * matrix2.M21 + matrix2.M13;
-
-        float m21 = matrix1.M21 * matrix2.M11 + matrix1.M22 * matrix2.M21;
-        float m22 = matrix1.M21 * matrix2.M12 + matrix1.M22 * matrix2.M22;
-        float m23 = matrix1.M13 * matrix2.M12 + matrix1.M23 * matrix2.M22 + matrix2.M23;
-
-        matrix1.M11 = m11;
-        matrix1.M12 = m12;
-        matrix1.M13 = m13;
-
-        matrix1.M21 = m21;
-        matrix1.M22 = m22;
-        matrix1.M23 = m23;
-
-        return matrix1;
+    public static Matrix2D operator *(in Matrix2D matrix1, in Matrix2D matrix2) {
+        Multiply(matrix1, matrix2, out Matrix2D result);
+        return result;
     }
 
     /// <summary>
@@ -624,23 +592,17 @@ public struct Matrix2D : IEquatable<Matrix2D> {
         return
             matrix1.M11 == matrix2.M11 &&
             matrix1.M12 == matrix2.M12 &&
-            matrix1.M13 == matrix2.M13 &&
             matrix1.M21 == matrix2.M21 &&
             matrix1.M22 == matrix2.M22 &&
-            matrix1.M23 == matrix2.M23;
+            matrix1.M31 == matrix2.M31 &&
+            matrix1.M32 == matrix2.M32;
     }
 
     /// <summary>
     /// Checks if two matrices are not equal with zero tolerance.
     /// </summary>
     public static bool operator !=(in Matrix2D matrix1, in Matrix2D matrix2) {
-        return
-            matrix1.M11 != matrix2.M11 ||
-            matrix1.M12 != matrix2.M12 ||
-            matrix1.M13 != matrix2.M13 ||
-            matrix1.M21 != matrix2.M21 ||
-            matrix1.M22 != matrix2.M22 ||
-            matrix1.M23 != matrix2.M23;
+        return !(matrix1 == matrix2);
     }
 
     #endregion
@@ -652,20 +614,18 @@ public struct Matrix2D : IEquatable<Matrix2D> {
     }
 
     public override bool Equals(object obj) {
-        if (obj is Matrix2D m) {
-            return this == m;
-        }
-        return false;
+        return obj is Matrix2D m && this == m;
     }
 
     public override int GetHashCode() {
-        return HashCode.Combine(M11, M12, M13, M21, M22, M23);
+        return HashCode.Combine(M11, M12, M21, M22, M31, M32);
     }
 
     public override string ToString() {
         return
-            $"[M11 = {M11}, M12 = {M12}, M13 = {M13}]\n" +
-            $"[M21 = {M21}, M22 = {M22}, M23 = {M23}]";
+            $"[M11 = {M11}, M12 = {M12}]\n" +
+            $"[M21 = {M21}, M22 = {M22}]\n" +
+            $"[M31 = {M31}, M32 = {M32}]";
     }
 
     #endregion

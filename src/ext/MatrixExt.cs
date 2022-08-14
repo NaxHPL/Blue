@@ -12,10 +12,12 @@ public static class MatrixExt {
 
         matrix2D.M11 = matrix.M11;
         matrix2D.M12 = matrix.M12;
-        matrix2D.M13 = matrix.M41;
+
         matrix2D.M21 = matrix.M21;
         matrix2D.M22 = matrix.M22;
-        matrix2D.M23 = matrix.M42;
+
+        matrix2D.M31 = matrix.M41;
+        matrix2D.M32 = matrix.M42;
 
         return matrix2D;
     }
