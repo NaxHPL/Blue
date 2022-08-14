@@ -104,8 +104,11 @@ public struct Rect {
     /// Gets a point inside a <see cref="Rect"/> given normalized coordinates and stores it in <paramref name="result"/>.
     /// </summary>
     public static void NormalizedToPoint(in Rect rect, in Vector2 normalizedCoords, out Vector2 result) {
-        result.X = rect.X + rect.Width * normalizedCoords.X;
-        result.Y = rect.Y + rect.Height * normalizedCoords.Y;
+        float x = rect.X + rect.Width * normalizedCoords.X;
+        float y = rect.Y + rect.Height * normalizedCoords.Y;
+
+        result.X = x;
+        result.Y = y;
     }
 
     /// <summary>
@@ -120,8 +123,11 @@ public struct Rect {
     /// Gets a point inside a <see cref="Rect"/> given normalized coordinates and stores it in <paramref name="result"/>. The point is clamped within the bounds of <paramref name="rect"/>.
     /// </summary>
     public static void NormalizedToPointClamped(in Rect rect, in Vector2 normalizedCoords, out Vector2 result) {
-        result.X = rect.X + MathHelper.Clamp(rect.Width * normalizedCoords.X, rect.MinX, rect.MaxX);
-        result.Y = rect.Y + MathHelper.Clamp(rect.Height * normalizedCoords.Y, rect.MinY, rect.MaxY);
+        float x = rect.X + MathHelper.Clamp(rect.Width * normalizedCoords.X, rect.MinX, rect.MaxX);
+        float y = rect.Y + MathHelper.Clamp(rect.Height * normalizedCoords.Y, rect.MinY, rect.MaxY);
+
+        result.X = x;
+        result.Y = y;
     }
 
     /// <summary>
@@ -136,8 +142,11 @@ public struct Rect {
     /// Gets the normalized coordinates corresponding the <paramref name="point"/> and stores them in <paramref name="result"/>.
     /// </summary>
     public static void PointToNormalized(in Rect rect, in Vector2 point, out Vector2 result) {
-        result.X = (point.X - rect.X) / rect.Width;
-        result.Y = (point.Y - rect.Y) / rect.Height;
+        float x = (point.X - rect.X) / rect.Width;
+        float y = (point.Y - rect.Y) / rect.Height;
+
+        result.X = x;
+        result.Y = y;
     }
 
     /// <summary>
@@ -152,8 +161,11 @@ public struct Rect {
     /// Gets the normalized coordinates corresponding the <paramref name="point"/> and stores them in <paramref name="result"/>. The coordinates are clamped between 0 and 1.
     /// </summary>
     public static void PointToNormalizedClamped(in Rect rect, in Vector2 point, out Vector2 result) {
-        result.X = MathExt.Clamp01((point.X - rect.X) / rect.Width);
-        result.Y = MathExt.Clamp01((point.Y - rect.Y) / rect.Height);
+        float x = MathExt.Clamp01((point.X - rect.X) / rect.Width);
+        float y = MathExt.Clamp01((point.Y - rect.Y) / rect.Height);
+
+        result.X = x;
+        result.Y = y;
     }
 
     /// <summary>
