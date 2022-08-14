@@ -58,10 +58,6 @@ public class Entity : BlueObject {
         Transform = new Transform(this);
         Components = new ComponentCollection();
         Name = string.IsNullOrEmpty(name) ? $"Entity_{InstanceID}" : name;
-
-        if (Blue.Instance.ActiveScene != null) {
-            Blue.Instance.ActiveScene.AddEntity(this);
-        }
     }
 
     /// <summary>
