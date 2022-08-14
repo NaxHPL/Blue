@@ -58,6 +58,10 @@ public class Entity : BlueObject {
         Transform = new Transform(this);
         Components = new ComponentCollection();
         Name = string.IsNullOrEmpty(name) ? $"Entity_{InstanceID}" : name;
+
+        if (Blue.Instance.ActiveScene != null) {
+            Blue.Instance.ActiveScene.AddEntity(this);
+        }
     }
 
     /// <summary>
@@ -98,39 +102,16 @@ public class Entity : BlueObject {
 
         if (entity == null) {
             Transform.SetParent(null);
-            UpdateActive();
-            return;
-        }
-
-        Transform.SetParent(entity.Transform);
-        UpdateActive();
-    }
-
-    /// <summary>
-    /// Adds a child entity to this entity.
-    /// </summary>
-    public Entity AddChild(string name = null) {
-        return AddChild<Entity>(name);
-    }
-
-    /// <summary>
-    /// Adds a child entity of type <typeparamref name="T"/> to this entity.
-    /// </summary>
-    public T AddChild<T>(string name = null) where T : Entity, new() {
-        T entity;
-
-        if (AttachedToScene) {
-            entity = scene.AddEntity<T>(name);
         }
         else {
-            entity = new T();
-            if (string.IsNullOrEmpty(name)) {
-                entity.Name = name;
-            }
+            Transform.SetParent(entity.Transform);
         }
 
-        entity.Parent = this;
-        return entity;
+        if (entity.AttachedToScene && entity.scene != scene) {
+            entity.scene.AddEntity(this);
+        }
+
+        UpdateActive();
     }
 
     /// <summary>
@@ -147,7 +128,7 @@ public class Entity : BlueObject {
 
     internal void UpdateActive() {
         bool wasActiveBefore = Active;
-        Active = enabled && AttachedToScene && Scene.IsActive && (!HasParent || Parent.Active);
+        Active = enabled && AttachedToScene && scene.IsActive && (!HasParent || Parent.Active);
 
         // Return early if active state didn't change
         if (wasActiveBefore == Active) {
@@ -241,7 +222,7 @@ public class Entity : BlueObject {
         }
 
         if (AttachedToScene) {
-            Scene.RegisterComponent(component);
+            scene.RegisterComponent(component);
         }
     }
 
@@ -254,7 +235,7 @@ public class Entity : BlueObject {
         component.TryInvokeOnInactive();
 
         if (AttachedToScene) {
-            Scene.UnregisterComponent(component);
+            scene.UnregisterComponent(component);
         }
 
         return true;
@@ -380,6 +361,6 @@ public class Entity : BlueObject {
         }
 
         Transform.DetachFromParent();
-        Scene?.RemoveEntity(this);
+        scene?.RemoveEntity(this);
     }
 }

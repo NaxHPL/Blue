@@ -136,17 +136,17 @@ public abstract class Component : BlueObject {
     protected virtual void Awake() { }
 
     /// <summary>
-    /// Called when this component becomes active.
-    /// </summary>
-    protected virtual void OnActive() { }
-
-    /// <summary>
     /// Called just before this component becomes active for the first time.
     /// </summary>
     /// <remarks>
     /// Called exactly once in the lifetime of a Component.
     /// </remarks>
     protected virtual void Start() { }
+
+    /// <summary>
+    /// Called when this component becomes active.
+    /// </summary>
+    protected virtual void OnActive() { }
 
     /// <summary>
     /// Called when the transform of the entity this component is attached to changes.

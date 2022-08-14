@@ -40,42 +40,46 @@ public class Scene {
     /// Creates a new <see cref="Scene"/>.
     /// </summary>
     public Scene() {
-        Camera = AddEntity("Main Camera").AddComponent<Camera>();
+        Camera = CreateEntity("Main Camera").AddComponent<Camera>();
     }
 
     #region Entities
 
     /// <summary>
-    /// Instantiates an <see cref="Entity"/> and adds it to this scene.
+    /// Creates an <see cref="Entity"/> and adds it to this scene.
     /// </summary>
-    public Entity AddEntity(string name = null) {
-        return AddEntity<Entity>(name);
+    public Entity CreateEntity(string name = null) {
+        return CreateEntity<Entity>(name);
     }
 
     /// <summary>
-    /// Instantiates an entity of type <typeparamref name="T"/> and adds it to this scene.
+    /// Creates an entity of type <typeparamref name="T"/> and adds it to this scene.
     /// </summary>
-    public T AddEntity<T>(string name = null) where T : Entity, new() {
+    public T CreateEntity<T>(string name = null) where T : Entity, new() {
         T entity = new T();
 
         if (!string.IsNullOrEmpty(name)) {
             entity.Name = name;
         }
 
-        AddEntityInternal(entity);
+        AddEntity(entity);
         return entity;
     }
 
-    void AddEntityInternal(Entity entity) {
+    internal void AddEntity(Entity entity) {
         if (!Entities.Add(entity)) {
             return;
+        }
+
+        if (entity.AttachedToScene) {
+            entity.Scene.RemoveEntity(entity);
         }
 
         entity.Scene = this;
         RegisterComponents(entity.Components);
 
         for (int i = 0; i < entity.ChildCount; i++) {
-            AddEntityInternal(entity.GetChildAt(i));
+            AddEntity(entity.GetChildAt(i));
         }
     }
 
