@@ -149,7 +149,7 @@ public class Camera : Component {
         matricesDirty = true;
     }
 
-    public override void OnEntityTransformChanged() {
+    protected override void OnEntityTransformChanged() {
         matricesDirty = true;
     }
 

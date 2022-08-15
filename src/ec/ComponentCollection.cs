@@ -115,10 +115,4 @@ internal class ComponentCollection {
     public bool Contains(Component component) {
         return component != null && componentInstanceIds.Contains(component.InstanceID);
     }
-
-    internal void OnEntityTransformChanged() {
-        for (int i = 0; i < components.Length; i++) {
-            components.Buffer[i].OnEntityTransformChanged();
-        }
-    }
 }

@@ -342,7 +342,10 @@ public class Transform {
         }
 
         hierarchyDirty |= dirtyFlags;
-        Entity.Components.OnEntityTransformChanged();
+
+        for (int i = 0; i < Entity.Components.Count; i++) {
+            Entity.Components[i].InvokeOnEntityTransformChanged();
+        }
 
         for (int i = 0; i < children.Length; i++) {
             children.Buffer[i].SetHierarchyDirty(dirtyFlags);

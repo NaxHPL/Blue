@@ -11,11 +11,6 @@ public interface IRenderable {
     bool Active { get; }
 
     /// <summary>
-    /// The world space bounds of this renderable.
-    /// </summary>
-    Rect Bounds { get; }
-
-    /// <summary>
     /// The render layer this renderable is drawn on.
     /// </summary>
     /// <remarks>
@@ -38,6 +33,11 @@ public interface IRenderable {
     /// This renderable's material.
     /// </summary>
     Material Material { get; }
+
+    /// <summary>
+    /// The world space bounds of this renderable.
+    /// </summary>
+    Rect Bounds { get; }
 
     /// <summary>
     /// Renders this renderable using the specified sprite batch.

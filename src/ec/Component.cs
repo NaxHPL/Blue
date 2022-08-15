@@ -125,6 +125,10 @@ public abstract class Component : BlueObject {
         return true;
     }
 
+    internal void InvokeOnEntityTransformChanged() {
+        OnEntityTransformChanged();
+    }
+
     #region Lifecycle Methods
 
     /// <summary>
@@ -151,7 +155,7 @@ public abstract class Component : BlueObject {
     /// <summary>
     /// Called when the transform of the entity this component is attached to changes.
     /// </summary>
-    public virtual void OnEntityTransformChanged() { }
+    protected virtual void OnEntityTransformChanged() { }
 
     /// <summary>
     /// Called when this component becomes inactive.
