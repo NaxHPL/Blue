@@ -234,10 +234,10 @@ public class Camera : Component {
             Vector2 topRight = ScreenToWorldPoint(new Vector2(viewport.X + viewport.Width, viewport.Y));
             Vector2 bottomLeft = ScreenToWorldPoint(new Vector2(viewport.X, viewport.Y + viewport.Height));
 
-            float minX = MathHelper.Min(topLeft.X, MathHelper.Min(topRight.X, MathHelper.Min(bottomLeft.X, bottomRight.X)));
-            float maxX = MathHelper.Max(topLeft.X, MathHelper.Max(topRight.X, MathHelper.Max(bottomLeft.X, bottomRight.X)));
-            float minY = MathHelper.Min(topLeft.Y, MathHelper.Min(topRight.Y, MathHelper.Min(bottomLeft.Y, bottomRight.Y)));
-            float maxY = MathHelper.Max(topLeft.Y, MathHelper.Max(topRight.Y, MathHelper.Max(bottomLeft.Y, bottomRight.Y)));
+            float minX = MathExt.Min(topLeft.X, topRight.X, bottomLeft.X, bottomRight.X);
+            float maxX = MathExt.Max(topLeft.X, topRight.X, bottomLeft.X, bottomRight.X);
+            float minY = MathExt.Min(topLeft.Y, topRight.Y, bottomLeft.Y, bottomRight.Y);
+            float maxY = MathExt.Max(topLeft.Y, topRight.Y, bottomLeft.Y, bottomRight.Y);
 
             bounds.X = minX;
             bounds.Y = minY;

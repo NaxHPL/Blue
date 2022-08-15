@@ -9,7 +9,7 @@ public class Blue : Game {
     /// <summary>
     /// Access to the <see cref="Blue"/> instance.
     /// </summary>
-    public static Blue Instance => instance ?? throw new Exception("Attempted to access the " + nameof(Blue) + " instance before it was created!");
+    public static Blue Instance => instance ?? throw new InvalidOperationException("Attempted to access the " + nameof(Blue) + " instance before it was created!");
     static Blue instance;
 
     /// <summary>
@@ -49,7 +49,7 @@ public class Blue : Game {
 
     public Blue() {
         if (instance != null) {
-            throw new Exception("Attempted to create a second instance of " + nameof(Blue) + "! Only one instance is allowed.");
+            throw new InvalidOperationException("Attempted to create a second instance of " + nameof(Blue) + "! Only one instance is allowed.");
         }
         
         instance = this;
