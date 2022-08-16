@@ -41,11 +41,15 @@ public abstract class BlueObject {
         obj.isDestroyed = true;
     }
 
-    internal static void Update() {
+    /// <summary>
+    /// Immediately destroy objects that have been queued up for destruction.
+    /// </summary>
+    internal static void DestroyQueuedObjects() {
         if (objectsToDestroy.Length > 0) {
             for (int i = 0; i < objectsToDestroy.Length; i++) {
                 DestroyImmediate(objectsToDestroy.Buffer[i]);
             }
+
             objectsToDestroy.Clear();
             objectsToDestroyInstanceIds.Clear();
         }

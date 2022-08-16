@@ -3,14 +3,6 @@ using Microsoft.Xna.Framework.Input;
 
 namespace BlueFw;
 
-public enum MouseButton {
-    Left,
-    Right,
-    Middle,
-    XButton1,
-    XButton2
-}
-
 /// <summary>
 /// Provides access to the state of the input for the current frame.
 /// </summary>
@@ -185,8 +177,8 @@ public static class Input {
                 MouseButton.Left => CurrentState.LeftButton == ButtonState.Pressed,
                 MouseButton.Right => CurrentState.RightButton == ButtonState.Pressed,
                 MouseButton.Middle => CurrentState.MiddleButton == ButtonState.Pressed,
-                MouseButton.XButton1 => CurrentState.XButton1 == ButtonState.Pressed,
-                MouseButton.XButton2 => CurrentState.XButton2 == ButtonState.Pressed,
+                MouseButton.ExtButton1 => CurrentState.XButton1 == ButtonState.Pressed,
+                MouseButton.ExtButton2 => CurrentState.XButton2 == ButtonState.Pressed,
                 _ => false
             };
         }
@@ -199,8 +191,8 @@ public static class Input {
                 MouseButton.Left => PreviousState.LeftButton == ButtonState.Released && CurrentState.LeftButton == ButtonState.Pressed,
                 MouseButton.Right => PreviousState.RightButton == ButtonState.Released && CurrentState.RightButton == ButtonState.Pressed,
                 MouseButton.Middle => PreviousState.MiddleButton == ButtonState.Released && CurrentState.MiddleButton == ButtonState.Pressed,
-                MouseButton.XButton1 => PreviousState.XButton1 == ButtonState.Released && CurrentState.XButton1 == ButtonState.Pressed,
-                MouseButton.XButton2 => PreviousState.XButton2 == ButtonState.Released && CurrentState.XButton2 == ButtonState.Pressed,
+                MouseButton.ExtButton1 => PreviousState.XButton1 == ButtonState.Released && CurrentState.XButton1 == ButtonState.Pressed,
+                MouseButton.ExtButton2 => PreviousState.XButton2 == ButtonState.Released && CurrentState.XButton2 == ButtonState.Pressed,
                 _ => false
             };
         }
@@ -213,8 +205,8 @@ public static class Input {
                 MouseButton.Left => PreviousState.LeftButton == ButtonState.Pressed && CurrentState.LeftButton == ButtonState.Released,
                 MouseButton.Right => PreviousState.RightButton == ButtonState.Pressed && CurrentState.RightButton == ButtonState.Released,
                 MouseButton.Middle => PreviousState.MiddleButton == ButtonState.Pressed && CurrentState.MiddleButton == ButtonState.Released,
-                MouseButton.XButton1 => PreviousState.XButton1 == ButtonState.Pressed && CurrentState.XButton1 == ButtonState.Released,
-                MouseButton.XButton2 => PreviousState.XButton2 == ButtonState.Pressed && CurrentState.XButton2 == ButtonState.Released,
+                MouseButton.ExtButton1 => PreviousState.XButton1 == ButtonState.Pressed && CurrentState.XButton1 == ButtonState.Released,
+                MouseButton.ExtButton2 => PreviousState.XButton2 == ButtonState.Pressed && CurrentState.XButton2 == ButtonState.Released,
                 _ => false
             };
         }

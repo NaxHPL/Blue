@@ -81,7 +81,8 @@ public class Blue : Game {
         }
 
         ActiveScene?.Update();
-        BlueObject.Update();
+
+        BlueObject.DestroyQueuedObjects();
     }
 
     protected override void Draw(GameTime gameTime) {

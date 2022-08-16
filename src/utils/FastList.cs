@@ -24,7 +24,7 @@ public class FastList<T> {
     public int Length;
 
     /// <summary>
-    /// Gets the item at the specified index.
+    /// Gets/sets the item at the specified index.
     /// </summary>
     /// <remarks>For slightly better performace, access the item buffer directly using <see cref="Length"/> for the total item count.</remarks>
     public T this[int index] {
@@ -34,6 +34,13 @@ public class FastList<T> {
             }
 
             return Buffer[index];
+        }
+        set {
+            if (index < 0 || index >= Length) {
+                throw new IndexOutOfRangeException();
+            }
+
+            Buffer[index] = value;
         }
     }
 

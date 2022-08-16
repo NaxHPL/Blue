@@ -3,6 +3,9 @@ using Microsoft.Xna.Framework.Graphics;
 
 namespace BlueFw;
 
+/// <summary>
+/// A simple sprite.
+/// </summary>
 public class Sprite : Component, IRenderable {
 
     public int RenderLayer { get; set; }
@@ -33,7 +36,7 @@ public class Sprite : Component, IRenderable {
     }
 
     /// <summary>
-    /// The Sprite's origin (pivot point). Default is the top left of Sprite.
+    /// The Sprite's origin (pivot point). Default is the top left.
     /// </summary>
     public Vector2 Origin {
         get => origin;
@@ -41,7 +44,7 @@ public class Sprite : Component, IRenderable {
     }
 
     /// <summary>
-    /// The Sprite's origin (pivot point) normalized. Default is the top left of Sprite.
+    /// The Sprite's origin (pivot point) normalized. Default is the top left.
     /// </summary>
     public Vector2 OriginNormalized {
         get {
@@ -57,7 +60,6 @@ public class Sprite : Component, IRenderable {
             Vector2 newOrigin;
 
             if (texture == null) {
-                Log.Warning("Setting a Sprite's normalized origin before setting a texture will have no effect!");
                 newOrigin = Vector2.Zero;
             }
             else if (sourceRect.HasValue) {
@@ -102,13 +104,13 @@ public class Sprite : Component, IRenderable {
     /// </summary>
     public Color Tint = Color.White;
 
-    Rect bounds = Rect.Zero;
+    Rect bounds;
     Texture2D texture;
     Rectangle? sourceRect;
     Vector2 origin;
     SpriteEffects spriteEffects = SpriteEffects.None;
 
-    bool boundsDirty = false;
+    bool boundsDirty;
 
     /// <summary>
     /// Sets Sprite's the texture.
