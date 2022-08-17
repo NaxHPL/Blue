@@ -4,9 +4,9 @@ using Microsoft.Xna.Framework.Graphics;
 namespace BlueFw;
 
 /// <summary>
-/// A simple sprite.
+/// A static sprite component.
 /// </summary>
-public class Sprite : Component, IRenderable {
+public class SimpleSprite : Component, IRenderable {
 
     public int RenderLayer { get; set; }
 
@@ -203,5 +203,9 @@ public class Sprite : Component, IRenderable {
             spriteEffects,
             0f
         );
+    }
+
+    protected override void OnDestroy() {
+        texture = null;
     }
 }

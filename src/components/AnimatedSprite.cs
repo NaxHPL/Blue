@@ -2,6 +2,7 @@
 using Microsoft.Xna.Framework.Graphics;
 using System;
 using System.Collections.Generic;
+using System.Xml.Linq;
 
 namespace BlueFw;
 
@@ -63,7 +64,7 @@ public class AnimatedSprite : Component, IUpdatable, IRenderable {
         internal SpriteEffects SpriteEffects;
     }
 
-    /// <summary></summary> Yes, the summary is empty on purpose.
+    /// <summary></summary>
     public int UpdateOrder => 0;
 
     public int RenderLayer { get; set; }
@@ -99,21 +100,21 @@ public class AnimatedSprite : Component, IUpdatable, IRenderable {
         }
     }
 
+    public string CurrentSequence { get; private set; } = null;
+
     /// <summary>
-    /// Is the animation playing?
+    /// Gets/sets whether the animation is paused.
     /// </summary>
-    public bool IsPlaying => !isPaused;
+    public bool IsPaused { get; private set; }
 
     FastList<FrameInfo[]> sequences = new FastList<FrameInfo[]>();
     Dictionary<string, int> sequenceIndicesByName = new Dictionary<string, int>();
 
-    int currentSequence = 0;
+    int previousSequenceIdx = 0;
+    int currentSequenceIdx = 0;
     int currentFrameIdx = 0;
-    bool isPaused = false;
-    PlayMode currentPlayMode = PlayMode.Forwards;
-
-    int pauseAtFrameIndex = -1;
-    int stopAtFrameIndex = -1;
+    PlayMode currentPlayMode = PlayMode.Loop;
+    PlayDirection currentPlayDirection = PlayDirection.Forwards;
 
     float timer = 0f;
     float frameTime = 0.2f;
@@ -130,11 +131,12 @@ public class AnimatedSprite : Component, IUpdatable, IRenderable {
 
     /// <summary>
     /// Sets the frames of an animation sequence.
-    /// If a sequence named <paramref name="name"/> doesn't exist, it will be added instead.
+    /// If a sequence named <paramref name="name"/> doesn't exist, it will be added.
     /// </summary>
     /// <param name="name">The name of the sequence.</param>
     /// <param name="frames">The sequence's animation frames.</param>
     public void SetSequence(string name, FrameInfo[] frames) {
+        ArgumentNullException.ThrowIfNull(name, nameof(name));
         ArgumentNullException.ThrowIfNull(frames, nameof(frames));
 
         if (frames.Length == 0) {
@@ -153,85 +155,83 @@ public class AnimatedSprite : Component, IUpdatable, IRenderable {
     }
 
     /// <summary>
-    /// Gets the number of frames in the specified sequence.
+    /// Gets the frame data for the specified sequence.
     /// </summary>
-    public int GetFrameCount(string sequenceName) {
-        if (!sequenceIndicesByName.ContainsKey(sequenceName)) {
-            throw new ArgumentException($"A sequence named \"{sequenceName}\" doesn't exist!", nameof(sequenceName));
+    public FrameInfo[] GetSequence(string sequence) {
+        if (!sequenceIndicesByName.ContainsKey(sequence)) {
+            throw new ArgumentException($"A sequence named \"{sequence}\" doesn't exist!", nameof(sequence));
         }
 
-        return sequences[sequenceIndicesByName[sequenceName]].Length;
+        return sequences[sequenceIndicesByName[sequence]];
+    }
+
+    /// <summary>
+    /// Gets the number of frames in the specified sequence.
+    /// </summary>
+    public int GetFrameCount(string sequence) {
+        return GetSequence(sequence).Length;
     }
 
     #endregion
 
     #region Animation Control
 
-    // play (params: sequence name, loop?, [play mode = forwards], [int startingFrameIndex = 0]
-
     /// <summary>
-    /// Pauses the animation.
+    /// 
     /// </summary>
-    public void Pause() {
-        if (isPaused) {
-            return;
+    /// <param name="sequence"></param>
+    /// <param name="mode"></param>
+    /// <param name="direction"></param>
+    public void PlaySequence(string sequence, PlayMode mode = PlayMode.Loop, PlayDirection direction = PlayDirection.Forwards) {
+        ArgumentNullException.ThrowIfNull(sequence, nameof(sequence));
+
+        if (!sequenceIndicesByName.ContainsKey(sequence)) {
+            throw new ArgumentException($"A sequence named \"{sequence}\" doesn't exist!", nameof(sequence));
         }
 
-        isPaused = true;
-        pauseAtFrameIndex = -1;
+        PlaySequence(sequenceIndicesByName[sequence], mode, direction);
+        CurrentSequence = sequence;
+    }
+
+    void PlaySequence(int sequenceIdx, PlayMode mode = PlayMode.Loop, PlayDirection direction = PlayDirection.Forwards) {
+        // Check if playing the fallback sequence
+        if (sequenceIdx == 0) {
+            CurrentSequence = null;
+        }
+
+        previousSequenceIdx = currentSequenceIdx;
+
+        currentSequenceIdx = sequenceIdx;
+        currentPlayMode = mode;
+        currentPlayDirection = direction;
+
+        if (direction == PlayDirection.Forwards) {
+            SetFrame(0);
+        }
+        else {
+            SetFrame(sequences.Buffer[currentSequenceIdx].Length - 1);
+        }
+
+        IsPaused = false;
     }
 
     /// <summary>
-    /// Pauses the animation once it reaches the specified frame index.
-    /// </summary>
-    /// <param name="frameIndex">The animation will play until this frame, then pause.</param>
-    public void Pause(int frameIndex) {
-        if (isPaused) {
-            return;
-        }
-
-        pauseAtFrameIndex = frameIndex;
-    }
-
-    /// <summary>
-    /// Unpauses the animation.
-    /// </summary>
-    public void Unpause() {
-        if (!isPaused) {
-            return;
-        }
-
-        isPaused = false;
-        pauseAtFrameIndex = -1;
-    }
-
-    /// <summary>
-    /// Stops the animation.
+    /// Stops the animation and resets it to the start of the sequence.
     /// </summary>
     public void Stop() {
-        isPaused = true;
-        pauseAtFrameIndex = -1;
-        stopAtFrameIndex = -1;
+        IsPaused = true;
         SetFrame(0);
-    }
-
-    /// <summary>
-    /// Stops the animation once it reaches the specified frame index.
-    /// </summary>
-    /// <param name="frameIndex">The animation will play until this frame, then stop.</param>
-    public void Stop(int frameIndex) {
-        stopAtFrameIndex = frameIndex;
     }
 
     /// <summary>
     /// Sets the current frame on the currently playing sequence.
     /// </summary>
     public void SetFrame(int frameIndex) {
-        if (frameIndex < 0 || frameIndex >= sequences.Buffer[currentSequence].Length) {
+        if (frameIndex < 0 || frameIndex >= sequences.Buffer[currentSequenceIdx].Length) {
             throw new ArgumentOutOfRangeException(
                 nameof(frameIndex),
                 frameIndex,
-                $"Invalid frame index for the current animation sequence! Expected a value in the range [0,{sequences.Buffer[currentSequence].Length-1}]."
+                $"Invalid frame index for the current animation sequence! Expected a value in the range [0,{sequences.Buffer[currentSequenceIdx].Length-1}]."
             );
         }
 
@@ -249,36 +249,56 @@ public class AnimatedSprite : Component, IUpdatable, IRenderable {
     #endregion
 
     public void Update() {
-        if (isPaused) {
+        if (IsPaused) {
             return;
         }
 
         timer += Time.DeltaTime;
 
-        if (timer < frameTime) {
-            return;
+        if (timer >= frameTime) {
+            AdvanceAnimation();
+        }
+    }
+
+    void AdvanceAnimation() {
+        bool reachedSequenceEnd =
+            (currentPlayDirection == PlayDirection.Forwards && currentFrameIdx == sequences.Buffer[currentSequenceIdx].Length - 1) ||
+            (currentPlayDirection == PlayDirection.Reverse && currentFrameIdx == 0);
+
+        if (reachedSequenceEnd) {
+            switch (currentPlayMode) {
+                case PlayMode.Once:
+                    Stop();
+                    return;
+
+                case PlayMode.OnceThenPrevious:
+                    PlaySequence(previousSequenceIdx);
+                    return;
+
+                case PlayMode.PingPong:
+                    currentPlayDirection = currentPlayDirection == PlayDirection.Forwards ?
+                            PlayDirection.Reverse :
+                            PlayDirection.Forwards;
+                    break;
+
+                case PlayMode.Clamp:
+                    Stop();
+                    if (currentPlayDirection == PlayDirection.Forwards) {
+                        SetFrame(sequences.Buffer[currentSequenceIdx].Length - 1);
+                    }
+                    return;
+            }
         }
 
-        int nextFrame = currentFrameIdx + (currentPlayMode == PlayMode.Forwards ? 1 : -1);
-
+        int nextFrame = currentFrameIdx + (currentPlayDirection == PlayDirection.Forwards ? 1 : -1);
         if (nextFrame < 0) {
-            nextFrame = sequences[currentSequence].Length - 1;
+            nextFrame = sequences[currentSequenceIdx].Length - 1;
         }
         else {
-            nextFrame %= sequences[currentSequence].Length;
+            nextFrame %= sequences[currentSequenceIdx].Length;
         }
 
-        if (nextFrame == stopAtFrameIndex) {
-            Stop();
-        }
-        else if (nextFrame == pauseAtFrameIndex) {
-            Pause();
-        }
-        else {
-            SetFrame(nextFrame);
-        }
-
-        timer = 0f;
+        SetFrame(nextFrame);
     }
 
     protected override void OnEntityTransformChanged() {
@@ -290,7 +310,7 @@ public class AnimatedSprite : Component, IUpdatable, IRenderable {
             return;
         }
 
-        FrameInfo currentFrame = sequences.Buffer[currentSequence][currentFrameIdx];
+        FrameInfo currentFrame = sequences.Buffer[currentSequenceIdx][currentFrameIdx];
 
         if (currentFrame.Texture == null) {
             bounds = Rect.Zero;
@@ -323,7 +343,7 @@ public class AnimatedSprite : Component, IUpdatable, IRenderable {
     }
 
     public void Render(SpriteBatch spriteBatch, Camera camera) {
-        FrameInfo currentFrame = sequences.Buffer[currentSequence][currentFrameIdx];
+        FrameInfo currentFrame = sequences.Buffer[currentSequenceIdx][currentFrameIdx];
 
         if (currentFrame.Texture == null) {
             return;
@@ -340,5 +360,13 @@ public class AnimatedSprite : Component, IUpdatable, IRenderable {
             currentFrame.SpriteEffects,
             0f
         );
+    }
+
+    protected override void OnDestroy() {
+        for (int i = 0; i < sequences.Length; i++) {
+            for (int j = 0; j < sequences.Buffer[i].Length; j++) {
+                sequences.Buffer[i][j].Texture = null;
+            }
+        }
     }
 }
