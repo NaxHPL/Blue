@@ -2,7 +2,6 @@
 using Microsoft.Xna.Framework.Graphics;
 using System;
 using System.Collections.Generic;
-using System.Xml.Linq;
 
 namespace BlueFw;
 
@@ -64,8 +63,10 @@ public class AnimatedSprite : Component, IUpdatable, IRenderable {
         internal SpriteEffects SpriteEffects;
     }
 
-    /// <summary></summary>
-    public int UpdateOrder => 0;
+    /// <summary>
+    /// By default, Animated Sprites update last at the end of the update loop.
+    /// </summary>
+    public int UpdateOrder { get; set; } = int.MaxValue;
 
     public int RenderLayer { get; set; }
 
@@ -106,6 +107,9 @@ public class AnimatedSprite : Component, IUpdatable, IRenderable {
     /// Gets/sets whether the animation is paused.
     /// </summary>
     public bool IsPaused { get; private set; }
+
+    // This dictionary only gets created if a frame action is set
+    Dictionary<int, Dictionary<int, Action>> frameActionsBySequenceAndFrameIdx;
 
     FastList<FrameInfo[]> sequences = new FastList<FrameInfo[]>();
     Dictionary<string, int> sequenceIndicesByName = new Dictionary<string, int>();
@@ -238,13 +242,74 @@ public class AnimatedSprite : Component, IUpdatable, IRenderable {
         currentFrameIdx = frameIndex;
         timer = 0f;
         boundsDirty = true;
+        
+        // Check for and invoke frame action
+        if (frameActionsBySequenceAndFrameIdx != null &&
+            frameActionsBySequenceAndFrameIdx.ContainsKey(currentSequenceIdx) &&
+            frameActionsBySequenceAndFrameIdx[currentSequenceIdx].ContainsKey(frameIndex)) {
+
+            // action is guarunteed to not be null because we check when setting it
+            frameActionsBySequenceAndFrameIdx[currentSequenceIdx][frameIndex]();
+        }
     }
 
     #endregion
 
-    #region Frame Events
+    #region Frame Actions
 
+    /// <summary>
+    /// Sets the frame action for the specified sequence and frame index.
+    /// </summary>
+    public void SetFrameAction(string sequence, int frameIndex, Action action) {
+        ArgumentNullException.ThrowIfNull(sequence, nameof(sequence));
+        ArgumentNullException.ThrowIfNull(action, nameof(action));
 
+        if (!sequenceIndicesByName.ContainsKey(sequence)) {
+            throw new ArgumentException($"A sequence named \"{sequence}\" doesn't exist!", nameof(sequence));
+        }
+
+        int sequenceIdx = sequenceIndicesByName[sequence];
+
+        if (frameIndex < 0 || frameIndex >= sequences.Buffer[sequenceIdx].Length) {
+            throw new ArgumentOutOfRangeException(
+                nameof(frameIndex),
+                frameIndex,
+                $"Attempted to set a frame action for an invalid frame index! Expected a value in the range [0,{sequences.Buffer[sequenceIdx].Length-1}]."
+            );
+        }
+
+        frameActionsBySequenceAndFrameIdx ??= new Dictionary<int, Dictionary<int, Action>>();
+
+        if (!frameActionsBySequenceAndFrameIdx.ContainsKey(sequenceIdx)) {
+            frameActionsBySequenceAndFrameIdx.Add(sequenceIdx, new Dictionary<int, Action>());
+        }
+
+        frameActionsBySequenceAndFrameIdx[sequenceIdx][frameIndex] = action;
+    }
+
+    /// <summary>
+    /// Unsets the frame action for the specified sequence and frame index.
+    /// </summary>
+    public void UnsetFrameAction(string sequence, int frameIndex) {
+        if (sequence == null ||
+            frameActionsBySequenceAndFrameIdx == null ||
+            !sequenceIndicesByName.ContainsKey(sequence)) {
+            return;
+        }
+
+        int sequenceIdx = sequenceIndicesByName[sequence];
+
+        if (frameIndex < 0 || frameIndex >= sequences.Buffer[sequenceIdx].Length) {
+            return;
+        }
+
+        if (frameActionsBySequenceAndFrameIdx.ContainsKey(sequenceIdx) &&
+            frameActionsBySequenceAndFrameIdx[sequenceIdx].ContainsKey(frameIndex)) {
+
+            frameActionsBySequenceAndFrameIdx[sequenceIdx][frameIndex] = null;
+            frameActionsBySequenceAndFrameIdx[sequenceIdx].Remove(frameIndex);
+        }
+    }
 
     #endregion
 
@@ -257,6 +322,7 @@ public class AnimatedSprite : Component, IUpdatable, IRenderable {
 
         if (timer >= frameTime) {
             AdvanceAnimation();
+            timer = 0f; // not necessarily needed, but just in case
         }
     }
 
@@ -277,8 +343,8 @@ public class AnimatedSprite : Component, IUpdatable, IRenderable {
 
                 case PlayMode.PingPong:
                     currentPlayDirection = currentPlayDirection == PlayDirection.Forwards ?
-                            PlayDirection.Reverse :
-                            PlayDirection.Forwards;
+                        PlayDirection.Reverse :
+                        PlayDirection.Forwards;
                     break;
 
                 case PlayMode.Clamp:
@@ -363,6 +429,16 @@ public class AnimatedSprite : Component, IUpdatable, IRenderable {
     }
 
     protected override void OnDestroy() {
+        if (frameActionsBySequenceAndFrameIdx != null) {
+            foreach (Dictionary<int, Action> frameActions in frameActionsBySequenceAndFrameIdx.Values) {
+                foreach (int frameIdx in frameActions.Keys) {
+                    frameActions[frameIdx] = null;
+                }
+                frameActions.Clear();
+            }
+            frameActionsBySequenceAndFrameIdx.Clear();
+        }
+
         for (int i = 0; i < sequences.Length; i++) {
             for (int j = 0; j < sequences.Buffer[i].Length; j++) {
                 sequences.Buffer[i][j].Texture = null;
