@@ -1,4 +1,7 @@
-﻿namespace BlueFw;
+﻿using System;
+using System.Collections.Generic;
+
+namespace BlueFw;
 
 /// <summary>
 /// Base component class.
@@ -128,6 +131,91 @@ public abstract class Component : BlueObject {
     internal void InvokeOnEntityTransformChanged() {
         OnEntityTransformChanged();
     }
+
+    #region Entity Passthroughs
+
+    /// <summary>
+    /// Returns <see langword="true"/> if this component is attached to an entity and the entity has a component of type <typeparamref name="T"/>.
+    /// </summary>
+    public bool HasComponent<T>() where T : Component {
+        return AttachedToEntity && Entity.HasComponent<T>();
+    }
+
+    /// <summary>
+    /// Returns the first component of type <typeparamref name="T"/> attached to this component's entity.
+    /// If this component isn't attached to an entity or the entity has no <typeparamref name="T"/> component, returns <see langword="null"/>.
+    /// </summary>
+    public T GetComponent<T>() where T : Component {
+        return Entity?.GetComponent<T>();
+    }
+
+    /// <summary>
+    /// Tries to get the first component of type <typeparamref name="T"/> attached to this component's entity. If successful, the component is stored in <paramref name="component"/>.
+    /// </summary>
+    public bool TryGetComponent<T>(out T component) where T : Component {
+        if (AttachedToEntity) {
+            return Entity.TryGetComponent(out component);
+        }
+
+        component = null;
+        return false;
+    }
+
+    /// <summary>
+    /// Finds all components of type <typeparamref name="T"/> attached to this component's entity and adds them to <paramref name="results"/>.
+    /// </summary>
+    /// <param name="onlyActive">(Optional) Only consider components which are active in the hierarchy.</param>
+    public void GetComponents<T>(List<T> results, bool onlyActive = false) where T : Component {
+        if (AttachedToEntity) {
+            Entity.GetComponents(results, onlyActive);
+        }
+    }
+
+    /// <summary>
+    /// Finds all components of type <typeparamref name="T"/> attached to this component's entity.
+    /// </summary>
+    /// <param name="onlyActive">(Optional) Only consider components which are active in the hierarchy.</param>
+    public T[] GetComponents<T>(bool onlyActive = false) where T : Component {
+        return AttachedToEntity ? Entity.GetComponents<T>(onlyActive) : Array.Empty<T>();
+    }
+
+    /// <summary>
+    /// Returns the first component of type <typeparamref name="T"/> found on this component's entity or any of its children. Uses depth first search.
+    /// </summary>
+    /// <param name="onlyActive">(Optional) Only consider components which are active in the hierarchy.</param>
+    public T GetComponentInChildren<T>(bool onlyActive = false) where T : Component {
+        return AttachedToEntity ? Entity.GetComponentInChildren<T>(onlyActive) : null;
+    }
+
+    /// <summary>
+    /// Adds all components of type <typeparamref name="T"/> attached to this component's entity or any of its children to <paramref name="results"/>.
+    /// </summary>
+    /// <param name="onlyActive">(Optional) Only consider components which are active in the hierarchy.</param>
+    public void GetComponentsInChildren<T>(List<T> results, bool onlyActive = false) where T : Component {
+        if (AttachedToEntity) {
+            Entity.GetComponentsInChildren(results, onlyActive);
+        }
+    }
+
+    /// <summary>
+    /// Returns the first component of type <typeparamref name="T"/> found on this component's entity or any of its parents. Uses depth first search.
+    /// </summary>
+    /// <param name="onlyActive">(Optional) Only consider components which are active in the hierarchy.</param>
+    public T GetComponentInParents<T>(bool onlyActive = false) where T : Component {
+        return AttachedToEntity ? Entity.GetComponentInParents<T>(onlyActive) : null;
+    }
+
+    /// <summary>
+    /// Adds all components of type <typeparamref name="T"/> attached to this component's entity or any of its parents to <paramref name="results"/>.
+    /// </summary>
+    /// <param name="onlyActive">(Optional) Only consider components which are active in the hierarchy.</param>
+    public void GetComponentsInParents<T>(List<T> results, bool onlyActive = false) where T : Component {
+        if (AttachedToEntity) {
+            Entity.GetComponentsInParents(results, onlyActive);
+        }
+    }
+
+    #endregion
 
     #region Lifecycle Methods
 
