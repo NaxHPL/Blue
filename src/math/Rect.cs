@@ -23,6 +23,15 @@ public struct Rect {
     static Rect maxRect = new Rect(-float.MaxValue / 2f, -float.MaxValue / 2f, float.MaxValue, float.MaxValue);
 
     /// <summary>
+    /// A <see cref="Rect"/> that is at the coordinates (X: float.MinValue, Y: float.MinValue) with a width and height of 0.
+    /// </summary>
+    /// <remarks>
+    /// It's likely to be offscreen... probably.
+    /// </remarks>
+    internal static Rect Offscreen => offscreenRect;
+    static Rect offscreenRect = new Rect(float.MinValue, float.MinValue, 0f, 0f);
+
+    /// <summary>
     /// Returns <see langword="true"/> if the provided rectangles overlap each other.
     /// </summary>
     public static bool Overlaps(in Rect rect1, in Rect rect2) {

@@ -11,4 +11,103 @@ public static class Texture2DExt {
     public static Point Size(this Texture2D texture) {
         return new Point(texture.Width, texture.Height);
     }
+
+    static Vector2 ConvertOriginToVector(Origin origin, int width, int height) {
+        return origin switch {
+           Origin.Top         => new Vector2(width / 2f, 0f),
+           Origin.TopRight    => new Vector2(width, 0f),
+           Origin.Left        => new Vector2(0f, height / 2f),
+           Origin.Center      => new Vector2(width / 2f, height / 2f),
+           Origin.Right       => new Vector2(width, height / 2f),
+           Origin.BottomLeft  => new Vector2(0f, height),
+           Origin.Bottom      => new Vector2(width / 2f, height),
+           Origin.BottomRight => new Vector2(width, height),
+           _                  => new Vector2(0f, 0f)
+        };
+    }
+
+    /// <summary>
+    /// Slices this texture into Sprites.
+    /// </summary>
+    /// <param name="cellCount">The number of cells to split the texture into.</param>
+    /// <param name="origin">The origin point for the Sprites.</param>
+    /// <param name="textureRegion">Only split this region of the texture into Sprites. If <see langword="null"/>, the whole texture will be split.</param>
+    public static Sprite[] SliceByCellCount(this Texture2D texture, in Point cellCount, Origin origin, Rectangle? textureRegion = null) {
+        Point cellSize = new Point(
+            (textureRegion.HasValue ? textureRegion.Value.Width : texture.Width) / cellCount.X,
+            (textureRegion.HasValue ? textureRegion.Value.Height : texture.Height) / cellCount.Y
+        );
+        return SliceByCellSize(texture, cellSize, origin, textureRegion);
+    }
+
+    /// <summary>
+    /// Slices this texture into Sprites.
+    /// </summary>
+    /// <param name="cellCount">The number of cells to split the texture into.</param>
+    /// <param name="origin">The origin point for the Sprites.</param>
+    /// <param name="textureRegion">Only split this region of the texture into Sprites. If <see langword="null"/>, the whole texture will be split.</param>
+    public static Sprite[] SliceByCellCount(this Texture2D texture, in Point cellCount, in Vector2 origin, Rectangle? textureRegion = null) {
+        Point cellSize = new Point(
+            (textureRegion.HasValue ? textureRegion.Value.Width : texture.Width) / cellCount.X,
+            (textureRegion.HasValue ? textureRegion.Value.Height : texture.Height) / cellCount.Y
+        );
+        return SliceByCellSize(texture, cellSize, origin, textureRegion);
+    }
+
+    /// <summary>
+    /// Slices this texture into Sprites.
+    /// </summary>
+    /// <param name="cellSize">The size of each Sprite.</param>
+    /// <param name="origin">The origin point for the Sprites.</param>
+    /// <param name="textureRegion">Only split this region of the texture into Sprites. If <see langword="null"/>, the whole texture will be split.</param>
+    public static Sprite[] SliceByCellSize(this Texture2D texture, in Point cellSize, Origin origin, Rectangle? textureRegion = null) {
+        Vector2 originVec = ConvertOriginToVector(origin, cellSize.X, cellSize.Y);
+        return SliceByCellSize(texture, cellSize, originVec, textureRegion);
+    }
+
+    /// <summary>
+    /// Slices this texture into Sprites.
+    /// </summary>
+    /// <param name="cellSize">The size of each Sprite.</param>
+    /// <param name="origin">The origin point for the Sprites.</param>
+    /// <param name="textureRegion">Only split this region of the texture into Sprites. If <see langword="null"/>, the whole texture will be split.</param>
+    public static Sprite[] SliceByCellSize(this Texture2D texture, in Point cellSize, in Vector2 origin, Rectangle? textureRegion = null) {
+        int numCellsX;
+        int numCellsY;
+
+        int sourceRectStartX;
+        int sourceRectStartY;
+
+        if (textureRegion.HasValue) {
+            numCellsX = textureRegion.Value.Width / cellSize.X;
+            numCellsY = textureRegion.Value.Height / cellSize.Y;
+
+            sourceRectStartX = textureRegion.Value.X;
+            sourceRectStartY = textureRegion.Value.Y;
+        }
+        else {
+            numCellsX = texture.Width / cellSize.X;
+            numCellsY = texture.Height / cellSize.Y;
+
+            sourceRectStartX = 0;
+            sourceRectStartY = 0;
+        }
+
+        Rectangle sourceRect;
+        sourceRect.Width = cellSize.X;
+        sourceRect.Height = cellSize.Y;
+
+        Sprite[] sprites = new Sprite[numCellsX * numCellsY];
+
+        int i = 0;
+        for (int y = 0; y < numCellsY; y++) {
+            sourceRect.Y = sourceRectStartY + y * cellSize.Y;
+            for (int x = 0; x < numCellsX; x++) {
+                sourceRect.X = sourceRectStartX + x * cellSize.X;
+                sprites[i++] = new Sprite(texture, sourceRect, origin);
+            }
+        }
+
+        return sprites;
+    }
 }

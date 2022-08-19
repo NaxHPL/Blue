@@ -19,60 +19,11 @@ public class SimpleSprite : Component, IRenderable {
     }
 
     /// <summary>
-    /// The texture to draw.
+    /// The Sprite to draw.
     /// </summary>
-    public Texture2D Texture {
-        get => texture;
-        set => SetTexture(value);
-    }
-
-    /// <summary>
-    /// The region of the texture that will be drawn.
-    /// If <see langword="null"/> (default), the whole texture is drawn.
-    /// </summary>
-    public Rectangle? SourceRect {
-        get => sourceRect;
-        set => SetSourceRect(value);
-    }
-
-    /// <summary>
-    /// The Sprite's origin (pivot point). Default is the top left.
-    /// </summary>
-    public Vector2 Origin {
-        get => origin;
-        set => SetOrigin(value);
-    }
-
-    /// <summary>
-    /// The Sprite's origin (pivot point) normalized. Default is the top left.
-    /// </summary>
-    public Vector2 OriginNormalized {
-        get {
-            if (texture == null) {
-                return Vector2.Zero;
-            }
-
-            return sourceRect.HasValue ?
-                new Vector2(origin.X / sourceRect.Value.Width, origin.Y / sourceRect.Value.Height) :
-                new Vector2(origin.X / texture.Width, origin.Y / texture.Height);
-        }
-        set {
-            Vector2 newOrigin;
-
-            if (texture == null) {
-                newOrigin = Vector2.Zero;
-            }
-            else if (sourceRect.HasValue) {
-                newOrigin.X = value.X * sourceRect.Value.Width;
-                newOrigin.Y = value.Y * sourceRect.Value.Height;
-            }
-            else {
-                newOrigin.X = value.X * texture.Width;
-                newOrigin.Y = value.Y * texture.Height;
-            }
-
-            SetOrigin(newOrigin);
-        }
+    public Sprite Sprite {
+        get => sprite;
+        set => SetSprite(value);
     }
 
     /// <summary>
@@ -105,46 +56,17 @@ public class SimpleSprite : Component, IRenderable {
     public Color Tint = Color.White;
 
     Rect bounds;
-    Texture2D texture;
-    Rectangle? sourceRect;
-    Vector2 origin;
+    Sprite sprite;
     SpriteEffects spriteEffects = SpriteEffects.None;
 
     bool boundsDirty;
 
-    /// <summary>
-    /// Sets Sprite's the texture.
-    /// </summary>
-    public void SetTexture(Texture2D texture) {
-        if (texture == this.texture) {
+    public void SetSprite(Sprite sprite) {
+        if (this.sprite == sprite) {
             return;
         }
 
-        this.texture = texture;
-        boundsDirty = true;
-    }
-
-    /// <summary>
-    /// Sets the source rectangle.
-    /// </summary>
-    public void SetSourceRect(in Rectangle? sourceRect) {
-        if (sourceRect == this.sourceRect) {
-            return;
-        }
-
-        this.sourceRect = sourceRect;
-        boundsDirty = true;
-    }
-
-    /// <summary>
-    /// Sets the Sprite's origin (pivot point).
-    /// </summary>
-    public void SetOrigin(in Vector2 origin) {
-        if (origin == this.origin) {
-            return;
-        }
-
-        this.origin = origin;
+        this.sprite = sprite;
         boundsDirty = true;
     }
 
@@ -157,48 +79,47 @@ public class SimpleSprite : Component, IRenderable {
             return;
         }
 
-        if (texture == null) {
-            bounds = Rect.Zero;
-            boundsDirty = false;
-            return;
+        if (sprite == null || sprite.Texture == null) {
+            bounds = Rect.Offscreen;
         }
+        else {
+            Point size = sprite.SourceRect.HasValue ? sprite.SourceRect.Value.Size : sprite.Texture.Size();
+            bounds.Size = size.ToVector2() * Transform.Scale;
+            bounds.Position = Transform.Position - sprite.Origin * Transform.Scale;
 
-        Point size = sourceRect.HasValue ? sourceRect.Value.Size : texture.Size();
-        bounds.Size = size.ToVector2() * Transform.Scale;
-        bounds.Position = Transform.Position - origin * Transform.Scale;
+            if (Transform.Rotation != 0f) {
+                Vector2 topLeft = Transform.TransformPoint(new Vector2(bounds.X, bounds.Y));
+                Vector2 topRight = Transform.TransformPoint(new Vector2(bounds.X + bounds.Width, bounds.Y));
+                Vector2 bottomLeft = Transform.TransformPoint(new Vector2(bounds.X, bounds.Y + bounds.Height));
+                Vector2 bottomRight = Transform.TransformPoint(new Vector2(bounds.X + bounds.Width, bounds.Y + bounds.Height));
 
-        if (Transform.Rotation != 0f) {
-            Vector2 topLeft = Transform.TransformPoint(new Vector2(bounds.X, bounds.Y));
-            Vector2 topRight = Transform.TransformPoint(new Vector2(bounds.X + bounds.Width, bounds.Y));
-            Vector2 bottomLeft = Transform.TransformPoint(new Vector2(bounds.X, bounds.Y + bounds.Height));
-            Vector2 bottomRight = Transform.TransformPoint(new Vector2(bounds.X + bounds.Width, bounds.Y + bounds.Height));
+                float minX = MathExt.Min(topLeft.X, topRight.X, bottomLeft.X, bottomRight.X);
+                float maxX = MathExt.Max(topLeft.X, topRight.X, bottomLeft.X, bottomRight.X);
+                float minY = MathExt.Min(topLeft.Y, topRight.Y, bottomLeft.Y, bottomRight.Y);
+                float maxY = MathExt.Max(topLeft.Y, topRight.Y, bottomLeft.Y, bottomRight.Y);
 
-            float minX = MathExt.Min(topLeft.X, topRight.X, bottomLeft.X, bottomRight.X);
-            float maxX = MathExt.Max(topLeft.X, topRight.X, bottomLeft.X, bottomRight.X);
-            float minY = MathExt.Min(topLeft.Y, topRight.Y, bottomLeft.Y, bottomRight.Y);
-            float maxY = MathExt.Max(topLeft.Y, topRight.Y, bottomLeft.Y, bottomRight.Y);
-
-            bounds.X = minX;
-            bounds.Y = minY;
-            bounds.Width = maxX - minX;
-            bounds.Height = maxY - minY;
+                bounds.X = minX;
+                bounds.Y = minY;
+                bounds.Width = maxX - minX;
+                bounds.Height = maxY - minY;
+            }
         }
 
         boundsDirty = false;
     }
 
     public void Render(SpriteBatch spriteBatch, Camera camera) {
-        if (Texture == null) {
+        if (sprite == null || sprite.Texture == null) {
             return;
         }
 
         spriteBatch.Draw(
-            Texture,
+            sprite.Texture,
             Transform.Position,
-            SourceRect,
+            sprite.SourceRect,
             Tint,
             Transform.Rotation,
-            Origin,
+            sprite.Origin,
             Transform.Scale,
             spriteEffects,
             0f
@@ -206,6 +127,6 @@ public class SimpleSprite : Component, IRenderable {
     }
 
     protected override void OnDestroy() {
-        texture = null;
+        sprite = null;
     }
 }

@@ -13,23 +13,12 @@ public class AnimatedSprite : Component, IUpdatable, IRenderable {
     /// <summary>
     /// Defines a single frame of animation.
     /// </summary>
-    public struct FrameInfo {
+    public struct Frame {
 
         /// <summary>
-        /// This frame's texture to draw.
+        /// The Sprite to draw this frame.
         /// </summary>
-        public Texture2D Texture;
-
-        /// <summary>
-        /// The region of the texture that will be drawn on this frame.
-        /// If <see langword="null"/> (default), the whole texture is drawn.
-        /// </summary>
-        public Rectangle? SourceRect;
-
-        /// <summary>
-        /// The sprite's origin (pivot point) for the frame. Default is the top left.
-        /// </summary>
-        public Vector2 Origin;
+        public Sprite Sprite;
 
         /// <summary>
         /// If not <see langword="null"/>, this will override the <see cref="Tint"/> property.
@@ -111,7 +100,7 @@ public class AnimatedSprite : Component, IUpdatable, IRenderable {
     // This dictionary only gets created if a frame action is set
     Dictionary<int, Dictionary<int, Action>> frameActionsBySequenceAndFrameIdx;
 
-    FastList<FrameInfo[]> sequences = new FastList<FrameInfo[]>();
+    FastList<Frame[]> sequences = new FastList<Frame[]>();
     Dictionary<string, int> sequenceIndicesByName = new Dictionary<string, int>();
 
     int previousSequenceIdx = 0;
@@ -127,19 +116,33 @@ public class AnimatedSprite : Component, IUpdatable, IRenderable {
     bool boundsDirty = false;
 
     public AnimatedSprite() {
-        FrameInfo[] fallbackSequence = { new FrameInfo() };
+        Frame[] fallbackSequence = { new Frame() };
         sequences.Add(fallbackSequence);
     }
 
     #region Sequences
 
     /// <summary>
-    /// Sets the frames of an animation sequence.
+    /// Sets a sequence named <paramref name="name"/> using the specified Sprites.
+    /// </summary>
+    /// <param name="name">The name of the sequence.</param>
+    /// <param name="sprites">The sequence's sprites.</param>
+    public void SetSequence(string name, Sprite[] sprites) {
+        Frame[] frames = new Frame[sprites.Length];
+        for (int i = 0; i < sprites.Length; i++) {
+            frames[i].Sprite = sprites[i];
+        }
+
+        SetSequence(name, frames);
+    }
+
+    /// <summary>
+    /// Sets a sequence named <paramref name="name"/> using the specified frames.
     /// If a sequence named <paramref name="name"/> doesn't exist, it will be added.
     /// </summary>
     /// <param name="name">The name of the sequence.</param>
     /// <param name="frames">The sequence's animation frames.</param>
-    public void SetSequence(string name, FrameInfo[] frames) {
+    public void SetSequence(string name, Frame[] frames) {
         ArgumentNullException.ThrowIfNull(name, nameof(name));
         ArgumentNullException.ThrowIfNull(frames, nameof(frames));
 
@@ -161,7 +164,7 @@ public class AnimatedSprite : Component, IUpdatable, IRenderable {
     /// <summary>
     /// Gets the frame data for the specified sequence.
     /// </summary>
-    public FrameInfo[] GetSequence(string sequence) {
+    public Frame[] GetSequence(string sequence) {
         if (!sequenceIndicesByName.ContainsKey(sequence)) {
             throw new ArgumentException($"A sequence named \"{sequence}\" doesn't exist!", nameof(sequence));
         }
@@ -376,52 +379,51 @@ public class AnimatedSprite : Component, IUpdatable, IRenderable {
             return;
         }
 
-        FrameInfo currentFrame = sequences.Buffer[currentSequenceIdx][currentFrameIdx];
+        Frame currentFrame = sequences.Buffer[currentSequenceIdx][currentFrameIdx];
 
-        if (currentFrame.Texture == null) {
-            bounds = Rect.Zero;
-            boundsDirty = false;
-            return;
+        if (currentFrame.Sprite == null || currentFrame.Sprite.Texture == null) {
+            bounds = Rect.Offscreen;
         }
+        else {
+            Point size = currentFrame.Sprite.SourceRect.HasValue ? currentFrame.Sprite.SourceRect.Value.Size : currentFrame.Sprite.Texture.Size();
+            bounds.Size = size.ToVector2() * Transform.Scale;
+            bounds.Position = Transform.Position - currentFrame.Sprite.Origin * Transform.Scale;
 
-        Point size = currentFrame.SourceRect.HasValue ? currentFrame.SourceRect.Value.Size : currentFrame.Texture.Size();
-        bounds.Size = size.ToVector2() * Transform.Scale;
-        bounds.Position = Transform.Position - currentFrame.Origin * Transform.Scale;
+            if (Transform.Rotation != 0f) {
+                Vector2 topLeft = Transform.TransformPoint(new Vector2(bounds.X, bounds.Y));
+                Vector2 topRight = Transform.TransformPoint(new Vector2(bounds.X + bounds.Width, bounds.Y));
+                Vector2 bottomLeft = Transform.TransformPoint(new Vector2(bounds.X, bounds.Y + bounds.Height));
+                Vector2 bottomRight = Transform.TransformPoint(new Vector2(bounds.X + bounds.Width, bounds.Y + bounds.Height));
 
-        if (Transform.Rotation != 0f) {
-            Vector2 topLeft = Transform.TransformPoint(new Vector2(bounds.X, bounds.Y));
-            Vector2 topRight = Transform.TransformPoint(new Vector2(bounds.X + bounds.Width, bounds.Y));
-            Vector2 bottomLeft = Transform.TransformPoint(new Vector2(bounds.X, bounds.Y + bounds.Height));
-            Vector2 bottomRight = Transform.TransformPoint(new Vector2(bounds.X + bounds.Width, bounds.Y + bounds.Height));
+                float minX = MathExt.Min(topLeft.X, topRight.X, bottomLeft.X, bottomRight.X);
+                float maxX = MathExt.Max(topLeft.X, topRight.X, bottomLeft.X, bottomRight.X);
+                float minY = MathExt.Min(topLeft.Y, topRight.Y, bottomLeft.Y, bottomRight.Y);
+                float maxY = MathExt.Max(topLeft.Y, topRight.Y, bottomLeft.Y, bottomRight.Y);
 
-            float minX = MathExt.Min(topLeft.X, topRight.X, bottomLeft.X, bottomRight.X);
-            float maxX = MathExt.Max(topLeft.X, topRight.X, bottomLeft.X, bottomRight.X);
-            float minY = MathExt.Min(topLeft.Y, topRight.Y, bottomLeft.Y, bottomRight.Y);
-            float maxY = MathExt.Max(topLeft.Y, topRight.Y, bottomLeft.Y, bottomRight.Y);
-
-            bounds.X = minX;
-            bounds.Y = minY;
-            bounds.Width = maxX - minX;
-            bounds.Height = maxY - minY;
+                bounds.X = minX;
+                bounds.Y = minY;
+                bounds.Width = maxX - minX;
+                bounds.Height = maxY - minY;
+            }
         }
 
         boundsDirty = false;
     }
 
     public void Render(SpriteBatch spriteBatch, Camera camera) {
-        FrameInfo currentFrame = sequences.Buffer[currentSequenceIdx][currentFrameIdx];
+        Frame currentFrame = sequences.Buffer[currentSequenceIdx][currentFrameIdx];
 
-        if (currentFrame.Texture == null) {
+        if (currentFrame.Sprite == null || currentFrame.Sprite.Texture == null) {
             return;
         }
 
         spriteBatch.Draw(
-            currentFrame.Texture,
+            currentFrame.Sprite.Texture,
             Transform.Position,
-            currentFrame.SourceRect,
+            currentFrame.Sprite.SourceRect,
             currentFrame.TintOverride.GetValueOrDefault(Tint),
             Transform.Rotation,
-            currentFrame.Origin,
+            currentFrame.Sprite.Origin,
             Transform.Scale,
             currentFrame.SpriteEffects,
             0f
@@ -441,7 +443,7 @@ public class AnimatedSprite : Component, IUpdatable, IRenderable {
 
         for (int i = 0; i < sequences.Length; i++) {
             for (int j = 0; j < sequences.Buffer[i].Length; j++) {
-                sequences.Buffer[i][j].Texture = null;
+                sequences.Buffer[i][j].Sprite = null;
             }
         }
     }
