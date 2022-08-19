@@ -433,9 +433,6 @@ public class AnimatedSprite : Component, IUpdatable, IRenderable {
     protected override void OnDestroy() {
         if (frameActionsBySequenceAndFrameIdx != null) {
             foreach (Dictionary<int, Action> frameActions in frameActionsBySequenceAndFrameIdx.Values) {
-                foreach (int frameIdx in frameActions.Keys) {
-                    frameActions[frameIdx] = null;
-                }
                 frameActions.Clear();
             }
             frameActionsBySequenceAndFrameIdx.Clear();
@@ -446,5 +443,6 @@ public class AnimatedSprite : Component, IUpdatable, IRenderable {
                 sequences.Buffer[i][j].Sprite = null;
             }
         }
+        sequences.Clear();
     }
 }

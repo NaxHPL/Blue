@@ -12,20 +12,6 @@ public static class Texture2DExt {
         return new Point(texture.Width, texture.Height);
     }
 
-    static Vector2 ConvertOriginToVector(Origin origin, int width, int height) {
-        return origin switch {
-           Origin.Top         => new Vector2(width / 2f, 0f),
-           Origin.TopRight    => new Vector2(width, 0f),
-           Origin.Left        => new Vector2(0f, height / 2f),
-           Origin.Center      => new Vector2(width / 2f, height / 2f),
-           Origin.Right       => new Vector2(width, height / 2f),
-           Origin.BottomLeft  => new Vector2(0f, height),
-           Origin.Bottom      => new Vector2(width / 2f, height),
-           Origin.BottomRight => new Vector2(width, height),
-           _                  => new Vector2(0f, 0f)
-        };
-    }
-
     /// <summary>
     /// Slices this texture into Sprites.
     /// </summary>
@@ -61,7 +47,7 @@ public static class Texture2DExt {
     /// <param name="origin">The origin point for the Sprites.</param>
     /// <param name="textureRegion">Only split this region of the texture into Sprites. If <see langword="null"/>, the whole texture will be split.</param>
     public static Sprite[] SliceByCellSize(this Texture2D texture, in Point cellSize, Origin origin, Rectangle? textureRegion = null) {
-        Vector2 originVec = ConvertOriginToVector(origin, cellSize.X, cellSize.Y);
+        Vector2 originVec = origin.ConvertToVector(cellSize);
         return SliceByCellSize(texture, cellSize, originVec, textureRegion);
     }
 

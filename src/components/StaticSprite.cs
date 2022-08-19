@@ -6,7 +6,7 @@ namespace BlueFw;
 /// <summary>
 /// A static sprite component.
 /// </summary>
-public class SimpleSprite : Component, IRenderable {
+public class StaticSprite : Component, IRenderable {
 
     public int RenderLayer { get; set; }
 
@@ -54,19 +54,54 @@ public class SimpleSprite : Component, IRenderable {
     /// A color to tint the sprite.
     /// </summary>
     public Color Tint = Color.White;
+    
+    /// <summary>
+    /// The nine slice mode to use when rendering this sprite. Default is <see cref="NineSliceMode.None"/>.
+    /// </summary>
+    public NineSliceMode NineSliceMode = NineSliceMode.None;
 
-    Rect bounds;
+    /// <summary>
+    /// Get/set the size of the sprite when <see cref="NineSliceMode"/> is set to <see cref="NineSliceMode.Scale"/> or <see cref="NineSliceMode.Tile"/>.
+    /// </summary>
+    public Point Size {
+        get => size;
+        set => SetSize(value);
+    }
+
+    Point size;
     Sprite sprite;
     SpriteEffects spriteEffects = SpriteEffects.None;
+    Rect bounds;
 
     bool boundsDirty;
 
+    /// <summary>
+    /// Sets the sprite.
+    /// </summary>
     public void SetSprite(Sprite sprite) {
         if (this.sprite == sprite) {
             return;
         }
 
         this.sprite = sprite;
+
+        if (sprite != null && sprite.Texture != null) {
+            size.X = sprite.Texture.Width;
+            size.Y = sprite.Texture.Height;
+        }
+
+        boundsDirty = true;
+    }
+
+    /// <summary>
+    /// Sets the size of the sprite when <see cref="NineSliceMode"/> is set to <see cref="NineSliceMode.Scale"/> or <see cref="NineSliceMode.Tile"/>.
+    /// </summary>
+    public void SetSize(Point size) {
+        if (this.size == size) {
+            return;
+        }
+
+        this.size = size;
         boundsDirty = true;
     }
 
