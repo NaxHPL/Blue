@@ -17,9 +17,30 @@ public class Sprite {
     public Rectangle? SourceRect;
 
     /// <summary>
+    /// A rectangle defining the center area of the sprite.
+    /// This to determine the areas for nine slicing.
+    /// </summary>
+    public Rectangle NineSliceRect;
+
+    /// <summary>
     /// The Sprite's origin (pivot point) specified in pixels. Default is the top left.
     /// </summary>
     public Vector2 Origin;
+
+    /// <summary>
+    /// The size of the Sprite as a <see cref="Point"/>.
+    /// </summary>
+    public Point Size => new Point(Width, Height);
+
+    /// <summary>
+    /// The width of the Sprite.
+    /// </summary>
+    public int Width => Texture == null ? 0 : SourceRect.HasValue ? SourceRect.Value.Width : Texture.Width;
+
+    /// <summary>
+    /// The height of the Sprite.
+    /// </summary>
+    public int Height => Texture == null ? 0 : SourceRect.HasValue ? SourceRect.Value.Height : Texture.Height;
 
     /// <summary>
     /// Creates a Sprite

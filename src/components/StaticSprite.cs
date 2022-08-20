@@ -1,5 +1,6 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using System;
 
 namespace BlueFw;
 
@@ -58,7 +59,10 @@ public class StaticSprite : Component, IRenderable {
     /// <summary>
     /// The nine slice mode to use when rendering this sprite. Default is <see cref="NineSliceMode.None"/>.
     /// </summary>
-    public NineSliceMode NineSliceMode = NineSliceMode.None;
+    public NineSliceMode NineSliceMode {
+        get => nineSliceMode;
+        set => SetNineSliceMode(value);
+    }
 
     /// <summary>
     /// Get/set the size of the sprite when <see cref="NineSliceMode"/> is set to <see cref="NineSliceMode.Scale"/> or <see cref="NineSliceMode.Tile"/>.
@@ -68,11 +72,15 @@ public class StaticSprite : Component, IRenderable {
         set => SetSize(value);
     }
 
-    Point size;
     Sprite sprite;
     SpriteEffects spriteEffects = SpriteEffects.None;
-    Rect bounds;
 
+    NineSliceMode nineSliceMode = NineSliceMode.None;
+    Texture2D nineSliceTex;
+    Point size;
+    Vector2 nineSliceOrigin;
+
+    Rect bounds;
     bool boundsDirty;
 
     /// <summary>
@@ -83,11 +91,18 @@ public class StaticSprite : Component, IRenderable {
             return;
         }
 
+        if (sprite.Texture == null) {
+            throw new ArgumentException("The provided Sprite's texture is null!", nameof(sprite));
+        }
+
         this.sprite = sprite;
 
-        if (sprite != null && sprite.Texture != null) {
-            size.X = sprite.Texture.Width;
-            size.Y = sprite.Texture.Height;
+        if (sprite != null) {
+            size = sprite.Size;
+        }
+
+        if (nineSliceMode != NineSliceMode.None) {
+            GenerateNineSliceTexture();
         }
 
         boundsDirty = true;
@@ -102,7 +117,55 @@ public class StaticSprite : Component, IRenderable {
         }
 
         this.size = size;
-        boundsDirty = true;
+
+        if (nineSliceMode != NineSliceMode.None) {
+            GenerateNineSliceTexture();
+            boundsDirty = true;
+        }
+    }
+
+    public void SetNineSliceMode(NineSliceMode nineSliceMode) {
+        if (this.nineSliceMode == nineSliceMode) {
+            return;
+        }
+
+        this.nineSliceMode = nineSliceMode;
+
+        if (nineSliceMode != NineSliceMode.None) {
+            GenerateNineSliceTexture();
+        }
+
+        if (sprite != null && size != sprite.Texture.Size()) {
+            boundsDirty = true;
+        }
+    }
+
+    void GenerateNineSliceTexture() {
+        if (sprite == null) {
+            return;
+        }
+
+        // Prepare texture
+        if (nineSliceTex != null && nineSliceTex.Size() != size) {
+            nineSliceTex.Dispose();
+            nineSliceTex = null;
+        }
+        nineSliceTex ??= new Texture2D(Blue.Instance.GraphicsDevice, size.X, size.Y);
+
+        NineSliceUtils.GenerateTexture(sprite, size, nineSliceTex);
+        UpdateNineSliceOrigin();
+    }
+
+    void UpdateNineSliceOrigin() {
+        if (sprite == null) {
+            return;
+        }
+
+        float sprOriginNormalizedX = sprite.Origin.X / sprite.Size.X;
+        float sprOriginNormalizedY = sprite.Origin.Y / sprite.Size.Y;
+
+        nineSliceOrigin.X = sprOriginNormalizedX * size.X;
+        nineSliceOrigin.Y = sprOriginNormalizedY * size.Y;
     }
 
     protected override void OnEntityTransformChanged() {
@@ -114,13 +177,15 @@ public class StaticSprite : Component, IRenderable {
             return;
         }
 
-        if (sprite == null || sprite.Texture == null) {
+        if (sprite == null) {
             bounds = Rect.Offscreen;
         }
         else {
-            Point size = sprite.SourceRect.HasValue ? sprite.SourceRect.Value.Size : sprite.Texture.Size();
+            Point size = nineSliceMode == NineSliceMode.None ? sprite.Size : this.size;
             bounds.Size = size.ToVector2() * Transform.Scale;
-            bounds.Position = Transform.Position - sprite.Origin * Transform.Scale;
+
+            Vector2 origin = nineSliceMode == NineSliceMode.None ? sprite.Origin : nineSliceOrigin;
+            bounds.Position = Transform.Position - origin * Transform.Scale;
 
             if (Transform.Rotation != 0f) {
                 Vector2 topLeft = Transform.TransformPoint(new Vector2(bounds.X, bounds.Y));
@@ -144,24 +209,44 @@ public class StaticSprite : Component, IRenderable {
     }
 
     public void Render(SpriteBatch spriteBatch, Camera camera) {
-        if (sprite == null || sprite.Texture == null) {
+        if (sprite == null) {
             return;
         }
 
-        spriteBatch.Draw(
-            sprite.Texture,
-            Transform.Position,
-            sprite.SourceRect,
-            Tint,
-            Transform.Rotation,
-            sprite.Origin,
-            Transform.Scale,
-            spriteEffects,
-            0f
-        );
+        if (nineSliceMode == NineSliceMode.None) {
+            spriteBatch.Draw(
+                sprite.Texture,
+                Transform.Position,
+                sprite.SourceRect,
+                Tint,
+                Transform.Rotation,
+                sprite.Origin,
+                Transform.Scale,
+                spriteEffects,
+                0f
+            );
+        }
+        else {
+            spriteBatch.Draw(
+                nineSliceTex,
+                Transform.Position,
+                null,
+                Tint,
+                Transform.Rotation,
+                nineSliceOrigin,
+                Transform.Scale,
+                spriteEffects,
+                0f
+            );
+        }
     }
 
     protected override void OnDestroy() {
         sprite = null;
+
+        if (nineSliceTex != null) {
+            nineSliceTex.Dispose();
+            nineSliceTex = null;
+        }
     }
 }

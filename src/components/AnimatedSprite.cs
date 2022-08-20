@@ -385,8 +385,7 @@ public class AnimatedSprite : Component, IUpdatable, IRenderable {
             bounds = Rect.Offscreen;
         }
         else {
-            Point size = currentFrame.Sprite.SourceRect.HasValue ? currentFrame.Sprite.SourceRect.Value.Size : currentFrame.Sprite.Texture.Size();
-            bounds.Size = size.ToVector2() * Transform.Scale;
+            bounds.Size = currentFrame.Sprite.Size.ToVector2() * Transform.Scale;
             bounds.Position = Transform.Position - currentFrame.Sprite.Origin * Transform.Scale;
 
             if (Transform.Rotation != 0f) {
