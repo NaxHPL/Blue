@@ -28,14 +28,14 @@ public static class MathExt {
     /// <summary>
     /// Gets the minimum value of three integers.
     /// </summary>
-    public static float Min(int value1, int value2, int value3) {
+    public static int Min(int value1, int value2, int value3) {
         return MathHelper.Min(value1, MathHelper.Min(value2, value3));
     }
 
     /// <summary>
     /// Gets the minimum value of four integers.
     /// </summary>
-    public static float Min(int value1, int value2, int value3, int value4) {
+    public static int Min(int value1, int value2, int value3, int value4) {
         return MathHelper.Min(value1, MathHelper.Min(value2, MathHelper.Min(value3, value4)));
     }
 
@@ -56,14 +56,14 @@ public static class MathExt {
     /// <summary>
     /// Gets the maximum value of three integers.
     /// </summary>
-    public static float Max(int value1, int value2, int value3) {
+    public static int Max(int value1, int value2, int value3) {
         return MathHelper.Max(value1, MathHelper.Max(value2, value3));
     }
 
     /// <summary>
     /// Gets the maximum value of four integers.
     /// </summary>
-    public static float Max(int value1, int value2, int value3, int value4) {
+    public static int Max(int value1, int value2, int value3, int value4) {
         return MathHelper.Max(value1, MathHelper.Max(value2, MathHelper.Max(value3, value4)));
     }
 }

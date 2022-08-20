@@ -112,6 +112,13 @@ public class StaticSprite : Component, IRenderable {
     /// Sets the size of the sprite when <see cref="NineSliceMode"/> is set to <see cref="NineSliceMode.Scale"/> or <see cref="NineSliceMode.Tile"/>.
     /// </summary>
     public void SetSize(Point size) {
+        if (size.X < 1) {
+            throw new ArgumentException("A sprite's width must be greater than zero!", nameof(size));
+        }
+        if (size.Y < 1) {
+            throw new ArgumentException("A sprite's height must be greater than zero!", nameof(size));
+        }
+
         if (this.size == size) {
             return;
         }
@@ -152,18 +159,13 @@ public class StaticSprite : Component, IRenderable {
         }
         nineSliceTex ??= new Texture2D(Blue.Instance.GraphicsDevice, size.X, size.Y);
 
-        NineSliceUtils.GenerateTexture(sprite, size, nineSliceTex);
-        UpdateNineSliceOrigin();
-    }
+        // Generate texture
+        NineSliceUtils.GenerateTexture(sprite, size, nineSliceMode, nineSliceTex);
 
-    void UpdateNineSliceOrigin() {
-        if (sprite == null) {
-            return;
-        }
-
+        // Update nine slice origin
         float sprOriginNormalizedX = sprite.Origin.X / sprite.Size.X;
         float sprOriginNormalizedY = sprite.Origin.Y / sprite.Size.Y;
-
+        
         nineSliceOrigin.X = sprOriginNormalizedX * size.X;
         nineSliceOrigin.Y = sprOriginNormalizedY * size.Y;
     }
