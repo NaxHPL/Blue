@@ -76,8 +76,9 @@ public class StaticSprite : Component, IRenderable {
     SpriteEffects spriteEffects = SpriteEffects.None;
 
     NineSliceMode nineSliceMode = NineSliceMode.None;
-    Texture2D nineSliceTex;
     Point size;
+    Texture2D nineSliceTiledTex;
+    NineSliceScaledRect[] nineSliceScaledRects;
     Vector2 nineSliceOrigin;
 
     Rect bounds;
@@ -101,8 +102,11 @@ public class StaticSprite : Component, IRenderable {
             size = sprite.Size;
         }
 
-        if (nineSliceMode != NineSliceMode.None) {
-            GenerateNineSliceTexture();
+        if (nineSliceMode == NineSliceMode.Scale) {
+            GenerateNineSliceScaledRects();
+        }
+        else if (nineSliceMode == NineSliceMode.Tile) {
+            GenerateNineSliceTiledTexture();
         }
 
         boundsDirty = true;
@@ -125,10 +129,17 @@ public class StaticSprite : Component, IRenderable {
 
         this.size = size;
 
-        if (nineSliceMode != NineSliceMode.None) {
-            GenerateNineSliceTexture();
-            boundsDirty = true;
+        if (nineSliceMode == NineSliceMode.Scale) {
+            GenerateNineSliceScaledRects();
         }
+        else if (nineSliceMode == NineSliceMode.Tile) {
+            GenerateNineSliceTiledTexture();
+        }
+        else {
+            return;
+        }
+
+        boundsDirty = true;
     }
 
     public void SetNineSliceMode(NineSliceMode nineSliceMode) {
@@ -138,29 +149,41 @@ public class StaticSprite : Component, IRenderable {
 
         this.nineSliceMode = nineSliceMode;
 
-        if (nineSliceMode != NineSliceMode.None) {
-            GenerateNineSliceTexture();
+        if (nineSliceMode == NineSliceMode.Scale) {
+            GenerateNineSliceScaledRects();
+        }
+        else if (nineSliceMode == NineSliceMode.Tile) {
+            GenerateNineSliceTiledTexture();
         }
 
-        if (sprite != null && size != sprite.Texture.Size()) {
+        if (sprite != null && size != sprite.Size) {
             boundsDirty = true;
         }
     }
 
-    void GenerateNineSliceTexture() {
+    void GenerateNineSliceScaledRects() {
+        if (sprite == null) {
+            return;
+        }
+
+        nineSliceScaledRects ??= new NineSliceScaledRect[9];
+        NineSliceUtils.GenerateScaledRects(size, sprite, nineSliceScaledRects);
+    }
+
+    void GenerateNineSliceTiledTexture() {
         if (sprite == null) {
             return;
         }
 
         // Prepare texture
-        if (nineSliceTex != null && nineSliceTex.Size() != size) {
-            nineSliceTex.Dispose();
-            nineSliceTex = null;
+        if (nineSliceTiledTex != null && nineSliceTiledTex.Size() != size) {
+            nineSliceTiledTex.Dispose();
+            nineSliceTiledTex = null;
         }
-        nineSliceTex ??= new Texture2D(Blue.Instance.GraphicsDevice, size.X, size.Y);
+        nineSliceTiledTex ??= new Texture2D(Blue.Instance.GraphicsDevice, size.X, size.Y);
 
         // Generate texture
-        NineSliceUtils.GenerateTexture(sprite, size, nineSliceMode, nineSliceTex);
+        NineSliceUtils.GenerateTiledTexture(sprite, size, nineSliceTiledTex);
 
         // Update nine slice origin
         float sprOriginNormalizedX = sprite.Origin.X / sprite.Size.X;
@@ -215,7 +238,35 @@ public class StaticSprite : Component, IRenderable {
             return;
         }
 
-        if (nineSliceMode == NineSliceMode.None) {
+        if (nineSliceMode == NineSliceMode.Scale) {
+            for (int i = 0; i < nineSliceScaledRects.Length; i++) {
+                spriteBatch.Draw(
+                    sprite.Texture,
+                    Transform.Position,
+                    nineSliceScaledRects[i].SourceRect,
+                    Tint,
+                    Transform.Rotation,
+                    nineSliceScaledRects[i].Origin,
+                    nineSliceScaledRects[i].Scale * Transform.Scale,
+                    spriteEffects,
+                    0f
+                );
+            }
+        }
+        else if (nineSliceMode == NineSliceMode.Tile) {
+            spriteBatch.Draw(
+                nineSliceTiledTex,
+                Transform.Position,
+                null,
+                Tint,
+                Transform.Rotation,
+                nineSliceOrigin,
+                Transform.Scale,
+                spriteEffects,
+                0f
+            );
+        }
+        else {
             spriteBatch.Draw(
                 sprite.Texture,
                 Transform.Position,
@@ -228,27 +279,14 @@ public class StaticSprite : Component, IRenderable {
                 0f
             );
         }
-        else {
-            spriteBatch.Draw(
-                nineSliceTex,
-                Transform.Position,
-                null,
-                Tint,
-                Transform.Rotation,
-                nineSliceOrigin,
-                Transform.Scale,
-                spriteEffects,
-                0f
-            );
-        }
     }
 
     protected override void OnDestroy() {
         sprite = null;
 
-        if (nineSliceTex != null) {
-            nineSliceTex.Dispose();
-            nineSliceTex = null;
+        if (nineSliceTiledTex != null) {
+            nineSliceTiledTex.Dispose();
+            nineSliceTiledTex = null;
         }
     }
 }
