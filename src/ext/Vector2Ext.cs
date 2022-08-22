@@ -1,18 +1,19 @@
 ﻿using Microsoft.Xna.Framework;
+using System;
 
 namespace BlueFw;
 
 public static class Vector2Ext {
 
     /// <summary>
-    /// Returns a copy of this vector with its length clamped to <paramref name="maxLength"/>.
+    /// Returns a vector identical to <paramref name="vector"/> but with its length clamped to <paramref name="maxLength"/>.
     /// </summary>
-    public static Vector2 ClampLength(this Vector2 v, float maxLength) {
-        if (v == Vector2.Zero || v.Length() <= maxLength) {
-            return v;
+    public static Vector2 ClampLength(in Vector2 vector, float maxLength) {
+        if (vector == Vector2.Zero || vector.Length() <= maxLength) {
+            return vector;
         }
 
-        return Vector2.Normalize(v) * maxLength;
+        return Vector2.Normalize(vector) * maxLength;
     }
 
     /// <summary>
@@ -32,5 +33,12 @@ public static class Vector2Ext {
 
         result.X = x;
         result.Y = y;
+    }
+
+    /// <summary>
+    /// Returns a vector with the absolute value of <paramref name="vector"/>'s component values.
+    /// </summary>
+    public static Vector2 Abs(in Vector2 vector) {
+        return new Vector2(MathF.Abs(vector.X), MathF.Abs(vector.Y));
     }
 }

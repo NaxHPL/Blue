@@ -6,8 +6,7 @@ namespace BlueFw;
 internal static class NineSliceUtils {
 
     public static void GenerateScaledRects(in Point desiredSize, Sprite sprite, ref NineSlicePatch[] patches) {
-        patches ??= new NineSlicePatch[9];
-        if (patches.Length != 9) {
+        if (patches == null || patches.Length != 9) {
             Array.Resize(ref patches, 9);
         }
 
@@ -80,8 +79,7 @@ internal static class NineSliceUtils {
         int numCenterPatches = numHorizPatches * numVertPatches;
         int numTotalPatches = numCornerPatches + (numHorizPatches + numVertPatches) * 2 + numCenterPatches;
 
-        patches ??= new NineSlicePatch[numTotalPatches];
-        if (patches.Length != numTotalPatches) {
+        if (patches == null || patches.Length != numTotalPatches) {
             Array.Resize(ref patches, numTotalPatches);
         }
 
