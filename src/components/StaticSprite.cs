@@ -97,7 +97,7 @@ public class StaticSprite : Component, IRenderable {
 
         this.sprite = sprite;
 
-        if (sprite != null) {
+        if (size == Point.Zero && sprite != null) {
             size = sprite.Size;
         }
 

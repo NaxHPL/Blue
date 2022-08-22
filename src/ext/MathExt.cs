@@ -1,4 +1,5 @@
 ﻿using Microsoft.Xna.Framework;
+using System;
 
 namespace BlueFw;
 
@@ -65,5 +66,9 @@ public static class MathExt {
     /// </summary>
     public static int Max(int value1, int value2, int value3, int value4) {
         return MathHelper.Max(value1, MathHelper.Max(value2, MathHelper.Max(value3, value4)));
+    }
+
+    public static int CeilToInt(float value) {
+        return (int)MathF.Ceiling(value);
     }
 }
