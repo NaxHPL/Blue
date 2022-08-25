@@ -26,9 +26,6 @@ internal class EntityCollection {
     readonly FastList<Entity> entities = new FastList<Entity>();
     readonly HashSet<uint> entityInstanceIds = new HashSet<uint>(); // Used for checking if the collection contains an entity
 
-    static readonly List<Entity> reusableEntityList = new List<Entity>();
-    static readonly List<Component> reusableComponentList = new List<Component>();
-
     /// <summary>
     /// Adds an entity.
     /// </summary>
@@ -137,14 +134,16 @@ internal class EntityCollection {
     /// </summary>
     /// <param name="onlyActive">(Optional) Only consider entities which are active in the hierarchy.</param>
     public T[] FindAll<T>(bool onlyActive = false) where T : Entity {
+        List<T> list = ListPool<T>.Get();
+
         for (int i = 0; i < entities.Length; i++) {
-            if (entities.Buffer[i] is T && (!onlyActive || entities.Buffer[i].Active)) {
-                reusableEntityList.Add(entities.Buffer[i]);
+            if (entities.Buffer[i] is T e && (!onlyActive || e.Active)) {
+                list.Add(e);
             }
         }
 
-        T[] arr = (T[])reusableEntityList.ToArray();
-        reusableEntityList.Clear();
+        T[] arr = list.ToArray();
+        ListPool<T>.Return(list);
         return arr;
     }
 
@@ -179,14 +178,16 @@ internal class EntityCollection {
     /// </summary>
     /// <param name="onlyActive">(Optional) Only consider components which are active in the hierarchy.</param>
     public T[] FindComponents<T>(bool onlyActive = false) where T : Component {
+        List<T> list = ListPool<T>.Get();
+
         for (int i = 0; i < entities.Length; i++) {
             if (entities.Buffer[i].TryGetComponent(out T c) && (!onlyActive || c.Active)) {
-                reusableComponentList.Add(c);
+                list.Add(c);
             }
         }
 
-        T[] arr = (T[])reusableComponentList.ToArray();
-        reusableComponentList.Clear();
+        T[] arr = list.ToArray();
+        ListPool<T>.Return(list);
         return arr;
     }
 }

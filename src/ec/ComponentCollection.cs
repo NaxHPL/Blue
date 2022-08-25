@@ -26,8 +26,6 @@ internal class ComponentCollection {
     readonly FastList<Component> components = new FastList<Component>();
     readonly HashSet<uint> componentInstanceIds = new HashSet<uint>(); // Used for checking if the collection contains a component
 
-    static readonly List<Component> reusableComponentList = new List<Component>(); // A reusable list used by various methods
-
     /// <summary>
     /// Adds a component to the collection.
     /// </summary>
@@ -98,14 +96,16 @@ internal class ComponentCollection {
     /// </summary>
     /// <param name="onlyActive">(Optional) Only consider components which are active in the hierarchy.</param>
     public T[] FindAll<T>(bool onlyActive = false) where T : Component {
+        List<T> list = ListPool<T>.Get();
+
         for (int i = 0; i < components.Length; i++) {
             if (components.Buffer[i] is T c && (!onlyActive || c.Active)) {
-                reusableComponentList.Add(c);
+                list.Add(c);
             }
         }
 
-        T[] arr = (T[])reusableComponentList.ToArray();
-        reusableComponentList.Clear();
+        T[] arr = list.ToArray();
+        ListPool<T>.Return(list);
         return arr;
     }
 
