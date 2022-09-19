@@ -103,12 +103,12 @@ public static class Input {
         /// <summary>
         /// The mouse position relative to the window as a <see cref="Point"/>.
         /// </summary>
-        public static Point MousePositionPoint => CurrentState.Position;
+        public static Point MousePosPoint => CurrentState.Position;
 
         /// <summary>
         /// The mouse position relative to the window.
         /// </summary>
-        public static Vector2 MousePosition { get; private set; }
+        public static Vector2 MousePos { get; private set; }
 
         /// <summary>
         /// Did the mouse move this frame?
@@ -157,7 +157,7 @@ public static class Input {
             PreviousState = CurrentState;
             CurrentState = Mouse.GetState();
 
-            MousePosition = CurrentState.Position.ToVector2();
+            MousePos = CurrentState.Position.ToVector2();
             MouseMoved = CurrentState.Position != PreviousState.Position;
 
             MouseScrollDelta = CurrentState.ScrollWheelValue - PreviousState.ScrollWheelValue;

@@ -68,7 +68,24 @@ public static class MathExt {
         return MathHelper.Max(value1, MathHelper.Max(value2, MathHelper.Max(value3, value4)));
     }
 
+    /// <summary>
+    /// Returns the smallest integral value that is greater than or equal to <paramref name="value"/> as an integer.
+    /// </summary>
     public static int CeilToInt(float value) {
         return (int)MathF.Ceiling(value);
+    }
+
+    /// <summary>
+    /// Returns the largest integral value that is less than or equal to <paramref name="value"/> as an integer.
+    /// </summary>
+    public static int FloorToInt(float value) {
+        return (int)MathF.Floor(value);
+    }
+
+    /// <summary>
+    /// Maps a float from one range to another.
+    /// </summary>
+    public static float Map(this float number, float fromLower, float fromUpper, float toLower, float toUpper) {
+        return (number - fromLower) / (fromUpper - fromLower) * (toUpper - toLower) + toLower;
     }
 }
