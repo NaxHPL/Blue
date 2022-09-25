@@ -1,12 +1,12 @@
-﻿using Microsoft.Xna.Framework.Content.Pipeline;
-using System.Drawing;
+﻿using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Content.Pipeline;
 
 namespace BlueContentPipeline;
 
 public class SDFFontContent : ContentItem {
 
-    public uint AtlasWidth;
-    public uint AtlasHeight;
-    public Color[] AtlasPixelData = Array.Empty<Color>();
+    public int AtlasWidth;
+    public int AtlasHeight;
+    public byte[] AtlasPixelData = Array.Empty<byte>();
     public string LayoutDataJson = "{}";
 }

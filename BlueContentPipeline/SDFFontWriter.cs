@@ -5,11 +5,18 @@ namespace BlueContentPipeline;
 
 public class SDFFontWriter : ContentTypeWriter<SDFFontContent> {
 
-    public override string GetRuntimeReader(TargetPlatform targetPlatform) {
-        return "BlueFw.SDFFontReader";
+    protected override void Write(ContentWriter output, SDFFontContent fontContent) {
+        output.Write(fontContent.AtlasWidth);
+        
+        //output.Write(fontContent.AtlasWidth);
+        //output.Write(fontContent.AtlasHeight);
+        //foreach (byte color in fontContent.AtlasPixelData) {
+        //    output.Write(color);
+        //}
+        //output.Write(fontContent.LayoutDataJson);
     }
 
-    protected override void Write(ContentWriter output, SDFFontContent fontContent) {
-        
+    public override string GetRuntimeReader(TargetPlatform targetPlatform) {
+        return "BlueFw.Content.SDFFontReader";
     }
 }

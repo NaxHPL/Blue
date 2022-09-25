@@ -1,8 +1,7 @@
-﻿using Microsoft.Xna.Framework.Content.Pipeline;
+﻿using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Content.Pipeline;
 using System.ComponentModel;
-using System;
-using FreeImageAPI;
-using System.Drawing;
+using System.Text.Json.Nodes;
 
 namespace BlueContentPipeline;
 
@@ -45,18 +44,18 @@ public class SDFFontProcessor : ContentProcessor<string, SDFFontContent> {
     [Description("The size of the glyphs in the atlas in pixels per EM")]
     public int GlyphSize { get; set; } = 36;
 
-    [DefaultValue(6)]
+    [DefaultValue(8)]
     [DisplayName("Distance Field Range Pixels")]
     [Description("The range of the distance field in pixels")]
-    public int DistanceFieldRangePx { get; set; } = 6;
+    public int DistanceFieldRangePx { get; set; } = 8;
 
     public override SDFFontContent Process(string fontFilePath, ContentProcessorContext context) {
         string fontName = Path.GetFileNameWithoutExtension(fontFilePath);
-        string id = "test";//Guid.NewGuid().ToString()[..8];
+        string id = "00000000";//Guid.NewGuid().ToString()[..8];
 
         string charSetFilePath = $"{context.IntermediateDirectory}{fontName}_charset_{id}.txt";
         string layoutDataFilePath = $"{context.IntermediateDirectory}{fontName}_layoutdata_{id}.json";
-        string atlasImageFilePath = $"{context.IntermediateDirectory}{fontName}_atlas_{id}.png";
+        string atlasImageFilePath = $"{context.IntermediateDirectory}{fontName}_atlas_{id}.bin";
 
         using (StreamWriter streamWriter = File.CreateText(charSetFilePath)) {
             streamWriter.Write(CharacterSet);
@@ -64,28 +63,21 @@ public class SDFFontProcessor : ContentProcessor<string, SDFFontContent> {
 
         // Use msdf-atlas-gen to make atlas and layout data
 
-        // load atlas image and fill SDFFontContent.PixelData
-        FIBITMAP fiBitmap = FreeImage.Load(FREE_IMAGE_FORMAT.FIF_PNG, atlasImageFilePath, FREE_IMAGE_LOAD_FLAGS.DEFAULT);
-
-        uint atlasWidth = FreeImage.GetWidth(fiBitmap);
-        uint atlasHeight = FreeImage.GetHeight(fiBitmap);
-        Color[] atlasPixelData = new Color[atlasWidth * atlasHeight];
-
-        for (uint y = 0; y < atlasHeight; y++) {
-            for (uint x = 0; x < atlasWidth; x++) {
-                FreeImage.GetPixelColor(fiBitmap, x, y, out RGBQUAD rgbQuad);
-                atlasPixelData[y * atlasWidth + x] = rgbQuad.Color;
-            }
-        }
-
-        FreeImage.Unload(fiBitmap);
-
-        // read layout data and fill SDFFontContent.LayoutDataJson
+        // read layout data
         string layoutDataJson = File.ReadAllText(layoutDataFilePath);
 
-        File.Delete(charSetFilePath);
-        File.Delete(layoutDataFilePath);
-        File.Delete(atlasImageFilePath);
+        JsonNode layoutDataNode = JsonNode.Parse(layoutDataJson)!;
+        int atlasWidth = layoutDataNode["atlas"]!["width"]!.GetValue<int>();
+        int atlasHeight = layoutDataNode["atlas"]!["height"]!.GetValue<int>();
+
+        byte[] atlasPixelData;
+        using (BinaryReader binaryReader = new BinaryReader(File.OpenRead(atlasImageFilePath))) {
+            atlasPixelData = binaryReader.ReadBytes(atlasWidth * atlasHeight);
+        }
+
+        //File.Delete(charSetFilePath);
+        //File.Delete(layoutDataFilePath);
+        //File.Delete(atlasImageFilePath);
 
         return new SDFFontContent() {
             AtlasWidth = atlasWidth,
