@@ -3,20 +3,21 @@ using Microsoft.Xna.Framework.Content.Pipeline.Serialization.Compiler;
 
 namespace BlueContentPipeline;
 
+[ContentTypeWriter]
 public class SDFFontWriter : ContentTypeWriter<SDFFontContent> {
 
-    protected override void Write(ContentWriter output, SDFFontContent fontContent) {
-        output.Write(fontContent.AtlasWidth);
-        
-        //output.Write(fontContent.AtlasWidth);
-        //output.Write(fontContent.AtlasHeight);
-        //foreach (byte color in fontContent.AtlasPixelData) {
-        //    output.Write(color);
-        //}
-        //output.Write(fontContent.LayoutDataJson);
+    protected override void Write(ContentWriter writer, SDFFontContent fontContent) {
+        writer.Write(fontContent.AtlasWidth);
+        writer.Write(fontContent.AtlasHeight);
+        writer.Write(fontContent.AtlasPixelData);
+        writer.Write(fontContent.LayoutDataJson);
     }
 
     public override string GetRuntimeReader(TargetPlatform targetPlatform) {
-        return "BlueFw.Content.SDFFontReader";
+        return "BlueFw.Content.SDFFontReader, Blue";
+    }
+
+    public override string GetRuntimeType(TargetPlatform targetPlatform) {
+        return "BlueFw.Content.SDFFont, Blue";
     }
 }

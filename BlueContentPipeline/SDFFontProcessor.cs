@@ -1,5 +1,4 @@
-﻿using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Content.Pipeline;
+﻿using Microsoft.Xna.Framework.Content.Pipeline;
 using System.ComponentModel;
 using System.Text.Json.Nodes;
 
@@ -63,7 +62,6 @@ public class SDFFontProcessor : ContentProcessor<string, SDFFontContent> {
 
         // Use msdf-atlas-gen to make atlas and layout data
 
-        // read layout data
         string layoutDataJson = File.ReadAllText(layoutDataFilePath);
 
         JsonNode layoutDataNode = JsonNode.Parse(layoutDataJson)!;
@@ -75,7 +73,7 @@ public class SDFFontProcessor : ContentProcessor<string, SDFFontContent> {
             atlasPixelData = binaryReader.ReadBytes(atlasWidth * atlasHeight);
         }
 
-        //File.Delete(charSetFilePath);
+        File.Delete(charSetFilePath);
         //File.Delete(layoutDataFilePath);
         //File.Delete(atlasImageFilePath);
 

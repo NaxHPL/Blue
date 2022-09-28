@@ -4,17 +4,16 @@ using Microsoft.Xna.Framework.Graphics;
 
 namespace BlueFw.Content;
 
-internal class SDFFontReader : ContentTypeReader<SDFFont> {
+public class SDFFontReader : ContentTypeReader<SDFFont> {
 
     protected override SDFFont Read(ContentReader reader, SDFFont existingInstance) {
         int atlasWidth = reader.ReadInt32();
         int atlasHeight = reader.ReadInt32();
 
         Color[] pixelColorData = new Color[atlasWidth * atlasHeight];
-        for (int y = 0; y < atlasHeight; y++) {
-            for (int x = 0; x < atlasWidth; x++) {
-                pixelColorData[y * atlasWidth + x] = reader.ReadColor();
-            }
+        for (int i = 0; i < pixelColorData.Length; i++) {
+            byte c = reader.ReadByte();
+            pixelColorData[i] = new Color(c, c, c, c);
         }
 
         string layoutDataJson = reader.ReadString();
@@ -22,6 +21,8 @@ internal class SDFFontReader : ContentTypeReader<SDFFont> {
         Texture2D atlasTexture = new Texture2D(Blue.Instance.GraphicsDevice, atlasWidth, atlasHeight);
         atlasTexture.SetData(pixelColorData);
 
-        return new SDFFont();
+        return new SDFFont() {
+            AtlasTexture = atlasTexture
+        };
     }
 }
