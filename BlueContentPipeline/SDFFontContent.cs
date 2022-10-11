@@ -4,8 +4,16 @@ namespace BlueContentPipeline;
 
 public class SDFFontContent : ContentItem {
 
+    public string FontName = "Unknown";
     public int AtlasWidth;
     public int AtlasHeight;
-    public byte[] AtlasPixelData = Array.Empty<byte>();
-    public string LayoutDataJson = "{}";
+    public byte[] Distances = Array.Empty<byte>();
+    public float LineHeight;
+    public float Ascender;
+    public float Descender;
+    public float UnderlineY;
+    public float UnderlineThickness;
+    public int GlyphCount;
+    public GlyphContent[] Glyphs = Array.Empty<GlyphContent>();
+
 }

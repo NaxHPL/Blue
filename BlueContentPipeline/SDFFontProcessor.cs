@@ -1,87 +1,60 @@
 ﻿using Microsoft.Xna.Framework.Content.Pipeline;
-using System.ComponentModel;
 using System.Text.Json.Nodes;
 
 namespace BlueContentPipeline;
 
 [ContentProcessor(DisplayName = "SDF Font Processor - Blue")]
-public class SDFFontProcessor : ContentProcessor<string, SDFFontContent> {
+public class SDFFontProcessor : ContentProcessor<SDFFontRawContent, SDFFontContent> {
 
-    [DefaultValue("[0x20, 0x7E]")]
-    [DisplayName("Character Set")]
-    [Description(
-        "The characters can be denoted in the following ways:"                                          + "\n" +
-        "  - Single character: 'A' (UTF-8 encoded), 65 (decimal Unicode), 0x41 (hexadecimal Unicode)"   + "\n" +
-        "  - Range of characters: ['A', 'Z'], [65, 90], [0x41, 0x5a]"                                   + "\n" +
-        "  - String of characters: \"ABCDEFGHIJKLMNOPQRSTUVWXYZ\" (UTF-8 encoded)"                      + "\n" +
-        "The entries should be separated by commas or whitespace. In between quotation marks, backslash is used as the escape character (e.g. '\\'', '\\\\', \"!\\\"#\"). The order in which characters appear is not taken into consideration."
-    )]
-    public string CharacterSet { get; set; } = "[0x20, 0x7E]";
+    public override SDFFontContent Process(SDFFontRawContent rawContent, ContentProcessorContext context) {
+        SDFFontContent output = new SDFFontContent();
 
-    [DefaultValue(false)]
-    [DisplayName("Use Fixed Atlas Dimensions")]
-    [Description("If true, the fixed dimensions will be used; otherwise, the minimum possible atlas dimensions will be selected based on the Automatic Dimensions Contraint parameter.")]
-    public bool UseFixedAtlasDimensions { get; set; } = false;
-
-    [DefaultValue(256)]
-    [DisplayName("Fixed Atlas Width")]
-    [Description("The atlas' fixed width (only used if Use Fixed Atlas Dimensions is set to true)")]
-    public int FixedAtlasWidth { get; set; } = 256;
-
-    [DefaultValue(256)]
-    [DisplayName("Fixed Atlas Height")]
-    [Description("The atlas' fixed height (only used if Use Fixed Atlas Dimensions is set to true)")]
-    public int FixedAtlasHeight { get; set; } = 256;
-
-    [DefaultValue(typeof(AutoDimensionsContraint), "SquareDivisibleByFour")]
-    [DisplayName("Automatic Dimensions Constraint")]
-    [Description("Sets the constraint to use when automatically sizing the atlas (only used if Use Fixed Atlas Dimensions is set to false)")]
-    public AutoDimensionsContraint AutoDimensionsContraint { get; set; } = AutoDimensionsContraint.SquareDivisibleByFour;
-
-    [DefaultValue(36)]
-    [DisplayName("Glyph Size")]
-    [Description("The size of the glyphs in the atlas in pixels per EM")]
-    public int GlyphSize { get; set; } = 36;
-
-    [DefaultValue(8)]
-    [DisplayName("Distance Field Range Pixels")]
-    [Description("The range of the distance field in pixels")]
-    public int DistanceFieldRangePx { get; set; } = 8;
-
-    public override SDFFontContent Process(string fontFilePath, ContentProcessorContext context) {
-        string fontName = Path.GetFileNameWithoutExtension(fontFilePath);
-        string id = "00000000";//Guid.NewGuid().ToString()[..8];
-
-        string charSetFilePath = $"{context.IntermediateDirectory}{fontName}_charset_{id}.txt";
-        string layoutDataFilePath = $"{context.IntermediateDirectory}{fontName}_layoutdata_{id}.json";
-        string atlasImageFilePath = $"{context.IntermediateDirectory}{fontName}_atlas_{id}.bin";
-
-        using (StreamWriter streamWriter = File.CreateText(charSetFilePath)) {
-            streamWriter.Write(CharacterSet);
+        JsonNode? layoutDataRoot = JsonNode.Parse(rawContent.LayoutDataJson);
+        if (layoutDataRoot == null) {
+            throw new Exception("Unable to parse layout data json.");
         }
 
-        // Use msdf-atlas-gen to make atlas and layout data
+        output.FontName = layoutDataRoot["name"]!.GetValue<string>();
 
-        string layoutDataJson = File.ReadAllText(layoutDataFilePath);
-
-        JsonNode layoutDataNode = JsonNode.Parse(layoutDataJson)!;
-        int atlasWidth = layoutDataNode["atlas"]!["width"]!.GetValue<int>();
-        int atlasHeight = layoutDataNode["atlas"]!["height"]!.GetValue<int>();
-
-        byte[] atlasPixelData;
-        using (BinaryReader binaryReader = new BinaryReader(File.OpenRead(atlasImageFilePath))) {
-            atlasPixelData = binaryReader.ReadBytes(atlasWidth * atlasHeight);
+        JsonNode? atlasData = layoutDataRoot["atlas"];
+        if (atlasData == null) {
+            throw new Exception("No atlas layout data found.");
         }
 
-        File.Delete(charSetFilePath);
-        //File.Delete(layoutDataFilePath);
-        //File.Delete(atlasImageFilePath);
+        output.AtlasWidth = atlasData["width"]!.GetValue<int>();
+        output.AtlasHeight = atlasData["height"]!.GetValue<int>();
+        output.Distances = rawContent.AtlasData;
 
-        return new SDFFontContent() {
-            AtlasWidth = atlasWidth,
-            AtlasHeight = atlasHeight,
-            AtlasPixelData = atlasPixelData,
-            LayoutDataJson = layoutDataJson
-        };
+        JsonNode? metricsData = layoutDataRoot["metrics"];
+        if (metricsData == null) {
+            throw new Exception("No metrics data found.");
+        }
+
+        output.LineHeight = metricsData["lineHeight"]!.GetValue<float>();
+        output.Ascender = metricsData["ascender"]!.GetValue<float>();
+        output.Descender = metricsData["descender"]!.GetValue<float>();
+        output.UnderlineY = metricsData["underlineY"]!.GetValue<float>();
+        output.UnderlineThickness = metricsData["underlineThickness"]!.GetValue<float>();
+
+        JsonNode? glyphsData = layoutDataRoot["glyphs"];
+        if (glyphsData == null) {
+            throw new Exception("No glyph data found.");
+        }
+
+        JsonArray glyphJsonArray = glyphsData.AsArray();
+        GlyphContent[] glyphs = new GlyphContent[glyphJsonArray.Count];
+
+        for (int i = 0; i < glyphJsonArray.Count; i++) {
+            JsonNode? glyphData = glyphJsonArray[i];
+            if (glyphData == null) {
+                continue;
+            }
+
+
+        }
+
+        output.Glyphs = glyphs;
+
+        return output;
     }
 }
