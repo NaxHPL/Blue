@@ -116,8 +116,7 @@ public class AnimatedSprite : Component, IUpdatable, IRenderable {
     bool boundsDirty = false;
 
     public AnimatedSprite() {
-        Frame[] fallbackSequence = { new Frame() };
-        sequences.Add(fallbackSequence);
+        sequences.Add(new Frame[] { default });
     }
 
     #region Sequences

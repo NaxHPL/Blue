@@ -11,8 +11,8 @@ public abstract class BlueObject {
 
     static uint nextInstanceId = 0;
 
-    static FastList<BlueObject> objectsToDestroy = new FastList<BlueObject>();
-    static HashSet<uint> objectsToDestroyInstanceIds = new HashSet<uint>();
+    static readonly FastList<BlueObject> objectsToDestroy = new FastList<BlueObject>();
+    static readonly HashSet<uint> objectsToDestroyInstanceIds = new HashSet<uint>();
 
     /// <summary>
     /// Destroys an entity or component.
@@ -84,8 +84,8 @@ public abstract class BlueObject {
         if (obj1Null && obj2Null) {
             return true;
         }
-        else if ((obj1Null && !obj2Null) ||
-                 (obj2Null && !obj1Null)) {
+
+        if ((obj1Null && !obj2Null) || (obj2Null && !obj1Null)) {
             return false;
         }
 

@@ -116,10 +116,10 @@ public class StaticSprite : Component, IRenderable {
     /// </summary>
     public void SetSize(Point size) {
         if (size.X < 1) {
-            throw new ArgumentException("A sprite's width must be greater than zero!", nameof(size));
+            throw new ArgumentException("A sprite's width must be at least one!", nameof(size));
         }
         if (size.Y < 1) {
-            throw new ArgumentException("A sprite's height must be greater than zero!", nameof(size));
+            throw new ArgumentException("A sprite's height must be at least one!", nameof(size));
         }
 
         if (this.size == size) {
