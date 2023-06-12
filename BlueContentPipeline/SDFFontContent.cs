@@ -13,7 +13,6 @@ public class SDFFontContent : ContentItem {
     public float Descender;
     public float UnderlineY;
     public float UnderlineThickness;
-    public int GlyphCount;
     public GlyphContent[] Glyphs = Array.Empty<GlyphContent>();
-
+    public KerningPair[] KerningPairs = Array.Empty<KerningPair>();
 }
