@@ -73,6 +73,12 @@ public class AnimatedSprite : Component, IUpdatable, IRenderable {
     public Color Tint = Color.White;
 
     /// <summary>
+    /// A function used to get the delta time when updating the sprite's animation.
+    /// By defualt this returns <see cref="Time.DeltaTime"/>, but can be changed to use unscaled time for example.
+    /// </summary>
+    public Func<float> DeltaTimeFunc = () => Time.DeltaTime;
+
+    /// <summary>
     /// The amount of frames the animation should play per second.
     /// </summary>
     public float FramesPerSecond {
@@ -320,7 +326,7 @@ public class AnimatedSprite : Component, IUpdatable, IRenderable {
             return;
         }
 
-        timer += Time.DeltaTime;
+        timer += DeltaTimeFunc();
 
         if (timer >= frameTime) {
             AdvanceAnimation();
