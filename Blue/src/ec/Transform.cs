@@ -1,4 +1,5 @@
-﻿using Microsoft.Xna.Framework;
+﻿using BlueFw.Math;
+using Microsoft.Xna.Framework;
 using System;
 
 namespace BlueFw;
@@ -10,10 +11,10 @@ public class Transform {
 
     [Flags]
     enum DirtyFlags {
-        Clean       = 0x00,
-        Position    = 0x01,
-        Scale       = 0x02,
-        Rotation    = 0x04,
+        Clean       = 0,
+        Position    = 1 << 0,
+        Scale       = 1 << 1,
+        Rotation    = 1 << 2,
 
         All = Position | Scale | Rotation
     }

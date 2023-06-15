@@ -1,98 +1,24 @@
-﻿using Microsoft.Xna.Framework.Graphics;
+﻿using BlueFw.Math;
+using Microsoft.Xna.Framework.Graphics;
 using System.Collections.Generic;
 
 namespace BlueFw;
 
-internal class SceneRenderer {
+internal class SceneRenderer : SceneHandler<IRenderable> {
 
     static readonly IComparer<IRenderable> renderableComparer = new RenderableOrderComparer();
-
-    readonly FastList<IRenderable> renderables = new FastList<IRenderable>();
-    readonly HashSet<IRenderable> renderablesSet = new HashSet<IRenderable>();
-
-    readonly HashSet<IRenderable> renderablesPendingAdd = new HashSet<IRenderable>();
-    readonly HashSet<IRenderable> renderablesPendingRemove = new HashSet<IRenderable>();
-
-    bool renderableOrderDirty = true;
-
-    public bool Register(IRenderable renderable) {
-        if (renderable == null) {
-            return false;
-        }
-
-        if (renderablesSet.Contains(renderable)) {
-            return false;
-        }
-
-        if (renderablesPendingRemove.Remove(renderable)) {
-            return true;
-        }
-
-        return renderablesPendingAdd.Add(renderable);
-    }
-
-    public bool Unregister(IRenderable renderable) {
-        if (renderable == null) {
-            return false;
-        }
-
-        if (!renderablesSet.Contains(renderable)) {
-            return false;
-        }
-
-        if (renderablesPendingAdd.Remove(renderable)) {
-            return true;
-        }
-
-        return renderablesPendingRemove.Add(renderable);
-    }
-
-    public void FlagRenderOrderDirty() {
-        renderableOrderDirty = true;
-    }
-
-    void EnsureRenderablesSorted() {
-        if (!renderableOrderDirty) {
-            return;
-        }
-
-        renderables.Sort(renderableComparer);
-        renderableOrderDirty = false;
-    }
-
-    void ApplyPendingChanges() {
-        if (renderablesPendingAdd.Count > 0) {
-            foreach (IRenderable renderable in renderablesPendingAdd) {
-                renderables.Add(renderable);
-                renderablesSet.Add(renderable);
-            }
-
-            renderablesPendingAdd.Clear();
-            renderableOrderDirty = true;
-        }
-
-        if (renderablesPendingRemove.Count > 0) {
-            foreach (IRenderable renderable in renderablesPendingRemove) {
-                renderables.Remove(renderable);
-                renderablesSet.Remove(renderable);
-            }
-
-            renderablesPendingRemove.Clear();
-        }
-    }
+    protected override IComparer<IRenderable> itemComparer => renderableComparer;
 
     public void Render(SpriteBatch spriteBatch, Camera camera) {
-        ApplyPendingChanges();
-        EnsureRenderablesSorted();
+        PrepareItemsForHandling();
 
         Blue.Instance.GraphicsDevice.Clear(camera.ClearColor);
 
-        bool seenByCamera;
         bool startedFirstBatch = false;
         Material currentMaterial = null;
 
-        for (int i = 0; i < renderables.Length; i++) {
-            IRenderable renderable = renderables.Buffer[i];
+        for (int i = 0; i < items.Length; i++) {
+            IRenderable renderable = items.Buffer[i];
 
             // Don't render if inactive
             if (!renderable.Active) {
@@ -100,7 +26,7 @@ internal class SceneRenderer {
             }
 
             // Don't render if the camera can't see it
-            Rect.Overlaps(renderable.Bounds, camera.Bounds, out seenByCamera);
+            Rect.Overlaps(renderable.Bounds, camera.Bounds, out bool seenByCamera);
             if (!seenByCamera) {
                 continue;
             }

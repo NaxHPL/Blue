@@ -14,7 +14,7 @@ public interface IUpdatable {
     /// </summary>
     /// <remarks>
     /// If you plan to change this value after this updatable is added to a scene,
-    /// you must call <see cref="Scene.ApplyUpdateOrderChanges"/> after this value changes.
+    /// you must call <see cref="Scene.UpdateOrderDirty"/> after this value changes.
     /// </remarks>
     int UpdateOrder { get; }
 

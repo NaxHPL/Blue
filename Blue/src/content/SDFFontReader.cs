@@ -7,6 +7,8 @@ namespace BlueFw.Content;
 public class SDFFontReader : ContentTypeReader<SDFFont> {
 
     protected override SDFFont Read(ContentReader reader, SDFFont existingInstance) {
+        return null;
+
         //int atlasWidth = reader.ReadInt32();
         //int atlasHeight = reader.ReadInt32();
 

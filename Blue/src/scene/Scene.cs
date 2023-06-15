@@ -35,6 +35,7 @@ public class Scene {
 
     readonly SceneUpdater sceneUpdater = new SceneUpdater();
     readonly SceneRenderer sceneRenderer = new SceneRenderer();
+    readonly SceneScreenRenderer sceneScreenRenderer = new SceneScreenRenderer();
 
     /// <summary>
     /// Creates a new <see cref="Scene"/>.
@@ -248,6 +249,9 @@ public class Scene {
         if (component is IRenderable renderable) {
             sceneRenderer.Register(renderable);
         }
+        if (component is IScreenRenderable screenRenderable) {
+            sceneScreenRenderer.Register(screenRenderable);
+        }
     }
 
     internal void UnregisterComponent(Component component) {
@@ -257,13 +261,16 @@ public class Scene {
         if (component is IRenderable renderable) {
             sceneRenderer.Unregister(renderable);
         }
+        if (component is IScreenRenderable screenRenderable) {
+            sceneScreenRenderer.Unregister(screenRenderable);
+        }
     }
 
     /// <summary>
-    /// Apply any changes made to update orders. The new order will be reflected in the next update cycle.
+    /// Flag that the update order of components have changed. The new order will be reflected in the next update cycle.
     /// </summary>
-    public void ApplyUpdateOrderChanges() {
-        sceneUpdater.FlagUpdateOrderDirty();
+    public void UpdateOrderDirty() {
+        sceneUpdater.FlagItemOrderDirty();
     }
 
     internal void Update() {
@@ -271,14 +278,22 @@ public class Scene {
     }
 
     /// <summary>
-    /// Apply any changes made to render orders. The new order will be reflected in the next update cycle.
+    /// Flag that the render order of components have changed. The new order will be reflected in the next update cycle.
     /// </summary>
-    public void ApplyRenderOrderChanges() {
-        sceneRenderer.FlagRenderOrderDirty();
+    public void RenderOrderDirty() {
+        sceneRenderer.FlagItemOrderDirty();
+    }
+
+    /// <summary>
+    /// Flag that the render order of screen space components have changed. The new order will be reflected in the next update cycle.
+    /// </summary>
+    public void ScreenRenderOrderDirty() {
+        sceneScreenRenderer.FlagItemOrderDirty();
     }
 
     internal void Render(SpriteBatch spriteBatch) {
         sceneRenderer.Render(spriteBatch, Camera);
+        sceneScreenRenderer.Render(spriteBatch);
     }
 
     #endregion

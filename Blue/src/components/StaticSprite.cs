@@ -1,13 +1,21 @@
-﻿using Microsoft.Xna.Framework;
+﻿using BlueFw.Math;
+using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using System;
 
 namespace BlueFw;
 
 /// <summary>
-/// A static sprite component.
+/// A static sprite component to be rendered in world space.
 /// </summary>
-public class StaticSprite : Component, IRenderable {
+public class StaticSprite : StaticSpriteBase, IRenderable { void IRenderable.Render(SpriteBatch spriteBatch, Camera camera) => Render(spriteBatch); }
+
+/// <summary>
+/// A static sprite component to be rendered in screen space.
+/// </summary>
+public class UI_StaticSprite : StaticSpriteBase, IScreenRenderable { }
+
+public class StaticSpriteBase : Component {
 
     public int RenderLayer { get; set; }
 
@@ -202,7 +210,7 @@ public class StaticSprite : Component, IRenderable {
         boundsDirty = false;
     }
 
-    public void Render(SpriteBatch spriteBatch, Camera camera) {
+    public void Render(SpriteBatch spriteBatch) {
         if (sprite == null) {
             return;
         }
@@ -236,9 +244,5 @@ public class StaticSprite : Component, IRenderable {
                 );
             }
         }
-    }
-
-    protected override void OnDestroy() {
-        sprite = null;
     }
 }

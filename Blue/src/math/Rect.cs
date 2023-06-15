@@ -1,7 +1,7 @@
 ﻿using Microsoft.Xna.Framework;
 using System;
 
-namespace BlueFw;
+namespace BlueFw.Math;
 
 /// <summary>
 /// Describes a 2D rectangle. Does <b>not</b> support negative width/height.
@@ -23,7 +23,7 @@ public struct Rect {
     static Rect maxRect = new Rect(-float.MaxValue / 2f, -float.MaxValue / 2f, float.MaxValue, float.MaxValue);
 
     /// <summary>
-    /// A <see cref="Rect"/> that is at the coordinates (X: float.MinValue, Y: float.MinValue) with a width and height of 0.
+    /// A <see cref="Rect"/> that is at the coordinates [float.MinValue, float.MinValue] with a width and height of 0.
     /// </summary>
     /// <remarks>
     /// It's likely to be offscreen... probably.
@@ -48,6 +48,25 @@ public struct Rect {
             rect1.MaxX > rect2.MinX &&
             rect1.MinY < rect2.MaxY &&
             rect1.MaxY > rect2.MinY;
+    }
+
+    /// <summary>
+    /// Returns <see langword="true"/> if the provided rectangles overlap each other.
+    /// </summary>
+    public static bool Overlaps(in Rect rect1, in Rectangle rect2) {
+        Overlaps(rect1, rect2, out bool result);
+        return result;
+    }
+
+    /// <summary>
+    /// Checks if the provided rectangles overlap each other and stores the result in <paramref name="result"/>.
+    /// </summary>
+    public static void Overlaps(in Rect rect1, in Rectangle rect2, out bool result) {
+        result =
+            rect1.MinX < rect2.X + rect2.Width &&
+            rect1.MaxX > rect2.X &&
+            rect1.MinY < rect2.Y + rect2.Height &&
+            rect1.MaxY > rect2.Y;
     }
 
     /// <summary>

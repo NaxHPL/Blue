@@ -1,4 +1,5 @@
-﻿using Microsoft.Xna.Framework.Graphics;
+﻿using BlueFw.Math;
+using Microsoft.Xna.Framework.Graphics;
 using System.Collections.Generic;
 
 namespace BlueFw;
@@ -15,7 +16,7 @@ public interface IRenderable {
     /// </summary>
     /// <remarks>
     /// If you plan to change this value after this renderable is added to a scene,
-    /// you must call <see cref="Scene.ApplyRenderOrderChanges"/> after this value changes.
+    /// you must call <see cref="Scene.RenderOrderDirty"/> after this value changes.
     /// </remarks>
     int RenderLayer { get; }
 
@@ -25,7 +26,7 @@ public interface IRenderable {
     /// </summary>
     /// <remarks>
     /// If you plan to change this value after this renderable is added to a scene,
-    /// you must call <see cref="Scene.ApplyRenderOrderChanges"/> after this value changes.
+    /// you must call <see cref="Scene.RenderOrderDirty"/> after this value changes.
     /// </remarks>
     float LayerDepth { get; }
 

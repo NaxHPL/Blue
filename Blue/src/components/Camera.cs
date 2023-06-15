@@ -1,4 +1,5 @@
-﻿using Microsoft.Xna.Framework;
+﻿using BlueFw.Math;
+using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
 namespace BlueFw;
@@ -95,7 +96,7 @@ public class Camera : Component {
     /// <summary>
     /// The color this camera uses to clear the background.
     /// </summary>
-    /// <remarks>By default, this is set to <see cref="Color.Black"/>.</remarks>
+    /// <remarks>By default, this is set to <see cref="Color.DarkSlateBlue"/>.</remarks>
     public Color ClearColor = Color.DarkSlateBlue;
 
     Vector2 origin;

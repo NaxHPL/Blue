@@ -1,4 +1,5 @@
-﻿using Microsoft.Xna.Framework;
+﻿using BlueFw.Math;
+using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using System;
 using System.Collections.Generic;
@@ -6,9 +7,16 @@ using System.Collections.Generic;
 namespace BlueFw;
 
 /// <summary>
-/// A sprite with animation sequences.
+/// A sprite with animation sequences to be rendered in world space.
 /// </summary>
-public class AnimatedSprite : Component, IUpdatable, IRenderable {
+public class AnimatedSprite : BaseAnimatedSprite, IRenderable { void IRenderable.Render(SpriteBatch spriteBatch, Camera camera) => Render(spriteBatch); }
+
+/// <summary>
+/// A sprite with animation sequences to be rendered in screen space.
+/// </summary>
+public class UI_AnimatedSprite : BaseAnimatedSprite, IScreenRenderable { }
+
+public class BaseAnimatedSprite : Component, IUpdatable {
 
     /// <summary>
     /// Defines a single frame of animation.
@@ -121,7 +129,7 @@ public class AnimatedSprite : Component, IUpdatable, IRenderable {
     Rect bounds;
     bool boundsDirty = false;
 
-    public AnimatedSprite() {
+    public BaseAnimatedSprite() {
         sequences.Add(new Frame[] { default });
     }
 
@@ -414,7 +422,7 @@ public class AnimatedSprite : Component, IUpdatable, IRenderable {
         boundsDirty = false;
     }
 
-    public void Render(SpriteBatch spriteBatch, Camera camera) {
+    public void Render(SpriteBatch spriteBatch) {
         Frame currentFrame = sequences.Buffer[currentSequenceIdx][currentFrameIdx];
 
         if (currentFrame.Sprite == null || currentFrame.Sprite.Texture == null) {

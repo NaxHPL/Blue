@@ -1,9 +1,20 @@
-﻿using Microsoft.Xna.Framework;
+﻿using BlueFw.Math;
+using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
 namespace BlueFw;
 
-public class SpriteText : Component, IRenderable {
+/// <summary>
+/// Sprite text to be rendered in world space.
+/// </summary>
+public class SpriteText : SpriteTextBase, IRenderable { void IRenderable.Render(SpriteBatch spriteBatch, Camera camera) => Render(spriteBatch); }
+
+/// <summary>
+/// Sprite text to be rendered in screen space.
+/// </summary>
+public class UI_SpriteText : SpriteTextBase, IScreenRenderable { }
+
+public class SpriteTextBase : Component {
 
     public int RenderLayer { get; set; }
 
@@ -176,8 +187,8 @@ public class SpriteText : Component, IRenderable {
         boundsDirty = false;
     }
 
-    public void Render(SpriteBatch spriteBatch, Camera camera) {
-        if (string.IsNullOrEmpty(text) || font == null) {
+    public void Render(SpriteBatch spriteBatch) {
+        if (text == null || font == null) {
             return;
         }
 

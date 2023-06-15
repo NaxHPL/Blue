@@ -53,7 +53,10 @@ public class Blue : Game {
         }
         
         instance = this;
+
         Graphics = new GraphicsDeviceManager(this);
+        Content.RootDirectory = "Content";
+        IsMouseVisible = true;
     }
 
     protected override void Initialize() {
