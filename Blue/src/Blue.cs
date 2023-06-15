@@ -105,6 +105,13 @@ public class Blue : Game {
         queuedSceneToLoad = scene;
     }
 
+    /// <summary>
+    /// Loads a scene of type <typeparamref name="T"/>. The scene will load at the start of the next frame.
+    /// </summary>
+    public void LoadScene<T>() where T : Scene, new() {
+        queuedSceneToLoad = new T();
+    }
+
     void LoadSceneImmediate(Scene scene) {
         UnloadActiveScene();
         ActiveScene = scene; // Must get set as active scene before scene.Load()!
