@@ -9,7 +9,7 @@ namespace BlueFw;
 /// A basic wrapper around an array that automatically expands when it reached capacity.
 /// Provides direct access to the buffer for fast retrieval.
 /// </summary>
-public class FastList<T> {
+public class FastList<T> : IEnumerable<T> {
 
     const int DEFAULT_CAPACITY = 4;
 
@@ -238,5 +238,35 @@ public class FastList<T> {
     /// </summary>
     public void Sort(IComparer<T> comparer) {
         Array.Sort(Buffer, 0, Length, comparer);
+    }
+
+    public IEnumerator<T> GetEnumerator() {
+        return new FastListEnumerator(this);
+    }
+
+    IEnumerator IEnumerable.GetEnumerator() {
+        return new FastListEnumerator(this);
+    }
+
+    struct FastListEnumerator : IEnumerator<T> {
+
+        public readonly T Current => list.Buffer[index];
+        readonly object IEnumerator.Current => list.Buffer[index];
+
+        readonly FastList<T> list;
+        int index;
+
+        public FastListEnumerator(FastList<T> list) {
+            this.list = list;
+            index = -1;
+        }
+
+        public bool MoveNext() {
+            return ++index < list.Length;
+        }
+
+        public readonly void Dispose() { }
+
+        public readonly void Reset() { }
     }
 }
