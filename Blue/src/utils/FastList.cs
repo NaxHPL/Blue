@@ -44,7 +44,7 @@ public class FastList<T> {
         }
     }
 
-    readonly bool isReferenceType;
+    readonly bool isValueType;
 
     /// <summary>
     /// Creates a new <see cref="FastList{T}"/>.
@@ -57,7 +57,7 @@ public class FastList<T> {
     /// <param name="capacity">The initial size of the buffer array.</param>
     public FastList(int capacity) {
         Buffer = new T[capacity];
-        isReferenceType = !typeof(T).IsValueType;
+        isValueType = typeof(T).IsValueType;
     }
 
     /// <summary>
@@ -86,7 +86,7 @@ public class FastList<T> {
             }
         }
 
-        isReferenceType = !typeof(T).IsValueType;
+        isValueType = typeof(T).IsValueType;
     }
 
     /// <summary>
@@ -181,7 +181,7 @@ public class FastList<T> {
 
         Array.Copy(Buffer, index + 1, Buffer, index, Length - index);
 
-        if (isReferenceType) {
+        if (!isValueType) {
             Buffer[Length] = default;
         }
     }
@@ -197,7 +197,7 @@ public class FastList<T> {
     /// Clears all items in the list.
     /// </summary>
     public void Clear() {
-        if (isReferenceType) {
+        if (!isValueType) {
             Array.Clear(Buffer, 0, Length);
         }
 
