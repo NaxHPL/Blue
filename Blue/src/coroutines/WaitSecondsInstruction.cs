@@ -1,4 +1,6 @@
-﻿namespace BlueFw.Coroutines;
+﻿using BlueFw.Utils;
+
+namespace BlueFw.Coroutines;
 
 internal class WaitSecondsInstruction : YieldInstruction {
 
@@ -15,5 +17,11 @@ internal class WaitSecondsInstruction : YieldInstruction {
     internal override bool Advance() {
         timer += isRealTime ? Time.UnscaledDeltaTime : Time.DeltaTime;
         return timer >= seconds;
+    }
+
+    protected override void Clear() { }
+
+    protected override void ReturnSelfToPool() {
+        Pool<WaitSecondsInstruction>.Return(this);
     }
 }

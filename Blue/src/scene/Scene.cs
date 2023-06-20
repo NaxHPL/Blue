@@ -67,7 +67,10 @@ public class Scene {
         return entity;
     }
 
-    internal void AddEntity(Entity entity) {
+    /// <summary>
+    /// Adds an entity to the scene.
+    /// </summary>
+    public void AddEntity(Entity entity) {
         if (!Entities.Add(entity)) {
             return;
         }
@@ -78,6 +81,8 @@ public class Scene {
 
         entity.Scene = this;
         RegisterComponents(entity.Components);
+
+        entity.OnAddedToScene();
 
         for (int i = 0; i < entity.ChildCount; i++) {
             AddEntity(entity.GetChildAt(i));
@@ -322,6 +327,7 @@ public class Scene {
         }
 
         Content?.Dispose();
+        Content = null;
 
         OnUnload();
     }

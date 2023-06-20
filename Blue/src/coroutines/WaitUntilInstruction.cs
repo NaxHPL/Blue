@@ -1,4 +1,5 @@
-﻿using System;
+﻿using BlueFw.Utils;
+using System;
 
 namespace BlueFw.Coroutines;
 
@@ -18,5 +19,9 @@ internal class WaitUntilInstruction : YieldInstruction {
 
     protected override void Clear() {
         predicate = null;
+    }
+
+    protected override void ReturnSelfToPool() {
+        Pool<WaitUntilInstruction>.Return(this);
     }
 }

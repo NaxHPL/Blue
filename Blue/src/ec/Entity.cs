@@ -344,6 +344,13 @@ public class Entity : BlueObject {
 
     #endregion
 
+    #region Lifecycle Methods
+
+    /// <summary>
+    /// Called when this entity gets added to a scene.
+    /// </summary>
+    public virtual void OnAddedToScene() { }
+
     /// <summary>
     /// Destroys this entity, all of its components, and all of of its children entities.
     /// </summary>
@@ -359,4 +366,6 @@ public class Entity : BlueObject {
         Transform.DetachFromParent();
         scene?.RemoveEntity(this);
     }
+
+    #endregion
 }

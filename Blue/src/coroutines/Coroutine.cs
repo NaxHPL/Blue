@@ -170,4 +170,8 @@ public class Coroutine : YieldInstruction {
 
         base.Release();
     }
+
+    protected override void ReturnSelfToPool() {
+        Pool<Coroutine>.Return(this);
+    }
 }
