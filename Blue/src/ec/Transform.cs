@@ -1,4 +1,6 @@
-﻿using BlueFw.Math;
+﻿using BlueFw.Extensions;
+using BlueFw.Math;
+using BlueFw.Utils;
 using Microsoft.Xna.Framework;
 using System;
 

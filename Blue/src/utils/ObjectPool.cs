@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace BlueFw;
+namespace BlueFw.Utils;
 
 public class ObjectPool<T> where T : class {
 

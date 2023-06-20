@@ -1,6 +1,6 @@
 ﻿using System.Diagnostics;
 
-namespace BlueFw;
+namespace BlueFw.Utils;
 
 public static class Log {
 

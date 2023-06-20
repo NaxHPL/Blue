@@ -1,6 +1,6 @@
 ﻿using Microsoft.Xna.Framework;
 
-namespace BlueFw;
+namespace BlueFw.Utils;
 
 internal struct NineSlicePatch {
     public Rectangle SourceRect;

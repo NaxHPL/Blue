@@ -1,4 +1,5 @@
-﻿using Microsoft.Xna.Framework;
+﻿using BlueFw.Coroutines;
+using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using System;
 
@@ -11,18 +12,6 @@ public class Blue : Game {
     /// </summary>
     public static Blue Instance => instance ?? throw new InvalidOperationException("Attempted to access the " + nameof(Blue) + " instance before it was created!");
     static Blue instance;
-
-    /// <summary>
-    /// Invoked when the instance is getting initialized.
-    /// Use this event to load non-graphical resources needed by the game and the first scene.
-    /// </summary>
-    public event Action Initializing;
-
-    /// <summary>
-    /// Invoked when the instance is loading content.
-    /// Use this event to load any graphical resources needed by the game.
-    /// </summary>
-    public event Action LoadingContent;
 
     /// <summary>
     /// The currently active scene.
@@ -60,14 +49,26 @@ public class Blue : Game {
     }
 
     protected override void Initialize() {
-        Initializing?.Invoke();
+        OnInitialize();
         base.Initialize();
     }
 
+    /// <summary>
+    /// Invoked when the instance is getting initialized.
+    /// Use this to load non-graphical resources needed by the game and the first scene.
+    /// </summary>
+    protected virtual void OnInitialize() { }
+
     protected override void LoadContent() {
         spriteBatch = new SpriteBatch(GraphicsDevice);
-        LoadingContent?.Invoke();
+        OnLoadContent();
     }
+
+    /// <summary>
+    /// Invoked when the instance is loading content.
+    /// Use this to load any graphical resources needed by the game.
+    /// </summary>
+    protected virtual void OnLoadContent() { }
 
     protected override void Update(GameTime gameTime) {
         if (PauseOnFocusLost && !IsActive) {
@@ -81,6 +82,11 @@ public class Blue : Game {
         if (queuedSceneToLoad != null) {
             LoadSceneImmediate(queuedSceneToLoad);
             queuedSceneToLoad = null;
+        }
+        else {
+            // We only want to update coroutines if we didn't load a scene this frame.
+            // Coroutines which started when the new scene loaded will have already had their first iteration done.
+            CoroutineUpdater.Update();
         }
 
         ActiveScene?.Update();

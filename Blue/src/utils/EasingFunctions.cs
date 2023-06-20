@@ -1,7 +1,7 @@
 ﻿using Microsoft.Xna.Framework;
 using System;
 
-namespace BlueFw;
+namespace BlueFw.Utils;
 
 public static class EasingFunctions {
 
@@ -78,7 +78,6 @@ public static class EasingFunctions {
     public static readonly Func<float, int, float, float> ElasticInExt = (x, oscillations, stiffness) => {
         float e = (MathF.Exp(x * stiffness) - 1f) / (MathF.Exp(stiffness) - 1f);
         return e * MathF.Sin(x * (MathHelper.PiOver2 + 2f * MathHelper.Pi * oscillations));
-
     };
     public static readonly Func<float, float> ElasticOut = x => ElasticOutExt(x, 2, 5f);
     public static readonly Func<float, int, float, float> ElasticOutExt = (x, oscillations, stiffness) => 1f - ElasticInExt(1f - x, oscillations, stiffness);

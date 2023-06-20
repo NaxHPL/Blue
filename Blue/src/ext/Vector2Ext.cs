@@ -2,7 +2,7 @@
 using Microsoft.Xna.Framework;
 using System;
 
-namespace BlueFw;
+namespace BlueFw.Extensions;
 
 public static class Vector2Ext {
 

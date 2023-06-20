@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using BlueFw.Utils;
+using System.Collections.Generic;
 
 namespace BlueFw;
 
@@ -14,7 +15,7 @@ internal abstract class SceneHandler<T> {
 
     bool itemOrderDirty = true;
 
-    public bool Register(T item) {
+    internal bool Register(T item) {
         if (item == null) {
             return false;
         }
@@ -30,7 +31,7 @@ internal abstract class SceneHandler<T> {
         return itemsPendingAdd.Add(item);
     }
 
-    public bool Unregister(T item) {
+    internal bool Unregister(T item) {
         if (item == null) {
             return false;
         }
@@ -46,7 +47,7 @@ internal abstract class SceneHandler<T> {
         return itemsPendingRemove.Add(item);
     }
 
-    public void FlagItemOrderDirty() {
+    internal void FlagItemOrderDirty() {
         itemOrderDirty = true;
     }
 

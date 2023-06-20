@@ -1,4 +1,5 @@
-﻿using BlueFw.Math;
+﻿using BlueFw.Extensions;
+using BlueFw.Math;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 

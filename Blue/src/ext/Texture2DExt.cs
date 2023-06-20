@@ -1,7 +1,7 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
-namespace BlueFw;
+namespace BlueFw.Extensions;
 
 public static class Texture2DExt {
 

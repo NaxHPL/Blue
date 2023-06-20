@@ -1,6 +1,6 @@
 ﻿using Microsoft.Xna.Framework;
 
-namespace BlueFw;
+namespace BlueFw.Extensions;
 
 public static class ColorExt {
 

@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace BlueFw;
+namespace BlueFw.Utils;
 
 /// <summary>
 /// A simple static, generic object pool.

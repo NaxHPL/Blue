@@ -1,7 +1,8 @@
-﻿using Microsoft.Xna.Framework;
+﻿using BlueFw.Extensions;
+using Microsoft.Xna.Framework;
 using System;
 
-namespace BlueFw;
+namespace BlueFw.Utils;
 
 internal static class NineSliceUtils {
 

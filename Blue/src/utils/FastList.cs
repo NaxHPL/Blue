@@ -3,7 +3,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 
-namespace BlueFw;
+namespace BlueFw.Utils;
 
 /// <summary>
 /// A basic wrapper around an array that automatically expands when it reached capacity.
@@ -240,15 +240,19 @@ public class FastList<T> : IEnumerable<T> {
         Array.Sort(Buffer, 0, Length, comparer);
     }
 
+    public override string ToString() {
+        return $"Count = {Length}";
+    }
+
     public IEnumerator<T> GetEnumerator() {
-        return new FastListEnumerator(this);
+        return new Enumerator(this);
     }
 
     IEnumerator IEnumerable.GetEnumerator() {
-        return new FastListEnumerator(this);
+        return GetEnumerator();
     }
 
-    struct FastListEnumerator : IEnumerator<T> {
+    struct Enumerator : IEnumerator<T> {
 
         public readonly T Current => list.Buffer[index];
         readonly object IEnumerator.Current => list.Buffer[index];
@@ -256,7 +260,7 @@ public class FastList<T> : IEnumerable<T> {
         readonly FastList<T> list;
         int index;
 
-        public FastListEnumerator(FastList<T> list) {
+        public Enumerator(FastList<T> list) {
             this.list = list;
             index = -1;
         }
@@ -265,8 +269,10 @@ public class FastList<T> : IEnumerable<T> {
             return ++index < list.Length;
         }
 
-        public readonly void Dispose() { }
+        public void Reset() {
+            index = -1;
+        }
 
-        public readonly void Reset() { }
+        public readonly void Dispose() { }
     }
 }

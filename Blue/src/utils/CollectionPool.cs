@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace BlueFw;
+namespace BlueFw.Utils;
 
 public class ListPool<T> : CollectionPool<List<T>, T> { private ListPool() { } }
 
