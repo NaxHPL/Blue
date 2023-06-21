@@ -27,7 +27,7 @@ internal class SceneScreenRenderer : SceneHandler<IScreenRenderable> {
                 continue;
             }
 
-            // Don't render if the camera can't see it
+            // Don't render if the viewport can't see it
             Rect.Overlaps(renderable.Bounds, viewportBounds, out bool seenByCamera);
             if (!seenByCamera) {
                 continue;
