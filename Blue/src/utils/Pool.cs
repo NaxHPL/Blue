@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+﻿using System.Collections.Concurrent;
 
 namespace BlueFw.Utils;
 
@@ -7,7 +7,7 @@ namespace BlueFw.Utils;
 /// </summary>
 public static class Pool<T> where T : class, new() {
 
-    static readonly Stack<T> available = new Stack<T>();
+    static readonly ConcurrentStack<T> available = new ConcurrentStack<T>();
 
     /// <summary>
     /// Gets the next available <typeparamref name="T"/>.

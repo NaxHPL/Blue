@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System.Collections.Concurrent;
+using System.Collections.Generic;
 
 namespace BlueFw.Utils;
 
@@ -10,7 +11,7 @@ public class DictionaryPool<TKey, TValue> : CollectionPool<Dictionary<TKey, TVal
 
 public class CollectionPool<T1, T2> where T1 : ICollection<T2>, new() {
 
-    static readonly Stack<T1> available = new Stack<T1>();
+    static readonly ConcurrentStack<T1> available = new ConcurrentStack<T1>();
 
     protected CollectionPool() { }
 

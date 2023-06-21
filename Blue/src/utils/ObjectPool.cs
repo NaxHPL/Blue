@@ -1,5 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
+using System.Collections.Concurrent;
 
 namespace BlueFw.Utils;
 
@@ -15,7 +15,7 @@ public class ObjectPool<T> where T : class {
     /// </summary>
     public event Action<T> ObjectReturned;
 
-    readonly Stack<T> availableObjects;
+    readonly ConcurrentStack<T> availableObjects;
     readonly Func<T> factory;
 
     /// <summary>
@@ -26,7 +26,7 @@ public class ObjectPool<T> where T : class {
     /// <exception cref="ArgumentNullException"/>
     public ObjectPool(Func<T> factoryMethod, int initialPoolSize = 0) {
         factory = factoryMethod ?? throw new ArgumentNullException(nameof(factoryMethod));
-        availableObjects = new Stack<T>(initialPoolSize);
+        availableObjects = new ConcurrentStack<T>();
 
         for (int i = 0; i < initialPoolSize; i++) {
             availableObjects.Push(factory());
