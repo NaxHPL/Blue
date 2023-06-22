@@ -170,7 +170,7 @@ public class StaticSpriteBase : Component {
         }
     }
 
-    protected override void OnEntityTransformChanged() {
+    protected override void OnEntityTransformChanged(Transform.ComponentFlags changedFlags) {
         boundsDirty = true;
     }
 

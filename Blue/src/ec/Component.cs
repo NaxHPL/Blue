@@ -128,8 +128,8 @@ public abstract class Component : BlueObject {
         return true;
     }
 
-    internal void InvokeOnEntityTransformChanged() {
-        OnEntityTransformChanged();
+    internal void InvokeOnEntityTransformChanged(Transform.ComponentFlags changedFlags) {
+        OnEntityTransformChanged(changedFlags);
     }
 
     #region Entity Passthroughs
@@ -243,7 +243,8 @@ public abstract class Component : BlueObject {
     /// <summary>
     /// Called when the transform of the entity this component is attached to changes.
     /// </summary>
-    protected virtual void OnEntityTransformChanged() { }
+    /// <param name="changedComponentFlags">The transform components that changed.</param>
+    protected virtual void OnEntityTransformChanged(Transform.ComponentFlags changedComponentFlags) { }
 
     /// <summary>
     /// Called when this component becomes inactive.

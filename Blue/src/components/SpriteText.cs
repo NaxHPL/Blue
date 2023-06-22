@@ -80,12 +80,18 @@ public class SpriteTextBase : Component {
     /// <summary>
     /// Enable/disable a drop shadow effect.
     /// </summary>
-    public bool DropShadowEnabled = false;
+    public bool DropShadowEnabled {
+        get => dropShadowEnabled;
+        set => SetDropShadowEnabled(value);
+    }
 
     /// <summary>
     /// How much to offset the drop shadow by.
     /// </summary>
-    public Vector2 DropShadowOffset = Vector2.One;
+    public Vector2 DropShadowOffset {
+        get => dropShadowOffset;
+        set => SetDropShadowOffset(value);
+    }
 
     /// <summary>
     /// A color to tint the drop shadow.
@@ -95,6 +101,9 @@ public class SpriteTextBase : Component {
     string text;
     SpriteFont font;
     SpriteEffects spriteEffects = SpriteEffects.None;
+    bool dropShadowEnabled = false;
+    Vector2 dropShadowOffset = Vector2.One;
+    Vector2 transformedDropShadowOffset = Vector2.One; // this offset takes rotation into account
     Vector2 originNormalized;
     Vector2 origin;
 
@@ -121,6 +130,31 @@ public class SpriteTextBase : Component {
         boundsDirty = true;
     }
 
+    public void SetDropShadowEnabled(bool enabled) {
+        if (dropShadowEnabled == enabled) {
+            return;
+        }
+
+        dropShadowEnabled = enabled;
+
+        if (Transform.Rotation != 0f) {
+            UpdateTransformedDropShadowOffset();
+        }
+    }
+
+    public void SetDropShadowOffset(Vector2 offset) {
+        if (dropShadowOffset == offset) {
+            return;
+        }
+
+        dropShadowOffset = offset;
+        transformedDropShadowOffset = offset;
+
+        if (Transform.Rotation != 0f) {
+            UpdateTransformedDropShadowOffset();
+        }
+    }
+
     public void SetOriginNormalized(Vector2 originNormalized) {
         if (this.originNormalized == originNormalized) {
             return;
@@ -137,8 +171,12 @@ public class SpriteTextBase : Component {
         }
     }
 
-    protected override void OnEntityTransformChanged() {
+    protected override void OnEntityTransformChanged(Transform.ComponentFlags changedFlags) {
         boundsDirty = true;
+
+        if (dropShadowEnabled && changedFlags.HasFlag(Transform.ComponentFlags.Rotation)) {
+            UpdateTransformedDropShadowOffset();
+        }
     }
 
     void UpdateBounds() {
@@ -153,15 +191,15 @@ public class SpriteTextBase : Component {
             Vector2 position = Transform.Position - origin * Transform.Scale;
             Vector2 size = font.MeasureString(text) * Transform.Scale;
 
-            if (DropShadowEnabled) {
-                if (DropShadowOffset.X < 0f) {
-                    position.X -= DropShadowOffset.X;
+            if (dropShadowEnabled) {
+                if (dropShadowOffset.X < 0f) {
+                    position.X -= dropShadowOffset.X;
                 }
-                if (DropShadowOffset.Y < 0f) {
-                    position.Y -= DropShadowOffset.Y;
+                if (dropShadowOffset.Y < 0f) {
+                    position.Y -= dropShadowOffset.Y;
                 }
 
-                size += Vector2Ext.Abs(DropShadowOffset) * Transform.Scale;
+                size += Vector2Ext.Abs(dropShadowOffset) * Transform.Scale;
             }
 
             bounds.Position = position;
@@ -188,16 +226,20 @@ public class SpriteTextBase : Component {
         boundsDirty = false;
     }
 
+    void UpdateTransformedDropShadowOffset() {
+        Transform.TransformPoint(dropShadowOffset, out transformedDropShadowOffset);
+    }
+
     public void Render(SpriteBatch spriteBatch) {
         if (text == null || font == null) {
             return;
         }
 
-        if (DropShadowEnabled) {
+        if (dropShadowEnabled) {
             spriteBatch.DrawString(
                 font,
                 text,
-                Transform.Position + DropShadowOffset,
+                Transform.Position + transformedDropShadowOffset,
                 DropShadowTint,
                 Transform.Rotation,
                 origin,

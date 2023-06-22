@@ -12,8 +12,9 @@ namespace BlueFw;
 public class Transform {
 
     [Flags]
-    enum DirtyFlags {
-        Clean       = 0,
+    public enum ComponentFlags {
+        None = 0,
+
         Position    = 1 << 0,
         Scale       = 1 << 1,
         Rotation    = 1 << 2,
@@ -163,8 +164,8 @@ public class Transform {
     Vector2 right = Vector2.UnitX;
     Vector2 down = Vector2.UnitY;
 
-    DirtyFlags hierarchyDirty = DirtyFlags.All;
-    DirtyFlags localDirty = DirtyFlags.All;
+    ComponentFlags hierarchyDirtyFlags = ComponentFlags.All;
+    ComponentFlags localDirtyFlags = ComponentFlags.All;
     bool positionDirty = true;
     bool worldToLocalDirty = true;
 
@@ -265,9 +266,9 @@ public class Transform {
 
         localPosition = position;
 
-        localDirty = DirtyFlags.All;
+        localDirtyFlags = ComponentFlags.All;
         positionDirty = true;
-        SetHierarchyDirty(DirtyFlags.Position);
+        SetHierarchyDirty(ComponentFlags.Position);
     }
 
     /// <summary>
@@ -294,9 +295,9 @@ public class Transform {
 
         localScale = scale;
 
-        localDirty |= DirtyFlags.Scale;
+        localDirtyFlags |= ComponentFlags.Scale;
         positionDirty = true;
-        SetHierarchyDirty(DirtyFlags.Scale);
+        SetHierarchyDirty(ComponentFlags.Scale);
     }
 
     /// <summary>
@@ -316,22 +317,22 @@ public class Transform {
 
         localRotation = radians;
 
-        localDirty = DirtyFlags.All;
+        localDirtyFlags = ComponentFlags.All;
         positionDirty = true;
-        SetHierarchyDirty(DirtyFlags.Rotation);
+        SetHierarchyDirty(ComponentFlags.Rotation);
     }
 
     #endregion
 
-    void SetHierarchyDirty(DirtyFlags dirtyFlags) {
-        if (hierarchyDirty.HasFlag(dirtyFlags)) {
+    void SetHierarchyDirty(ComponentFlags dirtyFlags) {
+        if (hierarchyDirtyFlags.HasFlag(dirtyFlags)) {
             return;
         }
 
-        hierarchyDirty |= dirtyFlags;
+        hierarchyDirtyFlags |= dirtyFlags;
 
         for (int i = 0; i < Entity.Components.Count; i++) {
-            Entity.Components[i].InvokeOnEntityTransformChanged();
+            Entity.Components[i].InvokeOnEntityTransformChanged(dirtyFlags);
         }
 
         for (int i = 0; i < children.Length; i++) {
@@ -340,7 +341,7 @@ public class Transform {
     }
 
     void UpdateTransform() {
-        if (hierarchyDirty == DirtyFlags.Clean) {
+        if (hierarchyDirtyFlags == ComponentFlags.None) {
             return;
         }
 
@@ -348,16 +349,16 @@ public class Transform {
             parent.UpdateTransform();
         }
 
-        if (localDirty != DirtyFlags.Clean) {
-            if (localDirty.HasFlag(DirtyFlags.Position)) {
+        if (localDirtyFlags != ComponentFlags.None) {
+            if (localDirtyFlags.HasFlag(ComponentFlags.Position)) {
                 Matrix2D.CreateTranslation(localPosition, out translationMatrix);
             }
 
-            if (localDirty.HasFlag(DirtyFlags.Rotation)) {
+            if (localDirtyFlags.HasFlag(ComponentFlags.Rotation)) {
                 Matrix2D.CreateRotation(localRotation, out rotationMatrix);
             }
 
-            if (localDirty.HasFlag(DirtyFlags.Scale)) {
+            if (localDirtyFlags.HasFlag(ComponentFlags.Scale)) {
                 Matrix2D.CreateScale(localScale, out scaleMatrix);
             }
 
@@ -370,7 +371,7 @@ public class Transform {
                 worldMatrix = localMatrix;
             }
 
-            localDirty = DirtyFlags.Clean;
+            localDirtyFlags = ComponentFlags.None;
         }
 
         if (HasParent) {
@@ -381,7 +382,7 @@ public class Transform {
 
         worldToLocalDirty = true;
         positionDirty = true;
-        hierarchyDirty = DirtyFlags.Clean;
+        hierarchyDirtyFlags = ComponentFlags.None;
     }
 
     void UpdatePosition() {
@@ -534,7 +535,7 @@ public class Transform {
         parent = transform;
 
         worldToLocalDirty = true;
-        SetHierarchyDirty(DirtyFlags.All);
+        SetHierarchyDirty(ComponentFlags.All);
     }
 
     /// <summary>

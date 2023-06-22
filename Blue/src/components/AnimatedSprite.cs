@@ -385,7 +385,7 @@ public class BaseAnimatedSprite : Component, IUpdatable {
         SetFrame(nextFrame);
     }
 
-    protected override void OnEntityTransformChanged() {
+    protected override void OnEntityTransformChanged(Transform.ComponentFlags changedFlags) {
         boundsDirty = true;
     }
 

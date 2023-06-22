@@ -151,7 +151,7 @@ public class Camera : Component {
         matricesDirty = true;
     }
 
-    protected override void OnEntityTransformChanged() {
+    protected override void OnEntityTransformChanged(Transform.ComponentFlags changedFlags) {
         matricesDirty = true;
     }
 
