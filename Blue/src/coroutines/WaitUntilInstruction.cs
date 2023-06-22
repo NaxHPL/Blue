@@ -1,27 +1,18 @@
-﻿using BlueFw.Utils;
-using System;
+﻿using System;
 
 namespace BlueFw.Coroutines;
 
-internal class WaitUntilInstruction : YieldInstruction {
+internal readonly struct WaitUntilInstruction : IYieldInstruction {
 
-    Func<bool> predicate;
-    bool target;
+    readonly public Func<bool> Condition;
+    readonly public bool Target;
 
-    internal void Initialize(Func<bool> predicate, bool target) {
-        this.predicate = predicate;
-        this.target = target;
+    public WaitUntilInstruction(Func<bool> condition, bool target) {
+        Condition = condition;
+        Target = target;
     }
 
-    internal override bool Advance() {
-        return predicate() == target;
-    }
-
-    protected override void Clear() {
-        predicate = null;
-    }
-
-    protected override void ReturnSelfToPool() {
-        Pool<WaitUntilInstruction>.Return(this);
+    public readonly bool Advance() {
+        return Condition() == Target;
     }
 }

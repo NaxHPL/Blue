@@ -288,14 +288,14 @@ public abstract class Component : BlueObject {
     /// <remarks>
     /// Untagged coroutines cannot be paused or stopped.
     /// </remarks>
-    protected void StartCoroutine(IEnumerator<YieldInstruction> coroutine) {
+    protected void StartCoroutine(IEnumerator<IYieldInstruction> coroutine) {
         StartCoroutine(coroutine, null);
     }
 
     /// <summary>
     /// Starts a coroutine with the given tag.
     /// </summary>
-    protected void StartCoroutine(IEnumerator<YieldInstruction> coroutine, string tag) {
+    protected void StartCoroutine(IEnumerator<IYieldInstruction> coroutine, string tag) {
         ArgumentNullException.ThrowIfNull(coroutine, nameof(coroutine));
 
         Coroutine cr = Pool<Coroutine>.Get();

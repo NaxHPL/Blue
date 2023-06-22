@@ -1,27 +1,19 @@
-﻿using BlueFw.Utils;
+﻿namespace BlueFw.Coroutines;
 
-namespace BlueFw.Coroutines;
+internal struct WaitSecondsInstruction : IYieldInstruction {
 
-internal class WaitSecondsInstruction : YieldInstruction {
+    readonly public float Seconds;
+    readonly public bool IsRealTime;
 
-    float seconds;
-    bool isRealTime;
     float timer = 0f;
 
-    internal void Initialize(float seconds, bool isRealTime) {
-        this.seconds = seconds;
-        this.isRealTime = isRealTime;
-        timer = 0f;
+    public WaitSecondsInstruction(float seconds, bool isRealTime) {
+        Seconds = seconds;
+        IsRealTime = isRealTime;
     }
 
-    internal override bool Advance() {
-        timer += isRealTime ? Time.UnscaledDeltaTime : Time.DeltaTime;
-        return timer >= seconds;
-    }
-
-    protected override void Clear() { }
-
-    protected override void ReturnSelfToPool() {
-        Pool<WaitSecondsInstruction>.Return(this);
+    public bool Advance() {
+        timer += IsRealTime ? Time.UnscaledDeltaTime : Time.DeltaTime;
+        return timer >= Seconds;
     }
 }

@@ -4,30 +4,28 @@ using System.Collections.Generic;
 
 namespace BlueFw.Coroutines;
 
-public class Coroutine : YieldInstruction {
+public class Coroutine : IYieldInstruction {
 
     #region Statics
 
     /// <summary>
     /// To be used within a coroutine to resume execution on the next frame.
     /// </summary>
-    public static YieldInstruction WaitUntilNextFrame() {
+    public static IYieldInstruction WaitUntilNextFrame() {
         return null;
     }
 
     /// <summary>
     /// To be used within a coroutine to resume execution after some time.
     /// </summary>
-    public static YieldInstruction WaitSeconds(float seconds, bool realTime = false) {
-        WaitSecondsInstruction instruction = Pool<WaitSecondsInstruction>.Get();
-        instruction.Initialize(seconds, realTime);
-        return instruction;
+    public static IYieldInstruction WaitSeconds(float seconds, bool realTime = false) {
+        return new WaitSecondsInstruction(seconds, realTime);
     }
 
     /// <summary>
     /// To be used within a coroutine to pause execution until a condition is met.
     /// </summary>
-    public static YieldInstruction WaitUntil(Func<bool> condition) {
+    public static IYieldInstruction WaitUntil(Func<bool> condition) {
         ArgumentNullException.ThrowIfNull(condition, nameof(condition));
         return WaitUntilInternal(condition, true);
     }
@@ -35,15 +33,13 @@ public class Coroutine : YieldInstruction {
     /// <summary>
     /// To be used within a coroutine to pause execution while a condition is true.
     /// </summary>
-    public static YieldInstruction WaitWhile(Func<bool> condition) {
+    public static IYieldInstruction WaitWhile(Func<bool> condition) {
         ArgumentNullException.ThrowIfNull(condition, nameof(condition));
         return WaitUntilInternal(condition, false);
     }
 
-    static YieldInstruction WaitUntilInternal(Func<bool> predicate, bool target) {
-        WaitUntilInstruction instruction = Pool<WaitUntilInstruction>.Get();
-        instruction.Initialize(predicate, target);
-        return instruction;
+    static IYieldInstruction WaitUntilInternal(Func<bool> predicate, bool target) {
+        return new WaitUntilInstruction(predicate, target);
     }
 
     #endregion
@@ -53,10 +49,10 @@ public class Coroutine : YieldInstruction {
     internal bool IsPaused;
 
     Component parentComponent;
-    IEnumerator<YieldInstruction> enumerator;
-    YieldInstruction currentInstruction;
+    IEnumerator<IYieldInstruction> enumerator;
+    IYieldInstruction currentInstruction;
 
-    internal void Initialize(string tag, IEnumerator<YieldInstruction> enumerator, Component parentComponent) {
+    internal void Initialize(string tag, IEnumerator<IYieldInstruction> enumerator, Component parentComponent) {
         Tag = tag;
         IsPaused = false;
 
@@ -65,14 +61,13 @@ public class Coroutine : YieldInstruction {
         currentInstruction = null;
     }
 
-    internal override bool Advance() {
+    public bool Advance() {
         if (IsPaused) {
             return false;
         }
 
         if (currentInstruction != null) {
             if (currentInstruction.Advance()) {
-                currentInstruction.Release();
                 currentInstruction = null;
             }
             else {
@@ -88,21 +83,18 @@ public class Coroutine : YieldInstruction {
         return true;
     }
 
-    internal override void Release() {
+    internal void Release() {
         parentComponent.CoroutineDone(this);
-        base.Release();
+        Clear();
+        Pool<Coroutine>.Return(this);
     }
 
-    protected override void Clear() {
+    protected void Clear() {
         Tag = null;
         IsPaused = false;
 
         enumerator = null;
         parentComponent = null;
         currentInstruction = null;
-    }
-
-    protected override void ReturnSelfToPool() {
-        Pool<Coroutine>.Return(this);
     }
 }
