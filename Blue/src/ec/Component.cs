@@ -1,4 +1,6 @@
-﻿using System;
+﻿using BlueFw.Coroutines;
+using BlueFw.Utils;
+using System;
 using System.Collections.Generic;
 
 namespace BlueFw;
@@ -125,6 +127,7 @@ public abstract class Component : BlueObject {
 
         nextActiveMethodToInvoke = LifecycleEnabledMethod.OnActive;
         OnInactive();
+        StopAllCoroutines();
         return true;
     }
 
@@ -274,4 +277,104 @@ public abstract class Component : BlueObject {
             OnDestroy();
         }
     }
+
+    #region Coroutines
+
+    readonly Dictionary<string, FastList<Coroutine>> coroutinesByTag = new Dictionary<string, FastList<Coroutine>>();
+
+    /// <summary>
+    /// Starts a coroutine.
+    /// </summary>
+    /// <remarks>
+    /// Untagged coroutines cannot be paused or stopped.
+    /// </remarks>
+    protected void StartCoroutine(IEnumerator<YieldInstruction> coroutine) {
+        StartCoroutine(coroutine, null);
+    }
+
+    /// <summary>
+    /// Starts a coroutine with the given tag.
+    /// </summary>
+    protected void StartCoroutine(IEnumerator<YieldInstruction> coroutine, string tag) {
+        ArgumentNullException.ThrowIfNull(coroutine, nameof(coroutine));
+
+        Coroutine cr = Pool<Coroutine>.Get();
+        cr.Initialize(tag, coroutine, this);
+        cr.Advance(); // advance to the first yield instruction
+        CoroutineUpdater.Register(cr);
+
+        if (tag != null) {
+            if (!coroutinesByTag.ContainsKey(tag)) {
+                coroutinesByTag.Add(tag, FastListPool<Coroutine>.Get());
+            }
+
+            coroutinesByTag[tag].Add(cr);
+        }
+    }
+
+    /// <summary>
+    /// Pauses all coroutines running on this component with the given tag.
+    /// </summary>
+    protected void PauseCoroutines(string tag) {
+        SetCoroutinesPaused(tag, true);
+    }
+
+    /// <summary>
+    /// Resumes all coroutines running on this component with the given tag.
+    /// </summary>
+    protected void ResumeCoroutines(string tag) {
+        SetCoroutinesPaused(tag, false);
+    }
+
+    void SetCoroutinesPaused(string tag, bool paused) {
+        if (!coroutinesByTag.TryGetValue(tag, out FastList<Coroutine> coroutines)) {
+            return;
+        }
+
+        for (int i = 0; i < coroutines.Length; i++) {
+            coroutines.Buffer[i].IsPaused = paused;
+        }
+    }
+
+    /// <summary>
+    /// Stops all coroutines running on this component with the given tag.
+    /// </summary>
+    protected void StopCoroutines(string tag) {
+        if (!coroutinesByTag.Remove(tag, out FastList<Coroutine> coroutines)) {
+            return;
+        }
+
+        for (int i = 0; i < coroutines.Length; i++) {
+            CoroutineUpdater.Unregister(coroutines.Buffer[i]);
+        }
+
+        FastListPool<Coroutine>.Return(coroutines);
+    }
+
+    /// <summary>
+    /// Stops all coroutines running on this component.
+    /// </summary>
+    protected void StopAllCoroutines() {
+        foreach (FastList<Coroutine> coroutines in coroutinesByTag.Values) {
+            for (int i = 0; i < coroutines.Length; i++) {
+                CoroutineUpdater.Unregister(coroutines.Buffer[i]);
+            }
+
+            FastListPool<Coroutine>.Return(coroutines);
+        }
+
+        coroutinesByTag.Clear();
+    }
+
+    internal void CoroutineDone(Coroutine coroutine) {
+        if (coroutine.Tag == null) {
+            return;
+        }
+
+        if (coroutinesByTag.TryGetValue(coroutine.Tag, out FastList<Coroutine> coroutines)) {
+            coroutines.Remove(coroutine);
+        }
+    }
+
+    #endregion
 }

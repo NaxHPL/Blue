@@ -70,7 +70,7 @@ public class Scene {
     /// <summary>
     /// Adds an entity to the scene.
     /// </summary>
-    public void AddEntity(Entity entity) {
+    internal void AddEntity(Entity entity) {
         if (!Entities.Add(entity)) {
             return;
         }

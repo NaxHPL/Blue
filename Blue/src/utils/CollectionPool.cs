@@ -5,6 +5,8 @@ namespace BlueFw.Utils;
 
 public class ListPool<T> : CollectionPool<List<T>, T> { private ListPool() { } }
 
+public class FastListPool<T> : CollectionPool<FastList<T>, T> { private FastListPool() { } }
+
 public class SetPool<T> : CollectionPool<HashSet<T>, T> { private SetPool() { } }
 
 public class DictionaryPool<TKey, TValue> : CollectionPool<Dictionary<TKey, TValue>, KeyValuePair<TKey, TValue>> { private DictionaryPool() { } }

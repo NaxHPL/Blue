@@ -9,9 +9,11 @@ namespace BlueFw.Utils;
 /// A basic wrapper around an array that automatically expands when it reached capacity.
 /// Provides direct access to the buffer for fast retrieval.
 /// </summary>
-public class FastList<T> : IEnumerable<T> {
+public class FastList<T> : ICollection<T>, IEnumerable<T> {
 
     const int DEFAULT_CAPACITY = 4;
+
+    public bool IsReadOnly => false;
 
     /// <summary>
     /// Direct access to the item buffer array.
@@ -22,6 +24,8 @@ public class FastList<T> : IEnumerable<T> {
     /// Direct access to the length of the filled items in the buffer. DO NOT MODIFY.
     /// </summary>
     public int Length;
+
+    public int Count => Length;
 
     /// <summary>
     /// Gets/sets the item at the specified index.
@@ -250,6 +254,10 @@ public class FastList<T> : IEnumerable<T> {
 
     IEnumerator IEnumerable.GetEnumerator() {
         return GetEnumerator();
+    }
+
+    public void CopyTo(T[] array, int arrayIndex) {
+        Array.Copy(Buffer, 0, array, arrayIndex, Length);
     }
 
     struct Enumerator : IEnumerator<T> {
