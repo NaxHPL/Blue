@@ -17,7 +17,7 @@ public class StaticSprite : StaticSpriteBase, IRenderable { void IRenderable.Ren
 /// </summary>
 public class StaticSpriteUI : StaticSpriteBase, IScreenRenderable { }
 
-public class StaticSpriteBase : Component {
+public abstract class StaticSpriteBase : Component {
 
     public int RenderLayer { get; set; }
 
@@ -179,34 +179,23 @@ public class StaticSpriteBase : Component {
             return;
         }
 
-        if (sprite == null) {
+        if (sprite == null || Transform == null) {
             bounds = Rect.Offscreen;
         }
         else {
-            Point size = nineSliceMode == NineSliceMode.None ? sprite.Size : this.size;
-            bounds.Size = size.ToVector2() * Transform.Scale;
+            Point size;
+            Vector2 origin;
 
-            Vector2 origin = nineSliceMode == NineSliceMode.None ?
-                sprite.Origin :
-                new Vector2(sprite.Origin.X / sprite.Size.X * size.X, sprite.Origin.Y / sprite.Size.Y * size.Y);
-            bounds.Position = Transform.Position - origin * Transform.Scale;
-
-            if (Transform.Rotation != 0f) {
-                Vector2 topLeft = Transform.TransformPoint(new Vector2(bounds.X, bounds.Y));
-                Vector2 topRight = Transform.TransformPoint(new Vector2(bounds.X + bounds.Width, bounds.Y));
-                Vector2 bottomLeft = Transform.TransformPoint(new Vector2(bounds.X, bounds.Y + bounds.Height));
-                Vector2 bottomRight = Transform.TransformPoint(new Vector2(bounds.X + bounds.Width, bounds.Y + bounds.Height));
-
-                float minX = MathExt.Min(topLeft.X, topRight.X, bottomLeft.X, bottomRight.X);
-                float maxX = MathExt.Max(topLeft.X, topRight.X, bottomLeft.X, bottomRight.X);
-                float minY = MathExt.Min(topLeft.Y, topRight.Y, bottomLeft.Y, bottomRight.Y);
-                float maxY = MathExt.Max(topLeft.Y, topRight.Y, bottomLeft.Y, bottomRight.Y);
-
-                bounds.X = minX;
-                bounds.Y = minY;
-                bounds.Width = maxX - minX;
-                bounds.Height = maxY - minY;
+            if (nineSliceMode == NineSliceMode.None) {
+                size = sprite.Size;
+                origin = sprite.Origin;
             }
+            else {
+                size = this.size;
+                origin = new Vector2(sprite.Origin.X / sprite.Size.X * size.X, sprite.Origin.Y / sprite.Size.Y * size.Y);
+            }
+
+            Rect.CalculateBounds(Transform.Position, origin, size.ToVector2(), Transform.Scale, Transform.Rotation, out bounds);
         }
 
         boundsDirty = false;

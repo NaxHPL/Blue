@@ -53,7 +53,7 @@ public class Sprite {
     /// <param name="texture">The Sprite's source texture.</param>
     /// <param name="sourceRect">The postiton and size of the Sprite on the texture. If null, the sprite is the whole texture.</param>
     /// <param name="origin">The Sprite's origin (pivot point).</param>
-    public Sprite(Texture2D texture, Rectangle? sourceRect, Vector2 origin) {
+    public Sprite(Texture2D texture, Rectangle? sourceRect = null, Vector2 origin = default) {
         Texture = texture;
         SourceRect = sourceRect;
         Origin = origin;

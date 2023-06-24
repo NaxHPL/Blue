@@ -18,7 +18,7 @@ public class AnimatedSprite : BaseAnimatedSprite, IRenderable { void IRenderable
 /// </summary>
 public class AnimatedSpriteUI : BaseAnimatedSprite, IScreenRenderable { }
 
-public class BaseAnimatedSprite : Component, IUpdatable {
+public abstract class BaseAnimatedSprite : Component, IUpdatable {
 
     /// <summary>
     /// Defines a single frame of animation.
@@ -396,29 +396,11 @@ public class BaseAnimatedSprite : Component, IUpdatable {
 
         Frame currentFrame = sequences.Buffer[currentSequenceIdx][currentFrameIdx];
 
-        if (currentFrame.Sprite == null || currentFrame.Sprite.Texture == null) {
+        if (currentFrame.Sprite?.Texture == null || Transform == null) {
             bounds = Rect.Offscreen;
         }
         else {
-            bounds.Size = currentFrame.Sprite.Size.ToVector2() * Transform.Scale;
-            bounds.Position = Transform.Position - currentFrame.Sprite.Origin * Transform.Scale;
-
-            if (Transform.Rotation != 0f) {
-                Vector2 topLeft = Transform.TransformPoint(new Vector2(bounds.X, bounds.Y));
-                Vector2 topRight = Transform.TransformPoint(new Vector2(bounds.X + bounds.Width, bounds.Y));
-                Vector2 bottomLeft = Transform.TransformPoint(new Vector2(bounds.X, bounds.Y + bounds.Height));
-                Vector2 bottomRight = Transform.TransformPoint(new Vector2(bounds.X + bounds.Width, bounds.Y + bounds.Height));
-
-                float minX = MathExt.Min(topLeft.X, topRight.X, bottomLeft.X, bottomRight.X);
-                float maxX = MathExt.Max(topLeft.X, topRight.X, bottomLeft.X, bottomRight.X);
-                float minY = MathExt.Min(topLeft.Y, topRight.Y, bottomLeft.Y, bottomRight.Y);
-                float maxY = MathExt.Max(topLeft.Y, topRight.Y, bottomLeft.Y, bottomRight.Y);
-
-                bounds.X = minX;
-                bounds.Y = minY;
-                bounds.Width = maxX - minX;
-                bounds.Height = maxY - minY;
-            }
+            Rect.CalculateBounds(Transform.Position, currentFrame.Sprite.Origin, currentFrame.Sprite.Size.ToVector2(), Transform.Scale, Transform.Rotation, out bounds);
         }
 
         boundsDirty = false;

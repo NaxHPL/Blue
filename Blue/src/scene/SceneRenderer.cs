@@ -29,6 +29,7 @@ internal class SceneRenderer : SceneHandler<IRenderable> {
             // Don't render if the camera can't see it
             Rect.Overlaps(renderable.Bounds, camera.Bounds, out bool seenByCamera);
             if (!seenByCamera) {
+                System.Diagnostics.Debug.WriteLine("Cannot see text! " + Time.FrameCount);
                 continue;
             }
 

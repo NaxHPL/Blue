@@ -33,6 +33,8 @@ public class Blue : Game {
     /// </summary>
     public bool PauseOnFocusLost = false;
 
+    internal readonly CoroutineManager CoroutineManager = new CoroutineManager();
+
     SpriteBatch spriteBatch;
     Scene queuedSceneToLoad;
 
@@ -71,7 +73,7 @@ public class Blue : Game {
     protected virtual void OnLoadContent() { }
 
     protected override void Update(GameTime gameTime) {
-        if (PauseOnFocusLost && !IsActive) {
+        if ((PauseOnFocusLost && !IsActive) || gameTime.ElapsedGameTime.TotalSeconds <= 0d) {
             SuppressDraw();
             return;
         }
@@ -86,7 +88,7 @@ public class Blue : Game {
         else {
             // We only want to update coroutines if we didn't load a scene this frame.
             // Coroutines which started when the new scene loaded will have already had their first iteration done.
-            CoroutineUpdater.Update();
+            CoroutineManager.Update();
         }
 
         ActiveScene?.Update();

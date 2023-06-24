@@ -209,7 +209,7 @@ public struct Matrix2D : IEquatable<Matrix2D> {
     /// Creates a new rotation <see cref="Matrix2D"/> with the specified angle (degrees).
     /// </summary>
     /// <param name="degrees">The angle in degrees.</param>
-    public static Matrix2D CreateRotationDegress(float degrees) {
+    public static Matrix2D CreateRotationDegrees(float degrees) {
         CreateRotation(MathHelper.ToRadians(degrees), out Matrix2D result);
         return result;
     }

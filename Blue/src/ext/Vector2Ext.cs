@@ -42,4 +42,29 @@ public static class Vector2Ext {
     public static Vector2 Abs(in Vector2 vector) {
         return new Vector2(MathF.Abs(vector.X), MathF.Abs(vector.Y));
     }
+
+    public static Vector2 RotateAround(in Vector2 position, in Vector2 center, float radians) {
+        RotateAround(position, center, radians, out Vector2 result);
+        return result;
+    }
+
+    public static void RotateAround(in Vector2 position, in Vector2 center, float radians, out Vector2 result) {
+        if (radians == 0f) {
+            result = position;
+        }
+        else {
+            // Translate to origin
+            Vector2 translatedPos = position - center;
+
+            // Do rotation
+            float cosTheta = MathF.Cos(radians);
+            float sinTheta = MathF.Sin(radians);
+
+            result.X = translatedPos.X * cosTheta - translatedPos.Y * sinTheta;
+            result.Y = translatedPos.X * sinTheta + translatedPos.Y * cosTheta;
+
+            // Translate back to original position
+            result += center;
+        }
+    }
 }

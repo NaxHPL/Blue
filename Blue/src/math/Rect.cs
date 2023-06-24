@@ -29,7 +29,7 @@ public struct Rect {
     /// <remarks>
     /// It's likely to be offscreen... probably.
     /// </remarks>
-    internal static Rect Offscreen => offscreenRect;
+    public static Rect Offscreen => offscreenRect;
     static Rect offscreenRect = new Rect(float.MinValue, float.MinValue, 0f, 0f);
 
     /// <summary>
@@ -209,6 +209,50 @@ public struct Rect {
     /// </summary>
     public static Rect FromMinMax(in Vector2 min, in Vector2 max) {
         return new Rect(min.X, min.Y, max.X - min.X, max.Y - min.Y);
+    }
+
+    // Reusable matrices for CalculateBounds
+    static Matrix2D transformMat;
+    static Matrix2D tempMat;
+
+    public static Rect CalculateBounds(in Vector2 position, in Vector2 origin, in Vector2 size, in Vector2 scale, float rotation) {
+        CalculateBounds(position, origin, size, scale, rotation, out Rect result);
+        return result;
+    }
+
+    public static void CalculateBounds(in Vector2 position, in Vector2 origin, in Vector2 size, in Vector2 scale, float rotation, out Rect result) {
+        if (rotation == 0f) {
+            result = new Rect(position - origin * scale, size * scale);
+        }
+        else {
+            Matrix2D.CreateTranslation(-position - origin, out transformMat);
+            Matrix2D.CreateScale(scale, out tempMat);
+            Matrix2D.Multiply(transformMat, tempMat, out transformMat);
+            Matrix2D.CreateRotation(rotation, out tempMat);
+            Matrix2D.Multiply(transformMat, tempMat, out transformMat);
+            Matrix2D.CreateTranslation(position, out tempMat);
+            Matrix2D.Multiply(transformMat, tempMat, out transformMat);
+
+            Vector2 topLeft = position;
+            Vector2 topRight = new Vector2(position.X + size.X, position.Y);
+            Vector2 bottomLeft = new Vector2(position.X, position.Y + size.Y);
+            Vector2 bottomRight = new Vector2(position.X + size.X, position.Y + size.Y);
+
+            Vector2Ext.Transform(topLeft, transformMat, out topLeft);
+            Vector2Ext.Transform(topRight, transformMat, out topRight);
+            Vector2Ext.Transform(bottomLeft, transformMat, out bottomLeft);
+            Vector2Ext.Transform(bottomRight, transformMat, out bottomRight);
+
+            float minX = MathExt.Min(topLeft.X, topRight.X, bottomLeft.X, bottomRight.X);
+            float maxX = MathExt.Max(topLeft.X, topRight.X, bottomLeft.X, bottomRight.X);
+            float minY = MathExt.Min(topLeft.Y, topRight.Y, bottomLeft.Y, bottomRight.Y);
+            float maxY = MathExt.Max(topLeft.Y, topRight.Y, bottomLeft.Y, bottomRight.Y);
+
+            result.X = minX;
+            result.Y = minY;
+            result.Width = maxX - minX;
+            result.Height = maxY - minY;
+        }
     }
 
     #endregion

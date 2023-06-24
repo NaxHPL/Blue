@@ -15,7 +15,7 @@ public class SpriteText : SpriteTextBase, IRenderable { void IRenderable.Render(
 /// </summary>
 public class SpriteTextUI : SpriteTextBase, IScreenRenderable { }
 
-public class SpriteTextBase : Component {
+public abstract class SpriteTextBase : Component {
 
     public int RenderLayer { get; set; }
 
@@ -103,7 +103,7 @@ public class SpriteTextBase : Component {
     SpriteEffects spriteEffects = SpriteEffects.None;
     bool dropShadowEnabled = false;
     Vector2 dropShadowOffset = Vector2.One;
-    Vector2 transformedDropShadowOffset = Vector2.One; // this offset takes rotation into account
+    Vector2 rotatedDropShadowOffset = Vector2.One;
     Vector2 originNormalized;
     Vector2 origin;
 
@@ -136,10 +136,7 @@ public class SpriteTextBase : Component {
         }
 
         dropShadowEnabled = enabled;
-
-        if (Transform.Rotation != 0f) {
-            UpdateTransformedDropShadowOffset();
-        }
+        boundsDirty = true;
     }
 
     public void SetDropShadowOffset(Vector2 offset) {
@@ -148,11 +145,8 @@ public class SpriteTextBase : Component {
         }
 
         dropShadowOffset = offset;
-        transformedDropShadowOffset = offset;
-
-        if (Transform.Rotation != 0f) {
-            UpdateTransformedDropShadowOffset();
-        }
+        rotatedDropShadowOffset = offset;
+        boundsDirty = true;
     }
 
     public void SetOriginNormalized(Vector2 originNormalized) {
@@ -166,17 +160,13 @@ public class SpriteTextBase : Component {
     }
 
     void UpdateOrigin() {
-        if (!string.IsNullOrEmpty(text) && font != null) {
+        if (font != null && !string.IsNullOrEmpty(text)) {
             origin = originNormalized * font.MeasureString(text);
         }
     }
 
     protected override void OnEntityTransformChanged(Transform.ComponentFlags changedFlags) {
         boundsDirty = true;
-
-        if (dropShadowEnabled && changedFlags.HasFlag(Transform.ComponentFlags.Rotation)) {
-            UpdateTransformedDropShadowOffset();
-        }
     }
 
     void UpdateBounds() {
@@ -184,50 +174,24 @@ public class SpriteTextBase : Component {
             return;
         }
 
-        if (string.IsNullOrEmpty(text) || font == null) {
+        if (font == null || Transform == null || string.IsNullOrEmpty(text)) {
             bounds = Rect.Offscreen;
         }
         else {
-            Vector2 position = Transform.Position - origin * Transform.Scale;
-            Vector2 size = font.MeasureString(text) * Transform.Scale;
+            Vector2 position = Transform.Position;
+            Vector2 size = font.MeasureString(text);
 
             if (dropShadowEnabled) {
-                if (dropShadowOffset.X < 0f) {
-                    position.X -= dropShadowOffset.X;
-                }
-                if (dropShadowOffset.Y < 0f) {
-                    position.Y -= dropShadowOffset.Y;
-                }
+                position += Vector2.Min(Vector2.Zero, dropShadowOffset);
+                size += Vector2Ext.Abs(dropShadowOffset);
 
-                size += Vector2Ext.Abs(dropShadowOffset) * Transform.Scale;
+                Vector2Ext.RotateAround(dropShadowOffset, Vector2.Zero, Transform.Rotation, out rotatedDropShadowOffset);
             }
 
-            bounds.Position = position;
-            bounds.Size = size;
-
-            if (Transform.Rotation != 0f) {
-                Vector2 topLeft = Transform.TransformPoint(new Vector2(bounds.X, bounds.Y));
-                Vector2 topRight = Transform.TransformPoint(new Vector2(bounds.X + bounds.Width, bounds.Y));
-                Vector2 bottomLeft = Transform.TransformPoint(new Vector2(bounds.X, bounds.Y + bounds.Height));
-                Vector2 bottomRight = Transform.TransformPoint(new Vector2(bounds.X + bounds.Width, bounds.Y + bounds.Height));
-
-                float minX = MathExt.Min(topLeft.X, topRight.X, bottomLeft.X, bottomRight.X);
-                float maxX = MathExt.Max(topLeft.X, topRight.X, bottomLeft.X, bottomRight.X);
-                float minY = MathExt.Min(topLeft.Y, topRight.Y, bottomLeft.Y, bottomRight.Y);
-                float maxY = MathExt.Max(topLeft.Y, topRight.Y, bottomLeft.Y, bottomRight.Y);
-
-                bounds.X = minX;
-                bounds.Y = minY;
-                bounds.Width = maxX - minX;
-                bounds.Height = maxY - minY;
-            }
+            Rect.CalculateBounds(position, origin, size, Transform.Scale, Transform.Rotation, out bounds);
         }
 
         boundsDirty = false;
-    }
-
-    void UpdateTransformedDropShadowOffset() {
-        Transform.TransformPoint(dropShadowOffset, out transformedDropShadowOffset);
     }
 
     public void Render(SpriteBatch spriteBatch) {
@@ -239,7 +203,7 @@ public class SpriteTextBase : Component {
             spriteBatch.DrawString(
                 font,
                 text,
-                Transform.Position + transformedDropShadowOffset,
+                Transform.Position + rotatedDropShadowOffset,
                 DropShadowTint,
                 Transform.Rotation,
                 origin,

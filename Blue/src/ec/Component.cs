@@ -302,7 +302,7 @@ public abstract class Component : BlueObject {
         Coroutine cr = Pool<Coroutine>.Get();
         cr.Initialize(tag, coroutine, this);
         cr.Advance(); // advance to the first yield instruction
-        CoroutineUpdater.Register(cr);
+        Blue.Instance.CoroutineManager.Register(cr);
 
         if (tag == null) {
             nonTaggedCoroutines ??= new FastList<Coroutine>();
@@ -359,7 +359,7 @@ public abstract class Component : BlueObject {
         }
 
         for (int i = 0; i < coroutines.Length; i++) {
-            CoroutineUpdater.Unregister(coroutines.Buffer[i]);
+            Blue.Instance.CoroutineManager.Unregister(coroutines.Buffer[i]);
         }
 
         FastListPool<Coroutine>.Return(coroutines);
@@ -371,7 +371,7 @@ public abstract class Component : BlueObject {
     protected void StopAllCoroutines() {
         if (nonTaggedCoroutines != null) {
             for (int i = 0; i < nonTaggedCoroutines.Length; i++) {
-                CoroutineUpdater.Unregister(nonTaggedCoroutines.Buffer[i]);
+                Blue.Instance.CoroutineManager.Unregister(nonTaggedCoroutines.Buffer[i]);
             }
 
             nonTaggedCoroutines.Clear();
@@ -380,7 +380,7 @@ public abstract class Component : BlueObject {
         if (coroutinesByTag != null) {
             foreach (FastList<Coroutine> coroutines in coroutinesByTag.Values) {
                 for (int i = 0; i < coroutines.Length; i++) {
-                    CoroutineUpdater.Unregister(coroutines.Buffer[i]);
+                    Blue.Instance.CoroutineManager.Unregister(coroutines.Buffer[i]);
                 }
 
                 FastListPool<Coroutine>.Return(coroutines);
