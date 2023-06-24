@@ -75,7 +75,7 @@ public class Coroutine : IYieldInstruction {
             }
         }
 
-        if (enumerator != null && enumerator.MoveNext()) {
+        if (enumerator.MoveNext()) {
             currentInstruction = enumerator.Current;
             return false;
         }

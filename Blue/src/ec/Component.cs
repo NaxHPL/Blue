@@ -280,13 +280,14 @@ public abstract class Component : BlueObject {
 
     #region Coroutines
 
-    readonly Dictionary<string, FastList<Coroutine>> coroutinesByTag = new Dictionary<string, FastList<Coroutine>>();
+    FastList<Coroutine> nonTaggedCoroutines;
+    Dictionary<string, FastList<Coroutine>> coroutinesByTag;
 
     /// <summary>
     /// Starts a coroutine.
     /// </summary>
     /// <remarks>
-    /// Untagged coroutines cannot be paused or stopped.
+    /// Untagged coroutines cannot be paused/resumed and can only be ended early using <see cref="StopAllCoroutines"/>.
     /// </remarks>
     protected void StartCoroutine(IEnumerator<IYieldInstruction> coroutine) {
         StartCoroutine(coroutine, null);
@@ -303,7 +304,12 @@ public abstract class Component : BlueObject {
         cr.Advance(); // advance to the first yield instruction
         CoroutineUpdater.Register(cr);
 
-        if (tag != null) {
+        if (tag == null) {
+            nonTaggedCoroutines ??= new FastList<Coroutine>();
+            nonTaggedCoroutines.Add(cr);
+        }
+        else {
+            coroutinesByTag ??= new Dictionary<string, FastList<Coroutine>>();
             if (!coroutinesByTag.ContainsKey(tag)) {
                 coroutinesByTag.Add(tag, FastListPool<Coroutine>.Get());
             }
@@ -327,6 +333,10 @@ public abstract class Component : BlueObject {
     }
 
     void SetCoroutinesPaused(string tag, bool paused) {
+        if (coroutinesByTag == null) {
+            return;
+        }
+
         if (!coroutinesByTag.TryGetValue(tag, out FastList<Coroutine> coroutines)) {
             return;
         }
@@ -340,6 +350,10 @@ public abstract class Component : BlueObject {
     /// Stops all coroutines running on this component with the given tag.
     /// </summary>
     protected void StopCoroutines(string tag) {
+        if (coroutinesByTag == null) {
+            return;
+        }
+
         if (!coroutinesByTag.Remove(tag, out FastList<Coroutine> coroutines)) {
             return;
         }
@@ -355,24 +369,40 @@ public abstract class Component : BlueObject {
     /// Stops all coroutines running on this component.
     /// </summary>
     protected void StopAllCoroutines() {
-        foreach (FastList<Coroutine> coroutines in coroutinesByTag.Values) {
-            for (int i = 0; i < coroutines.Length; i++) {
-                CoroutineUpdater.Unregister(coroutines.Buffer[i]);
+        if (nonTaggedCoroutines != null) {
+            for (int i = 0; i < nonTaggedCoroutines.Length; i++) {
+                CoroutineUpdater.Unregister(nonTaggedCoroutines.Buffer[i]);
             }
 
-            FastListPool<Coroutine>.Return(coroutines);
+            nonTaggedCoroutines.Clear();
         }
 
-        coroutinesByTag.Clear();
+        if (coroutinesByTag != null) {
+            foreach (FastList<Coroutine> coroutines in coroutinesByTag.Values) {
+                for (int i = 0; i < coroutines.Length; i++) {
+                    CoroutineUpdater.Unregister(coroutines.Buffer[i]);
+                }
+
+                FastListPool<Coroutine>.Return(coroutines);
+            }
+
+            coroutinesByTag.Clear();
+        }
     }
 
-    internal void CoroutineDone(Coroutine coroutine) {
-        if (coroutine.Tag == null) {
-            return;
+    internal void CoroutineDone(Coroutine cr) {
+        if (cr.Tag == null) {
+            nonTaggedCoroutines?.Remove(cr);
         }
+        else if (coroutinesByTag != null) {
+            if (coroutinesByTag.TryGetValue(cr.Tag, out FastList<Coroutine> coroutines)) {
+                coroutines.Remove(cr);
 
-        if (coroutinesByTag.TryGetValue(coroutine.Tag, out FastList<Coroutine> coroutines)) {
-            coroutines.Remove(coroutine);
+                if (coroutines.Length == 0) {
+                    coroutinesByTag.Remove(cr.Tag);
+                    FastListPool<Coroutine>.Return(coroutines);
+                }
+            }
         }
     }
 

@@ -37,7 +37,7 @@ internal static class CoroutineUpdater {
         }
 
         if (pendingAdd.Remove(coroutine)) {
-            return false;
+            return true;
         }
 
         return pendingRemove.Add(coroutine);
