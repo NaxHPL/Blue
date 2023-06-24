@@ -13,7 +13,7 @@ public class SpriteText : SpriteTextBase, IRenderable { void IRenderable.Render(
 /// <summary>
 /// Sprite text to be rendered in screen space.
 /// </summary>
-public class UI_SpriteText : SpriteTextBase, IScreenRenderable { }
+public class SpriteTextUI : SpriteTextBase, IScreenRenderable { }
 
 public class SpriteTextBase : Component {
 

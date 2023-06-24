@@ -15,7 +15,7 @@ public class StaticSprite : StaticSpriteBase, IRenderable { void IRenderable.Ren
 /// <summary>
 /// A static sprite component to be rendered in screen space.
 /// </summary>
-public class UI_StaticSprite : StaticSpriteBase, IScreenRenderable { }
+public class StaticSpriteUI : StaticSpriteBase, IScreenRenderable { }
 
 public class StaticSpriteBase : Component {
 

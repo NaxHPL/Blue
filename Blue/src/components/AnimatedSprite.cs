@@ -16,7 +16,7 @@ public class AnimatedSprite : BaseAnimatedSprite, IRenderable { void IRenderable
 /// <summary>
 /// A sprite with animation sequences to be rendered in screen space.
 /// </summary>
-public class UI_AnimatedSprite : BaseAnimatedSprite, IScreenRenderable { }
+public class AnimatedSpriteUI : BaseAnimatedSprite, IScreenRenderable { }
 
 public class BaseAnimatedSprite : Component, IUpdatable {
 
