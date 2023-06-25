@@ -49,9 +49,12 @@ public abstract class SpriteTextBase : Component {
     public bool FlipHorizontally {
         get => spriteEffects.HasFlag(SpriteEffects.FlipHorizontally);
         set {
-            spriteEffects = value ?
-                spriteEffects | SpriteEffects.FlipHorizontally :
-                spriteEffects & ~SpriteEffects.FlipHorizontally;
+            if (value) {
+                spriteEffects |= SpriteEffects.FlipHorizontally;
+            }
+            else {
+                spriteEffects &= ~SpriteEffects.FlipHorizontally;
+            }
         }
     }
 
@@ -61,12 +64,18 @@ public abstract class SpriteTextBase : Component {
     public bool FlipVertically {
         get => spriteEffects.HasFlag(SpriteEffects.FlipVertically);
         set {
-            spriteEffects = value ?
-                spriteEffects | SpriteEffects.FlipVertically :
-                spriteEffects & ~SpriteEffects.FlipVertically;
+            if (value) {
+                spriteEffects |= SpriteEffects.FlipVertically;
+            }
+            else {
+                spriteEffects &= ~SpriteEffects.FlipVertically;
+            }
         }
     }
 
+    /// <summary>
+    /// The text's origin point normalized. Default is top left.
+    /// </summary>
     public Vector2 OriginNormalized {
         get => originNormalized;
         set => SetOriginNormalized(value);
@@ -101,9 +110,11 @@ public abstract class SpriteTextBase : Component {
     string text;
     SpriteFont font;
     SpriteEffects spriteEffects = SpriteEffects.None;
+
     bool dropShadowEnabled = false;
     Vector2 dropShadowOffset = Vector2.One;
     Vector2 rotatedDropShadowOffset = Vector2.One;
+
     Vector2 originNormalized;
     Vector2 origin;
 
@@ -146,6 +157,7 @@ public abstract class SpriteTextBase : Component {
 
         dropShadowOffset = offset;
         UpdateRotatedDropShadowOffset();
+
         boundsDirty = true;
     }
 
@@ -165,8 +177,12 @@ public abstract class SpriteTextBase : Component {
         }
     }
 
-    protected override void OnEntityTransformChanged() {
+    protected override void OnEntityTransformChanged(Transform.ComponentFlags changedFlags) {
         boundsDirty = true;
+
+        if (dropShadowEnabled && changedFlags.HasFlag(Transform.ComponentFlags.Rotation)) {
+            UpdateRotatedDropShadowOffset();
+        }
     }
 
     void UpdateRotatedDropShadowOffset() {

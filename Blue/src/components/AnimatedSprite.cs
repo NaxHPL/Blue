@@ -41,9 +41,12 @@ public abstract class BaseAnimatedSprite : Component, IUpdatable {
         public bool FlipHorizontally {
             get => SpriteEffects.HasFlag(SpriteEffects.FlipHorizontally);
             set {
-                SpriteEffects = value ?
-                    SpriteEffects | SpriteEffects.FlipHorizontally :
-                    SpriteEffects & ~SpriteEffects.FlipHorizontally;
+                if (value) {
+                    SpriteEffects |= SpriteEffects.FlipHorizontally;
+                }
+                else {
+                    SpriteEffects &= ~SpriteEffects.FlipHorizontally;
+                }
             }
         }
 
@@ -53,9 +56,12 @@ public abstract class BaseAnimatedSprite : Component, IUpdatable {
         public bool FlipVertically {
             get => SpriteEffects.HasFlag(SpriteEffects.FlipVertically);
             set {
-                SpriteEffects = value ?
-                    SpriteEffects | SpriteEffects.FlipVertically :
-                    SpriteEffects & ~SpriteEffects.FlipVertically;
+                if (value) {
+                    SpriteEffects |= SpriteEffects.FlipVertically;
+                }
+                else {
+                    SpriteEffects &= ~SpriteEffects.FlipVertically;
+                }
             }
         }
 

@@ -43,9 +43,12 @@ public abstract class StaticSpriteBase : Component {
     public bool FlipHorizontally {
         get => spriteEffects.HasFlag(SpriteEffects.FlipHorizontally);
         set {
-            spriteEffects = value ?
-                spriteEffects | SpriteEffects.FlipHorizontally :
-                spriteEffects & ~SpriteEffects.FlipHorizontally;
+            if (value) {
+                spriteEffects |= SpriteEffects.FlipHorizontally;
+            }
+            else {
+                spriteEffects &= ~SpriteEffects.FlipHorizontally;
+            }
         }
     }
 
@@ -55,9 +58,12 @@ public abstract class StaticSpriteBase : Component {
     public bool FlipVertically {
         get => spriteEffects.HasFlag(SpriteEffects.FlipVertically);
         set {
-            spriteEffects = value ?
-                spriteEffects | SpriteEffects.FlipVertically :
-                spriteEffects & ~SpriteEffects.FlipVertically;
+            if (value) {
+                spriteEffects |= SpriteEffects.FlipVertically;
+            }
+            else {
+                spriteEffects &= ~SpriteEffects.FlipVertically;
+            }
         }
     }
 
