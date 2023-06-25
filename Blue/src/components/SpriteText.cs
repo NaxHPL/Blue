@@ -1,5 +1,6 @@
 ﻿using BlueFw.Extensions;
 using BlueFw.Math;
+using BlueFw.Extensions;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
@@ -218,9 +219,7 @@ public class SpriteText : Component, IRenderable {
                 Transform.Rotation,
                 origin,
                 Transform.Scale,
-                spriteEffects,
-                0f,
-                false
+                spriteEffects
             );
         }
 
@@ -232,9 +231,7 @@ public class SpriteText : Component, IRenderable {
             Transform.Rotation,
             origin,
             Transform.Scale,
-            spriteEffects,
-            0f,
-            false
+            spriteEffects
         );
     }
 }

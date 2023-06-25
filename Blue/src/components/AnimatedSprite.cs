@@ -1,5 +1,6 @@
 ﻿using BlueFw.Math;
 using BlueFw.Utils;
+using BlueFw.Extensions;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using System;
@@ -418,8 +419,7 @@ public class AnimatedSprite : Component, IUpdatable, IRenderable {
             Transform.Rotation,
             currentFrame.Sprite.Origin,
             Transform.Scale,
-            currentFrame.SpriteEffects,
-            0f
+            currentFrame.SpriteEffects
         );
     }
 

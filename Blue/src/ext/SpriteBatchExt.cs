@@ -1,6 +1,7 @@
 ﻿using BlueFw.Math;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using System;
 
 namespace BlueFw.Extensions;
 
@@ -26,9 +27,8 @@ public static class SpriteBatchExt {
     /// </summary>
     /// <param name="rect">The rectangle to draw.</param>
     /// <param name="color">The color of the rectangle.</param>
-    /// <param name="layerDepth">The depth of the layer of this rectangle.</param>
-    public static void FillRectangle(this SpriteBatch spriteBatch, in Rectangle rect, in Color color, float layerDepth = 0f) {
-        spriteBatch.FillRectangle(rect.X, rect.Y, rect.Width, rect.Height, color, layerDepth);
+    public static void FillRectangle(this SpriteBatch spriteBatch, in Rectangle rect, in Color color) {
+        spriteBatch.FillRectangle(rect.Location.ToVector2(), rect.Size.ToVector2(), color);
     }
 
     /// <summary>
@@ -39,9 +39,8 @@ public static class SpriteBatchExt {
     /// <param name="width">The width of the rectangle.</param>
     /// <param name="height">The height of the rectangle.</param>
     /// <param name="color">The color of the rectangle.</param>
-    /// <param name="layerDepth">The depth of the layer of this rectangle.</param>
-    public static void FillRectangle(this SpriteBatch spriteBatch, float x, float y, float width, float height, in Color color, float layerDepth = 0f) {
-        spriteBatch.FillRectangle(new Vector2(x, y), new Vector2(width, height), color, layerDepth);
+    public static void FillRectangle(this SpriteBatch spriteBatch, float x, float y, float width, float height, in Color color) {
+        spriteBatch.FillRectangle(new Vector2(x, y), new Vector2(width, height), color);
     }
 
     /// <summary>
@@ -50,9 +49,8 @@ public static class SpriteBatchExt {
     /// <param name="location">The location of the rectangle.</param>
     /// <param name="size">The size of the rectangle.</param>
     /// <param name="color">The color of the rectangle.</param>
-    /// <param name="layerDepth">The depth of the layer of this rectangle.</param>
-    public static void FillRectangle(this SpriteBatch spriteBatch, in Vector2 location, in Vector2 size, in Color color, float layerDepth = 0f) {
-        spriteBatch.Draw(GetWhitePixel(spriteBatch), location, null, color, 0f, Vector2.Zero, size, SpriteEffects.None, layerDepth);
+    public static void FillRectangle(this SpriteBatch spriteBatch, in Vector2 location, in Vector2 size, in Color color) {
+        spriteBatch.Draw(GetWhitePixel(spriteBatch), location, null, color, 0f, Vector2.Zero, size, SpriteEffects.None);
     }
 
     /// <summary>
@@ -78,5 +76,25 @@ public static class SpriteBatchExt {
     public static void Flush(this SpriteBatch spriteBatch, Material material, in Matrix2D? transformMatrix = null) {
         spriteBatch.End();
         spriteBatch.Begin(material, transformMatrix);
+    }
+
+    /// <summary>
+    /// Rounds <paramref name="position"/> to the nearest integral values before drawing.
+    /// </summary>
+    public static void Draw(this SpriteBatch spriteBatch, Texture2D texture, Vector2 position, in Rectangle? sourceRectangle, in Color color, float rotation, in Vector2 origin, in Vector2 scale, SpriteEffects effects) {
+        position.X = MathF.Round(position.X);
+        position.Y = MathF.Round(position.Y);
+
+        spriteBatch.Draw(texture, position, sourceRectangle, color, rotation, origin, scale, effects, 0f);
+    }
+
+    /// <summary>
+    /// Rounds <paramref name="position"/> to the nearest integral values before drawing.
+    /// </summary>
+    public static void DrawString(this SpriteBatch spriteBatch, SpriteFont spriteFont, string text, Vector2 position, in Color color, float rotation, in Vector2 origin, in Vector2 scale, SpriteEffects effects) {
+        position.X = MathF.Round(position.X);
+        position.Y = MathF.Round(position.Y);
+
+        spriteBatch.DrawString(spriteFont, text, position, color, rotation, origin, scale, effects, 0f, false);
     }
 }

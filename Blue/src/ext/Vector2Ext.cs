@@ -43,11 +43,17 @@ public static class Vector2Ext {
         return new Vector2(MathF.Abs(vector.X), MathF.Abs(vector.Y));
     }
 
+    /// <summary>
+    /// Returns a vector that's been rotated around <paramref name="center"/>.
+    /// </summary>
     public static Vector2 RotateAround(in Vector2 position, in Vector2 center, float radians) {
         RotateAround(position, center, radians, out Vector2 result);
         return result;
     }
 
+    /// <summary>
+    /// Creates a vector that's been rotated around <paramref name="center"/> and stores it in <paramref name="result"/>.
+    /// </summary>
     public static void RotateAround(in Vector2 position, in Vector2 center, float radians, out Vector2 result) {
         if (radians == 0f) {
             result = position;
@@ -66,5 +72,15 @@ public static class Vector2Ext {
             // Translate back to original position
             result += center;
         }
+    }
+
+    /// <summary>
+    /// Returns a vector as a <see cref="Point"/>.
+    /// </summary>
+    /// <param name="round">If <see langword="true"/>, components are round to the nearest integral value; otherwise components are cast to an integer.</param>
+    public static Point ToPoint(this in Vector2 vector, bool round) {
+        return round
+            ? new Point((int)MathF.Round(vector.X), (int)MathF.Round(vector.Y))
+            : new Point((int)vector.X, (int)vector.Y);
     }
 }

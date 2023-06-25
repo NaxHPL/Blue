@@ -1,5 +1,6 @@
 ﻿using BlueFw.Math;
 using BlueFw.Utils;
+using BlueFw.Extensions;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using System;
@@ -72,7 +73,7 @@ public class StaticSprite : Component, IRenderable {
     }
 
     /// <summary>
-    /// Get/set the size of the sprite when <see cref="NineSliceMode"/> is set to <see cref="NineSliceMode.Scale"/> or <see cref="NineSliceMode.Tile"/>.
+    /// The size of the sprite when <see cref="NineSliceMode"/> is set to <see cref="NineSliceMode.Scale"/> or <see cref="NineSliceMode.Tile"/>.
     /// </summary>
     public Point Size {
         get => size;
@@ -212,8 +213,7 @@ public class StaticSprite : Component, IRenderable {
                 Transform.Rotation,
                 sprite.Origin,
                 Transform.Scale,
-                spriteEffects,
-                0f
+                spriteEffects
             );
         }
         else {
@@ -227,8 +227,7 @@ public class StaticSprite : Component, IRenderable {
                     Transform.Rotation,
                     patches[i].Origin,
                     patches[i].Scale * Transform.Scale,
-                    spriteEffects,
-                    0f
+                    spriteEffects
                 );
             }
         }
