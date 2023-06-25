@@ -1,5 +1,6 @@
 ﻿using BlueFw.Extensions;
 using BlueFw.Math;
+using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using System.Collections.Generic;
 
@@ -15,8 +16,12 @@ internal class SceneRenderer : SceneHandler<IRenderable> {
 
         Blue.Instance.GraphicsDevice.Clear(camera.ClearColor);
 
-        bool startedFirstBatch = false;
+        Rectangle viewportBounds = Blue.Instance.GraphicsDevice.Viewport.Bounds;
+        Rectangle cameraBounds = camera.Bounds;
+
+        bool hasStartedBatch = false; // did we start a batch at all? if not, we don't need to call spriteBatch.End()
         Material currentMaterial = null;
+        bool currentlyRenderingInScreenSpace = false;
 
         for (int i = 0; i < items.Length; i++) {
             IRenderable renderable = items.Buffer[i];
@@ -26,37 +31,49 @@ internal class SceneRenderer : SceneHandler<IRenderable> {
                 continue;
             }
 
-            // Don't render if the camera can't see it
-            Rect.Overlaps(renderable.Bounds, camera.Bounds, out bool seenByCamera);
-            if (!seenByCamera) {
+            // Don't render if it can't be seen
+            Rect.Overlaps(renderable.Bounds, renderable.RenderInScreenSpace ? viewportBounds : cameraBounds, out bool isInBounds);
+            if (!isInBounds) {
                 continue;
             }
 
-            if (startedFirstBatch) {
-                EnsureStateForRenderable(renderable, currentMaterial, spriteBatch, camera);
+            if (hasStartedBatch) {
+                EnsureStateForRenderable(renderable, currentMaterial, currentlyRenderingInScreenSpace, spriteBatch, camera);
             }
             else {
                 currentMaterial = renderable.Material ?? Material.Default;
-                spriteBatch.Begin(currentMaterial, camera.TransformMatrix);
-                startedFirstBatch = true;
+                spriteBatch.Begin(currentMaterial, renderable.RenderInScreenSpace ? null : camera.TransformMatrix);
+                hasStartedBatch = true;
             }
+
+            currentlyRenderingInScreenSpace = renderable.RenderInScreenSpace;
 
             renderable.Render(spriteBatch, camera);
         }
 
-        if (startedFirstBatch) {
+        if (hasStartedBatch) {
             spriteBatch.End();
         }
     }
 
-    static void EnsureStateForRenderable(IRenderable renderable, Material currentMaterial, SpriteBatch spriteBatch, Camera camera) {
+    static void EnsureStateForRenderable(IRenderable renderable, Material currentMaterial, bool currentlyRenderingInScreenSpace, SpriteBatch spriteBatch, Camera camera) {
+        Material material = currentMaterial;
+        bool shouldFlush = false;
+        
         if (renderable.Material == null && currentMaterial != Material.Default) {
-            currentMaterial = Material.Default;
-            spriteBatch.Flush(currentMaterial, camera.TransformMatrix);
+            material = Material.Default;
+            shouldFlush = true;
         }
         else if (renderable.Material != null && currentMaterial != renderable.Material) {
-            currentMaterial = renderable.Material;
-            spriteBatch.Flush(currentMaterial, camera.TransformMatrix);
+            material = renderable.Material;
+            shouldFlush = true;
+        }
+        else if (currentlyRenderingInScreenSpace != renderable.RenderInScreenSpace) {
+            shouldFlush = true;
+        }
+
+        if (shouldFlush) {
+            spriteBatch.Flush(material, renderable.RenderInScreenSpace ? null : camera.TransformMatrix);
         }
     }
 }

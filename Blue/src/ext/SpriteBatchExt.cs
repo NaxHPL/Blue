@@ -56,24 +56,10 @@ public static class SpriteBatchExt {
     }
 
     /// <summary>
-    /// Begins a new batch with the specified material.
-    /// </summary>
-    public static void Begin(this SpriteBatch spriteBatch, Material material) {
-        spriteBatch.Begin(
-            SpriteSortMode.Deferred,
-            material.BlendState,
-            material.SamplerState,
-            material.DepthStencilState,
-            material.RasterizerState,
-            material.Effect
-        );
-    }
-
-    /// <summary>
     /// Begins a new batch with the specified material and transform matrix.
     /// </summary>
     /// <param name="transformMatrix">A matrix used to transform the sprite geometry.</param>
-    public static void Begin(this SpriteBatch spriteBatch, Material material, in Matrix2D transformMatrix) {
+    public static void Begin(this SpriteBatch spriteBatch, Material material, in Matrix2D? transformMatrix = null) {
         spriteBatch.Begin(
             SpriteSortMode.Deferred,
             material.BlendState,
@@ -86,18 +72,10 @@ public static class SpriteBatchExt {
     }
 
     /// <summary>
-    /// Flushes the current batch, then begins a new batch with the specified material.
-    /// </summary>
-    public static void Flush(this SpriteBatch spriteBatch, Material material) {
-        spriteBatch.End();
-        spriteBatch.Begin(material);
-    }
-
-    /// <summary>
     /// Flushes the current batch, then begins a new batch with the specified material and transform matrix.
     /// </summary>
     /// <param name="transformMatrix">A matrix used to transform the sprite geometry.</param>
-    public static void Flush(this SpriteBatch spriteBatch, Material material, in Matrix2D transformMatrix) {
+    public static void Flush(this SpriteBatch spriteBatch, Material material, in Matrix2D? transformMatrix = null) {
         spriteBatch.End();
         spriteBatch.Begin(material, transformMatrix);
     }

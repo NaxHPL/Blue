@@ -8,20 +8,22 @@ namespace BlueFw;
 /// <summary>
 /// Sprite text to be rendered in world space.
 /// </summary>
-public class SpriteText : SpriteTextBase, IRenderable { void IRenderable.Render(SpriteBatch spriteBatch, Camera camera) => Render(spriteBatch); }
+public class SpriteText : SpriteTextBase { public override bool RenderInScreenSpace => false; }
 
 /// <summary>
 /// Sprite text to be rendered in screen space.
 /// </summary>
-public class SpriteTextUI : SpriteTextBase, IScreenRenderable { }
+public class SpriteTextUI : SpriteTextBase { public override bool RenderInScreenSpace => true; }
 
-public abstract class SpriteTextBase : Component {
+public abstract class SpriteTextBase : Component, IRenderable {
 
     public int RenderLayer { get; set; }
 
     public float LayerDepth { get; set; }
 
     public Material Material { get; set; }
+
+    public abstract bool RenderInScreenSpace { get; }
 
     public Rect Bounds {
         get { UpdateBounds(); return bounds; }
@@ -212,7 +214,7 @@ public abstract class SpriteTextBase : Component {
         boundsDirty = false;
     }
 
-    public void Render(SpriteBatch spriteBatch) {
+    public void Render(SpriteBatch spriteBatch, Camera camera) {
         if (text == null || font == null) {
             return;
         }

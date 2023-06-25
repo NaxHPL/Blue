@@ -1,5 +1,4 @@
-﻿using BlueFw.Extensions;
-using BlueFw.Math;
+﻿using BlueFw.Math;
 using BlueFw.Utils;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
@@ -11,14 +10,14 @@ namespace BlueFw;
 /// <summary>
 /// A sprite with animation sequences to be rendered in world space.
 /// </summary>
-public class AnimatedSprite : BaseAnimatedSprite, IRenderable { void IRenderable.Render(SpriteBatch spriteBatch, Camera camera) => Render(spriteBatch); }
+public class AnimatedSprite : BaseAnimatedSprite { public override bool RenderInScreenSpace => false; }
 
 /// <summary>
 /// A sprite with animation sequences to be rendered in screen space.
 /// </summary>
-public class AnimatedSpriteUI : BaseAnimatedSprite, IScreenRenderable { }
+public class AnimatedSpriteUI : BaseAnimatedSprite { public override bool RenderInScreenSpace => true; }
 
-public abstract class BaseAnimatedSprite : Component, IUpdatable {
+public abstract class BaseAnimatedSprite : Component, IUpdatable, IRenderable {
 
     /// <summary>
     /// Defines a single frame of animation.
@@ -78,6 +77,8 @@ public abstract class BaseAnimatedSprite : Component, IUpdatable {
     public float LayerDepth { get; set; }
 
     public Material Material { get; set; }
+
+    public abstract bool RenderInScreenSpace { get; }
 
     public Rect Bounds {
         get { UpdateBounds(); return bounds; }
@@ -412,7 +413,7 @@ public abstract class BaseAnimatedSprite : Component, IUpdatable {
         boundsDirty = false;
     }
 
-    public void Render(SpriteBatch spriteBatch) {
+    public void Render(SpriteBatch spriteBatch, Camera camera) {
         Frame currentFrame = sequences.Buffer[currentSequenceIdx][currentFrameIdx];
 
         if (currentFrame.Sprite == null || currentFrame.Sprite.Texture == null) {

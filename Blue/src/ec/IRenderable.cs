@@ -36,7 +36,12 @@ public interface IRenderable {
     Material Material { get; }
 
     /// <summary>
-    /// The world space bounds of this renderable.
+    /// Defines if the renderable should be rendered in screen space or world space.
+    /// </summary>
+    bool RenderInScreenSpace { get; }
+
+    /// <summary>
+    /// The bounds of this renderable.
     /// </summary>
     Rect Bounds { get; }
 

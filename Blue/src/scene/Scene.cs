@@ -35,7 +35,6 @@ public class Scene {
 
     readonly SceneUpdater sceneUpdater = new SceneUpdater();
     readonly SceneRenderer sceneRenderer = new SceneRenderer();
-    readonly SceneScreenRenderer sceneScreenRenderer = new SceneScreenRenderer();
 
     /// <summary>
     /// Creates a new <see cref="Scene"/>.
@@ -254,9 +253,6 @@ public class Scene {
         if (component is IRenderable renderable) {
             sceneRenderer.Register(renderable);
         }
-        if (component is IScreenRenderable screenRenderable) {
-            sceneScreenRenderer.Register(screenRenderable);
-        }
     }
 
     internal void UnregisterComponent(Component component) {
@@ -265,9 +261,6 @@ public class Scene {
         }
         if (component is IRenderable renderable) {
             sceneRenderer.Unregister(renderable);
-        }
-        if (component is IScreenRenderable screenRenderable) {
-            sceneScreenRenderer.Unregister(screenRenderable);
         }
     }
 
@@ -289,16 +282,8 @@ public class Scene {
         sceneRenderer.FlagItemOrderDirty();
     }
 
-    /// <summary>
-    /// Flag that the render order of screen space components have changed. The new order will be reflected in the next update cycle.
-    /// </summary>
-    public void ScreenRenderOrderDirty() {
-        sceneScreenRenderer.FlagItemOrderDirty();
-    }
-
     internal void Render(SpriteBatch spriteBatch) {
         sceneRenderer.Render(spriteBatch, Camera);
-        sceneScreenRenderer.Render(spriteBatch);
     }
 
     #endregion

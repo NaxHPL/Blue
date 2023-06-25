@@ -1,5 +1,4 @@
-﻿using BlueFw.Extensions;
-using BlueFw.Math;
+﻿using BlueFw.Math;
 using BlueFw.Utils;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
@@ -10,20 +9,22 @@ namespace BlueFw;
 /// <summary>
 /// A static sprite component to be rendered in world space.
 /// </summary>
-public class StaticSprite : StaticSpriteBase, IRenderable { void IRenderable.Render(SpriteBatch spriteBatch, Camera camera) => Render(spriteBatch); }
+public class StaticSprite : StaticSpriteBase { public override bool RenderInScreenSpace => false; }
 
 /// <summary>
 /// A static sprite component to be rendered in screen space.
 /// </summary>
-public class StaticSpriteUI : StaticSpriteBase, IScreenRenderable { }
+public class StaticSpriteUI : StaticSpriteBase { public override bool RenderInScreenSpace => true; }
 
-public abstract class StaticSpriteBase : Component {
+public abstract class StaticSpriteBase : Component, IRenderable {
 
     public int RenderLayer { get; set; }
 
     public float LayerDepth { get; set; }
 
     public Material Material { get; set; }
+
+    public abstract bool RenderInScreenSpace { get; }
 
     public Rect Bounds {
         get { UpdateBounds(); return bounds; }
@@ -207,7 +208,7 @@ public abstract class StaticSpriteBase : Component {
         boundsDirty = false;
     }
 
-    public void Render(SpriteBatch spriteBatch) {
+    public void Render(SpriteBatch spriteBatch, Camera camera) {
         if (sprite == null) {
             return;
         }
