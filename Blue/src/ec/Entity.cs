@@ -147,6 +147,21 @@ public class Entity : BlueObject {
         }
     }
 
+    /// <summary>
+    /// Creates an <see cref="Entity"/> and adds it as a child.
+    /// </summary>
+    public Entity CreateChildEntity() {
+        return CreateChildEntity<Entity>();
+    }
+
+    /// <summary>
+    /// Creates a <typeparamref name="T"/> and adds it as a child.
+    /// </summary>
+    public T CreateChildEntity<T>() where T : Entity, new() {
+        T entity = new T { Parent = this };
+        return entity;
+    }
+
     #region Transform Passthroughs
 
     /// <summary>
