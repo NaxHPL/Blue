@@ -145,7 +145,7 @@ public abstract class SpriteTextBase : Component {
         }
 
         dropShadowOffset = offset;
-        rotatedDropShadowOffset = offset;
+        UpdateRotatedDropShadowOffset();
         boundsDirty = true;
     }
 
@@ -165,8 +165,12 @@ public abstract class SpriteTextBase : Component {
         }
     }
 
-    protected override void OnEntityTransformChanged(Transform.ComponentFlags changedFlags) {
+    protected override void OnEntityTransformChanged() {
         boundsDirty = true;
+    }
+
+    void UpdateRotatedDropShadowOffset() {
+        Vector2Ext.RotateAround(dropShadowOffset, Vector2.Zero, Transform.Rotation, out rotatedDropShadowOffset);
     }
 
     void UpdateBounds() {
@@ -184,8 +188,6 @@ public abstract class SpriteTextBase : Component {
             if (dropShadowEnabled) {
                 position += Vector2.Min(Vector2.Zero, dropShadowOffset);
                 size += Vector2Ext.Abs(dropShadowOffset);
-
-                Vector2Ext.RotateAround(dropShadowOffset, Vector2.Zero, Transform.Rotation, out rotatedDropShadowOffset);
             }
 
             Rect.CalculateBounds(position, origin, size, Transform.Scale, Transform.Rotation, out bounds);

@@ -28,6 +28,14 @@ public class Sprite {
     public Vector2 Origin;
 
     /// <summary>
+    /// The Sprite's origin (pivot point) normalized. Default is the top left.
+    /// </summary>
+    public Vector2 OriginNormalized {
+        get => Origin / Size.ToVector2();
+        set => Origin = Size.ToVector2() * value;
+    }
+
+    /// <summary>
     /// The size of the Sprite as a <see cref="Point"/>.
     /// </summary>
     public Point Size => new Point(Width, Height);
