@@ -7,17 +7,7 @@ using System.Collections.Generic;
 
 namespace BlueFw;
 
-/// <summary>
-/// A sprite with animation sequences to be rendered in world space.
-/// </summary>
-public class AnimatedSprite : BaseAnimatedSprite { public override bool RenderInScreenSpace => false; }
-
-/// <summary>
-/// A sprite with animation sequences to be rendered in screen space.
-/// </summary>
-public class AnimatedSpriteUI : BaseAnimatedSprite { public override bool RenderInScreenSpace => true; }
-
-public abstract class BaseAnimatedSprite : Component, IUpdatable, IRenderable {
+public class AnimatedSprite : Component, IUpdatable, IRenderable {
 
     /// <summary>
     /// Defines a single frame of animation.
@@ -78,7 +68,7 @@ public abstract class BaseAnimatedSprite : Component, IUpdatable, IRenderable {
 
     public Material Material { get; set; }
 
-    public abstract bool RenderInScreenSpace { get; }
+    public bool RenderInScreenSpace { get; set; }
 
     public Rect Bounds {
         get { UpdateBounds(); return bounds; }
@@ -138,7 +128,7 @@ public abstract class BaseAnimatedSprite : Component, IUpdatable, IRenderable {
     Rect bounds;
     bool boundsDirty = false;
 
-    public BaseAnimatedSprite() {
+    public AnimatedSprite() {
         sequences.Add(new Frame[] { default });
     }
 

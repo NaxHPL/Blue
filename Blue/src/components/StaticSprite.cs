@@ -6,17 +6,7 @@ using System;
 
 namespace BlueFw;
 
-/// <summary>
-/// A static sprite component to be rendered in world space.
-/// </summary>
-public class StaticSprite : StaticSpriteBase { public override bool RenderInScreenSpace => false; }
-
-/// <summary>
-/// A static sprite component to be rendered in screen space.
-/// </summary>
-public class StaticSpriteUI : StaticSpriteBase { public override bool RenderInScreenSpace => true; }
-
-public abstract class StaticSpriteBase : Component, IRenderable {
+public class StaticSprite : Component, IRenderable {
 
     public int RenderLayer { get; set; }
 
@@ -24,7 +14,7 @@ public abstract class StaticSpriteBase : Component, IRenderable {
 
     public Material Material { get; set; }
 
-    public abstract bool RenderInScreenSpace { get; }
+    public bool RenderInScreenSpace { get; set; }
 
     public Rect Bounds {
         get { UpdateBounds(); return bounds; }

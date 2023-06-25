@@ -5,17 +5,7 @@ using Microsoft.Xna.Framework.Graphics;
 
 namespace BlueFw;
 
-/// <summary>
-/// Sprite text to be rendered in world space.
-/// </summary>
-public class SpriteText : SpriteTextBase { public override bool RenderInScreenSpace => false; }
-
-/// <summary>
-/// Sprite text to be rendered in screen space.
-/// </summary>
-public class SpriteTextUI : SpriteTextBase { public override bool RenderInScreenSpace => true; }
-
-public abstract class SpriteTextBase : Component, IRenderable {
+public class SpriteText : Component, IRenderable {
 
     public int RenderLayer { get; set; }
 
@@ -23,7 +13,7 @@ public abstract class SpriteTextBase : Component, IRenderable {
 
     public Material Material { get; set; }
 
-    public abstract bool RenderInScreenSpace { get; }
+    public bool RenderInScreenSpace { get; set; }
 
     public Rect Bounds {
         get { UpdateBounds(); return bounds; }
