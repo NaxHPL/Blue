@@ -83,6 +83,13 @@ public static class MathExt {
     }
 
     /// <summary>
+    /// Rounds a float to the nearest integer.
+    /// </summary>
+    public static int RoundToInt(float value) {
+        return (int)MathF.Round(value);
+    }
+
+    /// <summary>
     /// Maps a float from one range to another.
     /// </summary>
     public static float Map(this float number, float fromLower, float fromUpper, float toLower, float toUpper) {
