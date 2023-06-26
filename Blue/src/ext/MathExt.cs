@@ -95,4 +95,14 @@ public static class MathExt {
     public static float Map(this float number, float fromLower, float fromUpper, float toLower, float toUpper) {
         return (number - fromLower) / (fromUpper - fromLower) * (toUpper - toLower) + toLower;
     }
+
+    /// <summary>
+    /// Determines where a value lies between two points.
+    /// </summary>
+    /// <returns>
+    /// A value between 0 and 1 representing where <paramref name="value"/> falls within the range.
+    /// </returns>
+    public static float InverseLerp(float a, float b, float value) {
+        return a == b ? 0f : (value - a) / (b - a);
+    }
 }

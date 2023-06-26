@@ -290,6 +290,10 @@ public abstract class Component : BlueObject {
     /// Untagged coroutines cannot be paused/resumed and can only be ended early using <see cref="StopAllCoroutines"/>.
     /// </remarks>
     protected void StartCoroutine(IEnumerator<IYieldInstruction> coroutine) {
+        if (!Active) {
+            throw new InvalidOperationException($"Couldn't start the coroutine because this {GetType()} is not active!");
+        }
+
         StartCoroutine(coroutine, null);
     }
 
