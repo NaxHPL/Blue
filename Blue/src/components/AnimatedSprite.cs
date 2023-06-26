@@ -71,6 +71,8 @@ public class AnimatedSprite : Component, IUpdatable, IRenderable {
 
     public bool RenderInScreenSpace { get; set; }
 
+    public bool SubpixelPositioning { get; set; }
+
     public Rect Bounds {
         get { UpdateBounds(); return bounds; }
     }
@@ -419,7 +421,8 @@ public class AnimatedSprite : Component, IUpdatable, IRenderable {
             Transform.Rotation,
             currentFrame.Sprite.Origin,
             Transform.Scale,
-            currentFrame.SpriteEffects
+            currentFrame.SpriteEffects,
+            !SubpixelPositioning
         );
     }
 

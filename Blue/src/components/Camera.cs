@@ -2,6 +2,7 @@
 using BlueFw.Math;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using System;
 
 namespace BlueFw;
 
@@ -63,6 +64,11 @@ public class Camera : Component {
         }
     }
 
+    public bool SubpixelPositioning {
+        get => subpixelPositioning;
+        set { subpixelPositioning = value; matricesDirty = boundsDirty = true; }
+    }
+
     /// <summary>
     /// The world space bounds of this camera.
     /// </summary>
@@ -103,6 +109,7 @@ public class Camera : Component {
     Vector2 origin;
     float zoom = 1f;
     Rect bounds;
+    bool subpixelPositioning = false;
 
     Matrix2D transformMatrix;
     Matrix2D inverseTransformMatrix;
@@ -196,7 +203,13 @@ public class Camera : Component {
             return;
         }
 
-        Matrix2D.CreateTranslation(-Transform.Position, out transformMatrix);
+        Vector2 position = Transform.Position;
+        if (subpixelPositioning) {
+            position.X = MathF.Round(Transform.Position.X);
+            position.Y = MathF.Round(Transform.Position.Y);
+        }
+
+        Matrix2D.CreateTranslation(-position, out transformMatrix);
 
         if (zoom != 1f) {
             Matrix2D.CreateScale(zoom, out tempMatrix);
@@ -222,10 +235,12 @@ public class Camera : Component {
             return;
         }
 
+        UpdateMatrices();
+
         Viewport viewport = Blue.Instance.GraphicsDevice.Viewport;
 
         Vector2 topLeft = ScreenToWorldPoint(new Vector2(viewport.X, viewport.Y));
-        Vector2 bottomRight = ScreenToWorldPoint(new Vector2(viewport.Width, viewport.Height));
+        Vector2 bottomRight = ScreenToWorldPoint(new Vector2(viewport.X + viewport.Width, viewport.Y + viewport.Height));
 
         if (Transform.Rotation == 0f) {
             bounds.Position = topLeft;

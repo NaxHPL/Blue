@@ -16,6 +16,8 @@ public class SpriteText : Component, IRenderable {
 
     public bool RenderInScreenSpace { get; set; }
 
+    public bool SubpixelPositioning { get; set; }
+
     public Rect Bounds {
         get { UpdateBounds(); return bounds; }
     }
@@ -219,7 +221,8 @@ public class SpriteText : Component, IRenderable {
                 Transform.Rotation,
                 origin,
                 Transform.Scale,
-                spriteEffects
+                spriteEffects,
+                !SubpixelPositioning
             );
         }
 
@@ -231,7 +234,8 @@ public class SpriteText : Component, IRenderable {
             Transform.Rotation,
             origin,
             Transform.Scale,
-            spriteEffects
+            spriteEffects,
+            !SubpixelPositioning
         );
     }
 }

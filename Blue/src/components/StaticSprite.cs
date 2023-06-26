@@ -17,6 +17,8 @@ public class StaticSprite : Component, IRenderable {
 
     public bool RenderInScreenSpace { get; set; }
 
+    public bool SubpixelPositioning { get; set; }
+
     public Rect Bounds {
         get { UpdateBounds(); return bounds; }
     }
@@ -213,7 +215,8 @@ public class StaticSprite : Component, IRenderable {
                 Transform.Rotation,
                 sprite.Origin,
                 Transform.Scale,
-                spriteEffects
+                spriteEffects,
+                !SubpixelPositioning
             );
         }
         else {
@@ -227,7 +230,8 @@ public class StaticSprite : Component, IRenderable {
                     Transform.Rotation,
                     patches[i].Origin,
                     patches[i].Scale * Transform.Scale,
-                    spriteEffects
+                    spriteEffects,
+                    !SubpixelPositioning
                 );
             }
         }
