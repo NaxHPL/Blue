@@ -581,10 +581,10 @@ public struct Rect {
 
     public static implicit operator Rectangle(in Rect rect) {
         return new Rectangle(
-            (int)MathF.Round(rect.X),
-            (int)MathF.Round(rect.Y),
-            (int)MathF.Round(rect.Width),
-            (int)MathF.Round(rect.Height)
+            MathExt.RoundToInt(rect.X),
+            MathExt.RoundToInt(rect.Y),
+            MathExt.RoundToInt(rect.Width),
+            MathExt.RoundToInt(rect.Height)
         );
     }
 

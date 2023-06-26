@@ -17,7 +17,7 @@ public class Sprite {
     public Rectangle? SourceRect;
 
     /// <summary>
-    /// A rectangle defining the center area of the sprite.
+    /// A rectangle defining the center area of the sprite relative to the source rectangle.
     /// This to determine the areas for nine slicing.
     /// </summary>
     public Rectangle NineSliceRect;

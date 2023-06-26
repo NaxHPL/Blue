@@ -80,7 +80,7 @@ public static class Vector2Ext {
     /// <param name="round">If <see langword="true"/>, components are round to the nearest integral value; otherwise components are cast to an integer.</param>
     public static Point ToPoint(this in Vector2 vector, bool round) {
         return round
-            ? new Point((int)MathF.Round(vector.X), (int)MathF.Round(vector.Y))
+            ? new Point(MathExt.RoundToInt(vector.X), MathExt.RoundToInt(vector.Y))
             : new Point((int)vector.X, (int)vector.Y);
     }
 }
