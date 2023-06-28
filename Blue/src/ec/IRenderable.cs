@@ -1,5 +1,4 @@
 ﻿using BlueFw.Math;
-using Microsoft.Xna.Framework.Graphics;
 using System.Collections.Generic;
 
 namespace BlueFw;
@@ -51,7 +50,7 @@ public interface IRenderable {
     /// <summary>
     /// Renders this renderable using the specified sprite batch.
     /// </summary>
-    void Render(SpriteBatch spriteBatch, Camera camera);
+    void Render(BlueSpriteBatch spriteBatch, Camera camera);
 }
 
 internal class RenderableOrderComparer : IComparer<IRenderable> {

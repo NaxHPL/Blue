@@ -1,5 +1,4 @@
 ﻿using Microsoft.Xna.Framework.Content;
-using Microsoft.Xna.Framework.Graphics;
 using System;
 using System.Collections.Generic;
 
@@ -282,7 +281,7 @@ public class Scene {
         sceneRenderer.FlagItemOrderDirty();
     }
 
-    internal void Render(SpriteBatch spriteBatch) {
+    internal void Render(BlueSpriteBatch spriteBatch) {
         sceneRenderer.Render(spriteBatch, Camera);
     }
 

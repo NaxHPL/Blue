@@ -1,6 +1,5 @@
 ﻿using BlueFw.Coroutines;
 using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Graphics;
 using System;
 
 namespace BlueFw;
@@ -35,7 +34,7 @@ public class Blue : Game {
 
     internal readonly CoroutineManager CoroutineManager = new CoroutineManager();
 
-    SpriteBatch spriteBatch;
+    BlueSpriteBatch spriteBatch;
     Scene queuedSceneToLoad;
 
     public Blue() {
@@ -62,7 +61,7 @@ public class Blue : Game {
     protected virtual void OnInitialize() { }
 
     protected override void LoadContent() {
-        spriteBatch = new SpriteBatch(GraphicsDevice);
+        spriteBatch = new BlueSpriteBatch(GraphicsDevice);
         OnLoadContent();
     }
 

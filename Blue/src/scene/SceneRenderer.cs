@@ -1,7 +1,5 @@
-﻿using BlueFw.Extensions;
-using BlueFw.Math;
+﻿using BlueFw.Math;
 using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Graphics;
 using System.Collections.Generic;
 
 namespace BlueFw;
@@ -11,7 +9,7 @@ internal class SceneRenderer : SceneHandler<IRenderable> {
     static readonly IComparer<IRenderable> renderableComparer = new RenderableOrderComparer();
     protected override IComparer<IRenderable> itemComparer => renderableComparer;
 
-    public void Render(SpriteBatch spriteBatch, Camera camera) {
+    public void Render(BlueSpriteBatch spriteBatch, Camera camera) {
         PrepareItemsForHandling();
 
         Blue.Instance.GraphicsDevice.Clear(camera.ClearColor);
@@ -56,7 +54,7 @@ internal class SceneRenderer : SceneHandler<IRenderable> {
         }
     }
 
-    static void EnsureStateForRenderable(IRenderable renderable, Material currentMaterial, bool currentlyRenderingInScreenSpace, SpriteBatch spriteBatch, Camera camera) {
+    static void EnsureStateForRenderable(IRenderable renderable, Material currentMaterial, bool currentlyRenderingInScreenSpace, BlueSpriteBatch spriteBatch, Camera camera) {
         Material material = currentMaterial;
         bool shouldFlush = false;
         

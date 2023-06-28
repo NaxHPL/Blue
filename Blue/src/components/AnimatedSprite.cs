@@ -1,6 +1,5 @@
 ﻿using BlueFw.Math;
 using BlueFw.Utils;
-using BlueFw.Extensions;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using System;
@@ -406,7 +405,7 @@ public class AnimatedSprite : Component, IUpdatable, IRenderable {
         boundsDirty = false;
     }
 
-    public void Render(SpriteBatch spriteBatch, Camera camera) {
+    public void Render(BlueSpriteBatch spriteBatch, Camera camera) {
         Frame currentFrame = sequences.Buffer[currentSequenceIdx][currentFrameIdx];
 
         if (currentFrame.Sprite == null || currentFrame.Sprite.Texture == null) {

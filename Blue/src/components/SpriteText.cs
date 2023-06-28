@@ -1,6 +1,5 @@
 ﻿using BlueFw.Extensions;
 using BlueFw.Math;
-using BlueFw.Extensions;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
@@ -207,7 +206,7 @@ public class SpriteText : Component, IRenderable {
         boundsDirty = false;
     }
 
-    public void Render(SpriteBatch spriteBatch, Camera camera) {
+    public void Render(BlueSpriteBatch spriteBatch, Camera camera) {
         if (text == null || font == null) {
             return;
         }
