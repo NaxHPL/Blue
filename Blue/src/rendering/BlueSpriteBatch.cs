@@ -39,7 +39,7 @@ public class BlueSpriteBatch : SpriteBatch {
     /// Begins a new batch with the specified material and transform matrix.
     /// </summary>
     /// <param name="transformMatrix">A matrix used to transform the sprite geometry.</param>
-    internal void Begin(Material material, in Matrix2D? transformMatrix) {
+    public void Begin(Material material, in Matrix2D? transformMatrix) {
         CurrentMaterial = material;
         CurrentTransformMatrix = transformMatrix;
 
@@ -129,7 +129,7 @@ public class BlueSpriteBatch : SpriteBatch {
         Draw(whitePixel, location, null, color, 0f, Vector2.Zero, size, SpriteEffects.None, roundPosition);
     }
 
-    internal new void End() {
+    public new void End() {
         base.End();
 
         CurrentMaterial = null;
