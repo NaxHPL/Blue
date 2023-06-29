@@ -130,7 +130,7 @@ public class BlueSpriteBatch : SpriteBatch {
     }
 
     internal new void End() {
-        End();
+        base.End();
 
         CurrentMaterial = null;
         CurrentTransformMatrix = null;
