@@ -23,8 +23,15 @@ public class BlueSpriteBatch : SpriteBatch {
         }
     }
 
-    Material currentMaterial;
-    Matrix2D? currentTransformMatrix;
+    /// <summary>
+    /// The material currently being used by the batcher.
+    /// </summary>
+    public Material CurrentMaterial { get; private set; }
+
+    /// <summary>
+    /// The transformation matrix currently being used by the batcher.
+    /// </summary>
+    public Matrix2D? CurrentTransformMatrix { get; private set; }
 
     internal BlueSpriteBatch(GraphicsDevice graphicsDevice) : base(graphicsDevice) { }
 
@@ -33,8 +40,8 @@ public class BlueSpriteBatch : SpriteBatch {
     /// </summary>
     /// <param name="transformMatrix">A matrix used to transform the sprite geometry.</param>
     internal void Begin(Material material, in Matrix2D? transformMatrix) {
-        currentMaterial = material;
-        currentTransformMatrix = transformMatrix;
+        CurrentMaterial = material;
+        CurrentTransformMatrix = transformMatrix;
 
         Begin(
             SpriteSortMode.Deferred,
@@ -122,11 +129,18 @@ public class BlueSpriteBatch : SpriteBatch {
         Draw(whitePixel, location, null, color, 0f, Vector2.Zero, size, SpriteEffects.None, roundPosition);
     }
 
+    internal new void End() {
+        End();
+
+        CurrentMaterial = null;
+        CurrentTransformMatrix = null;
+    }
+
     /// <summary>
     /// Ends the current batch, then begins a new batch with the previously used material and transform matrix.
     /// </summary>
     public void Flush() {
-        Flush(currentMaterial, currentTransformMatrix);
+        Flush(CurrentMaterial, CurrentTransformMatrix);
     }
 
     /// <summary>
