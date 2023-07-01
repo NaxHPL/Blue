@@ -10,7 +10,7 @@ public class StaticSprite : Component, IRenderable {
 
     public int RenderLayer { get; set; }
 
-    public float LayerDepth { get; set; }
+    public virtual float LayerDepth { get; set; }
 
     public Material Material { get; set; }
 

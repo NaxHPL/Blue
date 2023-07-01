@@ -23,15 +23,8 @@ public class BlueSpriteBatch : SpriteBatch {
         }
     }
 
-    /// <summary>
-    /// The material currently being used by the batcher.
-    /// </summary>
-    public Material CurrentMaterial { get; private set; }
-
-    /// <summary>
-    /// The transformation matrix currently being used by the batcher.
-    /// </summary>
-    public Matrix2D? CurrentTransformMatrix { get; private set; }
+    Material currentMaterial;
+    Matrix2D? currentTransformMatrix;
 
     internal BlueSpriteBatch(GraphicsDevice graphicsDevice) : base(graphicsDevice) { }
 
@@ -39,9 +32,9 @@ public class BlueSpriteBatch : SpriteBatch {
     /// Begins a new batch with the specified material and transform matrix.
     /// </summary>
     /// <param name="transformMatrix">A matrix used to transform the sprite geometry.</param>
-    public void Begin(Material material, in Matrix2D? transformMatrix) {
-        CurrentMaterial = material;
-        CurrentTransformMatrix = transformMatrix;
+    internal void Begin(Material material, in Matrix2D? transformMatrix) {
+        currentMaterial = material;
+        currentTransformMatrix = transformMatrix;
 
         Begin(
             SpriteSortMode.Deferred,
@@ -129,25 +122,39 @@ public class BlueSpriteBatch : SpriteBatch {
         Draw(whitePixel, location, null, color, 0f, Vector2.Zero, size, SpriteEffects.None, roundPosition);
     }
 
-    public new void End() {
+    internal new void End() {
         base.End();
 
-        CurrentMaterial = null;
-        CurrentTransformMatrix = null;
+        currentMaterial = null;
+        currentTransformMatrix = null;
     }
 
     /// <summary>
     /// Ends the current batch, then begins a new batch with the previously used material and transform matrix.
     /// </summary>
-    public void Flush() {
-        Flush(CurrentMaterial, CurrentTransformMatrix);
+    internal void Flush() {
+        Flush(currentMaterial, currentTransformMatrix);
     }
 
     /// <summary>
     /// Ends the current batch, then begins a new batch with the specified material and transform matrix.
     /// </summary>
     internal void Flush(Material material, in Matrix2D? transformMatrix) {
-        End();
+        base.End();
         Begin(material, transformMatrix);
+    }
+
+    /// <summary>
+    /// Pauses the sprite batch so some custom rendering can be done.
+    /// </summary>
+    public void Pause() {
+        base.End();
+    }
+
+    /// <summary>
+    /// Resumes the sprite batch after custom rendering is finished.
+    /// </summary>
+    public void Resume() {
+        Begin(currentMaterial, currentTransformMatrix);
     }
 }

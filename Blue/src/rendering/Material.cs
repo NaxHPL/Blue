@@ -18,7 +18,7 @@ public class Material {
     /// <summary>
     /// The material's blend state.
     /// </summary>
-    public BlendState BlendState = BlendState.NonPremultiplied;
+    public BlendState BlendState = BlendState.AlphaBlend;
 
     /// <summary>
     /// The material's sampler state.
