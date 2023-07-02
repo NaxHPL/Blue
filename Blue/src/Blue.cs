@@ -1,4 +1,5 @@
-﻿using BlueFw.Coroutines;
+﻿using BlueFw.Content;
+using BlueFw.Coroutines;
 using Microsoft.Xna.Framework;
 using System;
 
@@ -13,14 +14,14 @@ public class Blue : Game {
     static Blue instance;
 
     /// <summary>
-    /// The currently active scene.
-    /// </summary>
-    public Scene ActiveScene { get; private set; }
-
-    /// <summary>
     /// Used to initialize and control the presentation of the graphics device.
     /// </summary>
     public GraphicsDeviceManager Graphics { get; private set; }
+
+    /// <summary>
+    /// The global content manager. Use this for assets that are used globally in the game.
+    /// </summary>
+    public new BlueContent Content { get; private set; }
 
     /// <summary>
     /// Indicates if the game is the focused application.
@@ -31,6 +32,11 @@ public class Blue : Game {
     /// Defines whether to update the game when it isn't the focused application.
     /// </summary>
     public bool PauseOnFocusLost = false;
+
+    /// <summary>
+    /// The currently active scene.
+    /// </summary>
+    public Scene ActiveScene { get; private set; }
 
     internal readonly CoroutineManager CoroutineManager = new CoroutineManager();
 
@@ -45,13 +51,13 @@ public class Blue : Game {
         instance = this;
 
         Graphics = new GraphicsDeviceManager(this);
-        Content.RootDirectory = "Content";
         IsMouseVisible = true;
     }
 
     protected override void Initialize() {
-        OnInitialize();
+        Content = new BlueContent(GraphicsDevice, base.Content, "Content");
         base.Initialize();
+        OnInitialize();
     }
 
     /// <summary>
@@ -140,5 +146,10 @@ public class Blue : Game {
     protected override void OnExiting(object sender, EventArgs args) {
         UnloadActiveScene();
         base.OnExiting(sender, args);
+    }
+
+    protected override void Dispose(bool disposing) {
+        Content.Dispose(disposing);
+        base.Dispose(disposing);
     }
 }

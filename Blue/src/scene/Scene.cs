@@ -1,4 +1,5 @@
-﻿using Microsoft.Xna.Framework.Content;
+﻿using BlueFw.Content;
+using Microsoft.Xna.Framework.Content;
 using System;
 using System.Collections.Generic;
 
@@ -12,10 +13,10 @@ public class Scene {
     public bool IsActive => this == Blue.Instance.ActiveScene;
 
     /// <summary>
-    /// The <see cref="ContentManager"/> of this scene. Use this for scene specific content.
+    /// The content manager of this scene. Use this for scene specific content.
     /// </summary>
     /// <remarks>The content will be unloaded when the scene unloads.</remarks>
-    public ContentManager Content { get; private set; }
+    public BlueContent Content { get; private set; }
 
     /// <summary>
     /// This scene's main camera.
@@ -288,7 +289,7 @@ public class Scene {
     #endregion
 
     internal void Load() {
-        Content = new ContentManager(Blue.Instance.Services, Blue.Instance.Content.RootDirectory);
+        Content = new BlueContent(Blue.Instance.Content);
 
         for (int i = 0; i < SceneComponents.Count; i++) {
             SceneComponents[i].TryInvokeAwake();
@@ -310,7 +311,7 @@ public class Scene {
             BlueObject.DestroyImmediate(Entities[i]);
         }
 
-        Content?.Dispose();
+        Content.Dispose();
         Content = null;
 
         OnUnload();
