@@ -13,15 +13,12 @@ public class Entity : BlueObject {
     /// <summary>
     /// The scene this entity is attached to.
     /// </summary>
-    public Scene Scene {
-        get => scene;
-        internal set => SetScene(value);
-    }
+    public Scene Scene { get; internal set; }
 
     /// <summary>
     /// Returns <see langword="true"/> if this entity is attached to a scene.
     /// </summary>
-    public bool AttachedToScene => scene != null;
+    public bool AttachedToScene => Scene != null;
 
     /// <summary>
     /// Gets or sets whether this entity is enabled.
@@ -46,8 +43,6 @@ public class Entity : BlueObject {
     /// </summary>
     internal readonly ComponentCollection Components;
 
-    Scene scene;
-    bool isAwake = false;
     bool enabled = true;
 
     /// <summary>
@@ -64,27 +59,10 @@ public class Entity : BlueObject {
     /// </summary>
     public Entity() : this(null) { }
 
-    internal bool TryInvokeAwake() {
-        if (isAwake || !Active) {
-            return false;
-        }
-
-        isAwake = true;
-
+    internal void TryInvokeAwakeOnComponents() {
         for (int i = 0; i < Components.Count; i++) {
             Components[i].TryInvokeAwake();
         }
-
-        return true;
-    }
-
-    internal void SetScene(Scene scene) {
-        if (this.scene == scene) {
-            return;
-        }
-
-        this.scene = scene;
-        UpdateActive();
     }
 
     /// <summary>
@@ -102,8 +80,8 @@ public class Entity : BlueObject {
             Transform.SetParent(entity.Transform);
         }
 
-        if (entity.AttachedToScene && entity.scene != scene) {
-            entity.scene.AddEntity(this);
+        if (entity.AttachedToScene && entity.Scene != Scene) {
+            entity.Scene.AddEntity(this);
         }
 
         UpdateActive();
@@ -123,18 +101,17 @@ public class Entity : BlueObject {
 
     internal void UpdateActive() {
         bool wasActiveBefore = Active;
-        Active = enabled && AttachedToScene && scene.IsActive && (!HasParent || Parent.Active);
+        Active = enabled && AttachedToScene && Scene.IsActiveScene && Scene.IsLoaded && (!HasParent || Parent.Active);
 
         // Return early if active state didn't change
         if (wasActiveBefore == Active) {
             return;
         }
 
-        TryInvokeAwake();
-
         // Invoke OnActive or OnInactive for all components
         for (int i = 0; i < Components.Count; i++) {
             if (Components[i].Active) {
+                Components[i].TryInvokeAwake(); // just in case
                 Components[i].TryInvokeOnActive();
             }
             else {
@@ -223,16 +200,13 @@ public class Entity : BlueObject {
 
         component.Entity = this;
 
-        if (isAwake && Active) {
+        if (AttachedToScene && Scene.IsActiveScene && Scene.IsLoaded) {
             component.TryInvokeAwake();
-        }
-
-        if (component.Active) {
             component.TryInvokeOnActive();
         }
 
         if (AttachedToScene) {
-            scene.RegisterComponent(component);
+            Scene.RegisterComponent(component);
         }
     }
 
@@ -245,7 +219,7 @@ public class Entity : BlueObject {
         component.TryInvokeOnInactive();
 
         if (AttachedToScene) {
-            scene.UnregisterComponent(component);
+            Scene.UnregisterComponent(component);
         }
 
         return true;
@@ -378,7 +352,7 @@ public class Entity : BlueObject {
         }
 
         Transform.DetachFromParent();
-        scene?.RemoveEntity(this);
+        Scene?.RemoveEntity(this);
     }
 
     #endregion

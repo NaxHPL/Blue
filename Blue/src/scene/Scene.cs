@@ -1,5 +1,4 @@
 ﻿using BlueFw.Content;
-using Microsoft.Xna.Framework.Content;
 using System;
 using System.Collections.Generic;
 
@@ -10,7 +9,12 @@ public class Scene {
     /// <summary>
     /// Gets whether this scene is the active scene.
     /// </summary>
-    public bool IsActive => this == Blue.Instance.ActiveScene;
+    public bool IsActiveScene => this == Blue.Instance.ActiveScene;
+
+    /// <summary>
+    /// Has the scene finished loading?
+    /// </summary>
+    internal bool IsLoaded { get; private set; }
 
     /// <summary>
     /// The content manager of this scene. Use this for scene specific content.
@@ -81,6 +85,12 @@ public class Scene {
         entity.Scene = this;
         RegisterComponents(entity.Components);
 
+        if (IsLoaded) {
+            // If we're adding this entity while the scene is loaded, call awake/onactive on components
+            entity.TryInvokeAwakeOnComponents();
+            entity.UpdateActive();
+        }
+
         entity.OnAddedToScene();
 
         for (int i = 0; i < entity.ChildCount; i++) {
@@ -98,6 +108,10 @@ public class Scene {
 
         entity.Scene = null;
         UnregisterComponents(entity.Components);
+
+        if (IsLoaded) {
+            entity.UpdateActive();
+        }
 
         for (int i = 0; i < entity.ChildCount; i++) {
             RemoveEntity(entity.GetChildAt(i));
@@ -169,7 +183,10 @@ public class Scene {
 
         component.Scene = this;
 
-        component.TryInvokeAwake();
+        if (IsActiveScene && IsLoaded) {
+            component.TryInvokeAwake();
+        }
+
         component.TryInvokeOnActive();
 
         RegisterComponent(component);
@@ -289,24 +306,31 @@ public class Scene {
     #endregion
 
     internal void Load() {
+        IsLoaded = false;
+
         Content = new BlueContent(Blue.Instance.Content);
+        OnLoad();
+
+        IsLoaded = true;
 
         for (int i = 0; i < SceneComponents.Count; i++) {
             SceneComponents[i].TryInvokeAwake();
             SceneComponents[i].TryInvokeOnActive();
         }
+
         for (int i = 0; i < Entities.Count; i++) {
-            Entities[i].TryInvokeAwake();
+            Entities[i].TryInvokeAwakeOnComponents();
             Entities[i].UpdateActive();
         }
 
-        OnLoad();
+        OnLoadFinished();
     }
 
-    public void Unload() {
+    internal void Unload() {
         for (int i = SceneComponents.Count - 1; i >= 0; i--) {
             BlueObject.DestroyImmediate(SceneComponents[i]);
         }
+
         for (int i = Entities.Count - 1; i >= 0; i--) {
             BlueObject.DestroyImmediate(Entities[i]);
         }
@@ -315,15 +339,22 @@ public class Scene {
         Content = null;
 
         OnUnload();
+
+        IsLoaded = false;
     }
 
     #region Lifecycle Methods
 
     /// <summary>
     /// Called when this scene is loaded and becomes the active scene.
-    /// Use this to load scene content.
+    /// Use this to create entities and load scene content.
     /// </summary>
     protected virtual void OnLoad() { }
+
+    /// <summary>
+    /// Called when the scene is finished loading and Awake/OnActive have been called on all components.
+    /// </summary>
+    protected virtual void OnLoadFinished() { }
 
     /// <summary>
     /// Called when this scene is unloaded and is no longer the active scene.

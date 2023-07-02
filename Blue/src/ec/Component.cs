@@ -43,7 +43,7 @@ public abstract class Component : BlueObject {
     /// <remarks>
     /// An inactive component won't get updated or rendered
     /// </remarks>
-    public bool Active => enabled && ((AttachedToEntity && Entity.Active) || (AttachedToScene && Scene.IsActive));
+    public bool Active => enabled && ((AttachedToEntity && Entity.Active) || (AttachedToScene && Scene.IsActiveScene && Scene.IsLoaded));
 
     /// <summary>
     /// The <see cref="Transform"/> attached to this component's entity.
@@ -101,8 +101,11 @@ public abstract class Component : BlueObject {
         }
 
         nextActiveMethodToInvoke = LifecycleEnabledMethod.OnInactive;
+
+        TryInvokeAwake(); // just in case
         TryInvokeStart();
         OnActive();
+
         return true;
     }
 
@@ -223,7 +226,7 @@ public abstract class Component : BlueObject {
     #region Lifecycle Methods
 
     /// <summary>
-    /// Called when the scene first loads. If the entity this component is attached to is inactive during scene load, Awake will not be called until it is made active.
+    /// Called when this component is added to scene regardless of its Active state. Use Awake to initialize variables or states, but do not use it to interact with other components.
     /// </summary>
     /// <remarks>
     /// Called exactly once in the lifetime of a Component.
@@ -263,20 +266,6 @@ public abstract class Component : BlueObject {
     protected virtual void OnDestroy() { }
 
     #endregion
-
-    /// <summary>
-    /// Destroys this component and removes it from its entity.
-    /// </summary>
-    protected override void Destroy() {
-        Entity?.RemoveComponent(this);
-        Scene?.RemoveSceneComponent(this);
-
-        TryInvokeOnInactive();
-
-        if (isAwake) {
-            OnDestroy();
-        }
-    }
 
     #region Coroutines
 
@@ -411,4 +400,18 @@ public abstract class Component : BlueObject {
     }
 
     #endregion
+
+    /// <summary>
+    /// Destroys this component and removes it from its entity.
+    /// </summary>
+    protected override void Destroy() {
+        Entity?.RemoveComponent(this);
+        Scene?.RemoveSceneComponent(this);
+
+        TryInvokeOnInactive();
+
+        if (isAwake) {
+            OnDestroy();
+        }
+    }
 }
